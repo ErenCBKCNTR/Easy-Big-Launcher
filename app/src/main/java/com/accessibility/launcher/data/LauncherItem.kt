@@ -1,12 +1,12 @@
 package com.accessibility.launcher.data
 
-enum class ItemType {
-    APP, CONTACT, EMPTY
-}
-
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
+
+enum class ItemType {
+    APP, CONTACT, EMPTY
+}
 
 @Entity(
     tableName = "launcher_items",
