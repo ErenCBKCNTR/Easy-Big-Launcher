@@ -1,0 +1,6 @@
+{
+  "name": "Accessibility Launcher",
+  "description": "An accessible dashboard for users with special needs, featuring large buttons and high contrast to simplify digital navigation.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
