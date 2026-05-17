@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Easy Big Launcher</string>
+    <string name="btn_phone">Telefon</string>
+    <string name="btn_messages">Mesajlar</string>
+    <string name="btn_camera">Kamera</string>
+    <string name="btn_gallery">Galeri</string>
+    <string name="btn_all_apps">Tüm Uygulamalar</string>
+    <string name="btn_sos">SOS / Acil Durum</string>
+    <string name="btn_settings">Ayarlar</string>
+    <string name="settings_title">Ayarlar</string>
+    <string name="language_option">Uygulama Dili</string>
+    <string name="go_back">Geri</string>
+</resources>
