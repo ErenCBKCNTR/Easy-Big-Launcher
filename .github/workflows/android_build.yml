@@ -16,11 +16,13 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
-        cache: gradle
-    - name: Build with Gradle
+    - name: Install Gradle
       run: |
-        chmod +x gradlew
-        ./gradlew assembleDebug
+        wget https://services.gradle.org/distributions/gradle-8.5-bin.zip
+        unzip gradle-8.5-bin.zip
+        export GRADLE_HOME=$PWD/gradle-8.5
+        export PATH=$PATH:$GRADLE_HOME/bin
+        gradle assembleDebug
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
