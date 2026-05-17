@@ -20,7 +20,14 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
             val pageId = repository.insertPage(LauncherPage(pageOrder = 0, rowCount = rowCount, columnCount = columnCount)).toInt()
             // Create empty items
             for (i in 0 until (rowCount * columnCount)) {
-                repository.insertItem(LauncherItem(pageId = pageId, slotIndex = i, itemType = ItemType.EMPTY, null, null, null))
+                repository.insertItem(LauncherItem(
+                    pageId = pageId,
+                    slotIndex = i,
+                    itemType = ItemType.EMPTY,
+                    packageName = null,
+                    label = null,
+                    iconUri = null
+                ))
             }
         }
     }

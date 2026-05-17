@@ -6,6 +6,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.accessibility.launcher.ui.screens.HomeScreen
 import com.accessibility.launcher.ui.screens.SettingsScreen
+import com.accessibility.launcher.ui.screens.AllAppsScreen
 
 @Composable
 fun AppNavigation() {
