@@ -53,4 +53,8 @@
     <string name="manage_pages">Manage Pages</string>
     <string name="delete_page">Delete Page</string>
     <string name="cannot_delete_last_page">You cannot delete the last page.</string>
+    <string name="battery_optimization_title">Background Work Permission (Battery Exemption)</string>
+    <string name="battery_optimization_desc">This is critical for SOS and notifications to work reliably in the background.</string>
+    <string name="battery_protection_active">Protection Active</string>
+    <string name="battery_protection_inactive">Enable Protection</string>
 </resources>

@@ -17,6 +17,8 @@ import androidx.core.view.WindowInsetsControllerCompat
 import com.prusoft.easybiglauncher.ui.theme.AccessibilityLauncherTheme
 import com.prusoft.easybiglauncher.navigation.AppNavigation
 import com.prusoft.easybiglauncher.utils.TTSManager
+import android.content.ComponentCallbacks2
+import coil.imageLoader
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -30,6 +32,14 @@ class MainActivity : AppCompatActivity() {
             AccessibilityLauncherTheme {
                 AppNavigation()
             }
+        }
+    }
+
+    override fun onTrimMemory(level: Int) {
+        super.onTrimMemory(level)
+        if (level >= ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL) {
+            // Aggressively clear Coil memory cache on critical low memory
+            imageLoader.memoryCache?.clear()
         }
     }
 

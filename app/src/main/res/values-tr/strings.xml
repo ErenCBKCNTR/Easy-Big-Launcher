@@ -53,4 +53,8 @@
     <string name="manage_pages">Sayfaları Yönet</string>
     <string name="delete_page">Sayfayı Sil</string>
     <string name="cannot_delete_last_page">Son sayfayı silemezsiniz.</string>
+    <string name="battery_optimization_title">Arka Plan Çalışma İzni (Pil Muafiyeti)</string>
+    <string name="battery_optimization_desc">SOS ve bildirimlerin arka planda sorunsuz çalışması için bu ayar kritiktir.</string>
+    <string name="battery_protection_active">Koruma Aktif</string>
+    <string name="battery_protection_inactive">Korumayı Etkinleştir</string>
 </resources>

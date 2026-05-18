@@ -17,6 +17,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.prusoft.easybiglauncher.viewmodel.LauncherViewModel
 import kotlinx.coroutines.launch
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.core.os.LocaleListCompat
 import androidx.appcompat.app.AppCompatDelegate
 
@@ -26,12 +28,17 @@ import com.prusoft.easybiglauncher.ui.components.PermissionDisclosureDialog
 import android.Manifest
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import com.prusoft.easybiglauncher.utils.BatteryOptimizationManager
+import androidx.compose.ui.platform.LocalContext
 
 @Composable
 fun OnboardingScreen(navController: NavController, viewModel: LauncherViewModel = viewModel()) {
+    val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var showSosDisclosure by remember { mutableStateOf(false) }
     var showContactsDisclosure by remember { mutableStateOf(false) }
+    
+    var isIgnoringBattery by remember { mutableStateOf(BatteryOptimizationManager.isIgnoringBatteryOptimizations(context)) }
 
     val sosPermissionsLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -84,11 +91,11 @@ fun OnboardingScreen(navController: NavController, viewModel: LauncherViewModel 
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(20.dp))
             Text(
                 text = stringResource(R.string.onboarding_welcome),
                 style = MaterialTheme.typography.displayLarge.copy(
-                    fontSize = 54.sp,
+                    fontSize = 44.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White,
                     textAlign = TextAlign.Center
@@ -98,8 +105,8 @@ fun OnboardingScreen(navController: NavController, viewModel: LauncherViewModel 
             Spacer(modifier = Modifier.weight(1f))
 
             Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(32.dp)
+                modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 LanguageButton(
                     text = "TÜRKÇE",
@@ -116,22 +123,32 @@ fun OnboardingScreen(navController: NavController, viewModel: LauncherViewModel 
                     }
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
-                
                 Button(
                     onClick = { showSosDisclosure = true },
-                    modifier = Modifier.fillMaxWidth().height(80.dp),
+                    modifier = Modifier.fillMaxWidth().height(70.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray)
                 ) {
-                    Text("SOS İZİNLERİ / SOS PERMS", fontSize = 20.sp)
+                    Text("SOS İZİNLERİ / SOS PERMS", fontSize = 18.sp)
                 }
 
                 Button(
                     onClick = { showContactsDisclosure = true },
-                    modifier = Modifier.fillMaxWidth().height(80.dp),
+                    modifier = Modifier.fillMaxWidth().height(70.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray)
                 ) {
-                    Text("REHBER İZİNLERİ / CONTACT PERMS", fontSize = 20.sp)
+                    Text("REHBER İZİNLERİ / CONTACT PERMS", fontSize = 18.sp)
+                }
+
+                Button(
+                    onClick = { 
+                        BatteryOptimizationManager.requestIgnoreBatteryOptimizations(context)
+                    },
+                    modifier = Modifier.fillMaxWidth().height(70.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (isIgnoringBattery) Color(0xFF4CAF50) else Color(0xFFB71C1C)
+                    )
+                ) {
+                    Text("PİL MUAFİYETİ / BATTERY EXEMPT", fontSize = 18.sp, fontWeight = FontWeight.Bold)
                 }
             }
 
@@ -152,7 +169,7 @@ fun OnboardingScreen(navController: NavController, viewModel: LauncherViewModel 
             ) {
                 Text(stringResource(R.string.onboarding_start), fontSize = 28.sp, fontWeight = FontWeight.Bold)
             }
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }

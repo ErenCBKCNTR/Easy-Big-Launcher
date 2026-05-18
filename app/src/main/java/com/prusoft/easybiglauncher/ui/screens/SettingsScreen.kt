@@ -20,8 +20,12 @@ import androidx.navigation.NavController
 import com.prusoft.easybiglauncher.R
 import com.prusoft.easybiglauncher.ui.components.PinPadDialog
 import com.prusoft.easybiglauncher.utils.LauncherUtils
+import com.prusoft.easybiglauncher.utils.BatteryOptimizationManager
 import com.prusoft.easybiglauncher.viewmodel.LauncherViewModel
 import kotlinx.coroutines.launch
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.graphics.Color
 
 @Composable
 fun SettingsWrapper(navController: NavController, viewModel: LauncherViewModel = viewModel()) {
@@ -59,6 +63,8 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
     val isTtsEnabled by viewModel.securityRepository.isTtsEnabled.collectAsState(initial = false)
     val isDefault = remember { LauncherUtils.isDefaultLauncher(context) }
     
+    var isIgnoringBattery by remember { mutableStateOf(BatteryOptimizationManager.isIgnoringBatteryOptimizations(context)) }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -72,7 +78,7 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
         }
     ) { padding ->
         Column(
-            modifier = Modifier.padding(padding).padding(16.dp).fillMaxSize(),
+            modifier = Modifier.padding(padding).padding(16.dp).fillMaxSize().verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(text = stringResource(id = R.string.language_option), style = MaterialTheme.typography.titleLarge)
@@ -95,6 +101,32 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
                     scope.launch { viewModel.securityRepository.setTtsEnabled(it) }
                 })
             }
+
+            Divider()
+
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(text = stringResource(R.string.battery_optimization_title), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Text(text = stringResource(R.string.battery_optimization_desc), style = MaterialTheme.typography.bodyMedium)
+                
+                Button(
+                    onClick = { 
+                        BatteryOptimizationManager.requestIgnoreBatteryOptimizations(context)
+                    },
+                    modifier = Modifier.fillMaxWidth().height(80.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (isIgnoringBattery) Color(0xFF4CAF50) else MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Text(
+                        text = if (isIgnoringBattery) stringResource(R.string.battery_protection_active) else stringResource(R.string.battery_protection_inactive),
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+
+            Divider()
 
             Button(
                 onClick = { navController.navigate("manage_pages") },
