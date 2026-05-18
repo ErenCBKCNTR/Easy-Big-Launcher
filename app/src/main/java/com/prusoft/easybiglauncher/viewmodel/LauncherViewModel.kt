@@ -80,7 +80,6 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
                 packageName = null, 
                 label = null, 
                 iconUri = null, 
-                intentUri = null, 
                 customLabel = null, 
                 customColor = null, 
                 customImageUri = null

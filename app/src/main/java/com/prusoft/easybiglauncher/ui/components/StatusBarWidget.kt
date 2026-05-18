@@ -31,6 +31,7 @@ import com.prusoft.easybiglauncher.utils.TTSManager
 import com.prusoft.easybiglauncher.data.SecurityRepository
 import androidx.compose.runtime.collectAsState
 import android.app.Application
+import com.prusoft.easybiglauncher.R
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale

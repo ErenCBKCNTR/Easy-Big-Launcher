@@ -1,10 +1,13 @@
 package com.prusoft.easybiglauncher.ui.screens
 
 import android.telephony.SmsManager
+import android.telephony.SmsManager
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Send
@@ -92,7 +95,7 @@ fun BigSmsScreen(navController: NavController, viewModel: com.prusoft.easybiglau
                     modifier = Modifier.fillMaxWidth().weight(1f),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
                 ) {
-                    Column(modifier = Modifier.padding(24.dp).verticalScroll(androidx.compose.foundation.rememberScrollState())) {
+                    Column(modifier = Modifier.padding(24.dp).verticalScroll(rememberScrollState())) {
                         Text(text = selectedMessage!!.text, fontSize = 28.sp, lineHeight = 36.sp)
                     }
                 }
