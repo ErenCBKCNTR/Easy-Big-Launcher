@@ -182,12 +182,12 @@ fun AddReminderDialog(onDismiss: () -> Unit, onConfirm: (String, Long) -> Unit) 
                     modifier = Modifier.fillMaxWidth(),
                     textStyle = androidx.compose.ui.text.TextStyle(fontSize = 20.sp)
                 )
-                Row(horizontalArrangement = Arrangement.spacedBy(16.dp), modifier = Modifier.fillMaxWidth()) {
+                Column(verticalArrangement = Arrangement.spacedBy(16.dp), modifier = Modifier.fillMaxWidth()) {
                     OutlinedTextField(
                         value = hour,
                         onValueChange = { if (it.all { char -> char.isDigit() } && it.length <= 2) hour = it },
                         label = { Text(stringResource(R.string.hour)) },
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.fillMaxWidth(),
                         textStyle = androidx.compose.ui.text.TextStyle(fontSize = 20.sp),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                     )
@@ -195,7 +195,7 @@ fun AddReminderDialog(onDismiss: () -> Unit, onConfirm: (String, Long) -> Unit) 
                         value = minute,
                         onValueChange = { if (it.all { char -> char.isDigit() } && it.length <= 2) minute = it },
                         label = { Text(stringResource(R.string.minute)) },
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.fillMaxWidth(),
                         textStyle = androidx.compose.ui.text.TextStyle(fontSize = 20.sp),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                     )

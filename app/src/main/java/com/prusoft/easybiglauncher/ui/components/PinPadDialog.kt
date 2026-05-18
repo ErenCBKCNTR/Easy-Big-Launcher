@@ -15,6 +15,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Backspace
+import androidx.compose.material.icons.filled.Close
+
 @Composable
 fun PinPadDialog(
     onPinDismiss: () -> Unit,
@@ -83,7 +87,7 @@ fun PinPadDialog(
                             horizontalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
                             for (digit in row) {
-                                PinButton(digit, modifier = Modifier.weight(1f)) {
+                                PinButton(digit = digit, modifier = Modifier.weight(1f)) {
                                     if (pin.length < 4) {
                                         pin += digit
                                         if (pin.length == 4) {
@@ -118,10 +122,10 @@ fun PinPadDialog(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        PinButton("İPTAL", modifier = Modifier.weight(1f), isSpecial = true) {
+                        PinButton(icon = Icons.Default.Close, modifier = Modifier.weight(1f), isSpecial = true) {
                             onPinDismiss()
                         }
-                        PinButton("0", modifier = Modifier.weight(1f)) {
+                        PinButton(digit = "0", modifier = Modifier.weight(1f)) {
                             if (pin.length < 4) {
                                 pin += "0"
                                 if (pin.length == 4) {
@@ -147,7 +151,7 @@ fun PinPadDialog(
                                 }
                             }
                         }
-                        PinButton("SİL", modifier = Modifier.weight(1f), isSpecial = true) {
+                        PinButton(icon = Icons.Default.Backspace, modifier = Modifier.weight(1f), isSpecial = true) {
                             if (pin.isNotEmpty()) pin = pin.dropLast(1)
                         }
                     }
@@ -159,23 +163,32 @@ fun PinPadDialog(
 
 @Composable
 fun PinButton(
-    text: String,
     modifier: Modifier = Modifier,
+    digit: String? = null,
+    icon: androidx.compose.ui.graphics.vector.ImageVector? = null,
     isSpecial: Boolean = false,
     onClick: () -> Unit
 ) {
-    FilledTonalButton(
+    Button(
         onClick = onClick,
         modifier = modifier.height(90.dp).fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = if (isSpecial) ButtonDefaults.filledTonalButtonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant) else ButtonDefaults.filledTonalButtonColors()
+        colors = if (isSpecial) ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant, contentColor = MaterialTheme.colorScheme.onSurfaceVariant) else ButtonDefaults.buttonColors()
     ) {
-        Text(
-            text = text,
-            fontSize = if (isSpecial) 22.sp else 36.sp,
-            fontWeight = FontWeight.Black,
-            maxLines = 1,
-            softWrap = false
-        )
+        if (icon != null) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                modifier = Modifier.size(36.dp)
+            )
+        } else if (digit != null) {
+            Text(
+                text = digit,
+                fontSize = 36.sp,
+                fontWeight = FontWeight.Black,
+                maxLines = 1,
+                softWrap = false
+            )
+        }
     }
 }

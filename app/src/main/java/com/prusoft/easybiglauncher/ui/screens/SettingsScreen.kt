@@ -111,19 +111,27 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
                 SettingsMenuButton("2. Güvenlik ve Şifre") { currentCategory = 2 }
                 SettingsMenuButton("3. Acil Durum (SOS)") { currentCategory = 3 }
                 SettingsMenuButton("4. Ana Ekran Yönetimi") { currentCategory = 4 }
+                SettingsMenuButton("5. Tıbbi Kimlik Bilgileri") { currentCategory = 5 }
                 
                 Spacer(modifier = Modifier.weight(1f))
                 
                 Button(
                     onClick = { 
-                        val intent = Intent(Intent.ACTION_DELETE, Uri.parse("package:${context.packageName}"))
-                        context.startActivity(intent)
+                        try {
+                            val intent = Intent(Intent.ACTION_DELETE).apply {
+                                data = Uri.parse("package:${context.packageName}")
+                                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                            }
+                            context.startActivity(intent)
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
                     },
                     modifier = Modifier.fillMaxWidth().height(100.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Red, contentColor = Color.White),
                     shape = RoundedCornerShape(16.dp)
                 ) {
-                    Text("Uygulamayı Kaldır (Uninstall)", fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                    Text("Uygulamayı Kaldır (Uninstall)", fontSize = 22.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
             } else {
                 when(currentCategory) {
@@ -186,13 +194,55 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
                                 sharedPref.edit().putBoolean("low_battery_sos_enabled", it).apply() 
                             })
                         }
-                        TextField(
-                            value = sosNumber,
-                            onValueChange = { sosNumber = it; sharedPref.edit().putString("sos_number", it).apply() },
-                            label = { Text("Acil Durum Telefon Numarası") },
-                            modifier = Modifier.fillMaxWidth(),
-                            textStyle = androidx.compose.ui.text.TextStyle(fontSize = 22.sp)
-                        )
+                        
+                        var sendLocationSosEnabled by remember { mutableStateOf(sharedPref.getBoolean("sos_send_location", false)) }
+                        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                            Text("Konumumu da Gönder", fontSize = 24.sp, modifier = Modifier.weight(1f))
+                            Switch(checked = sendLocationSosEnabled, onCheckedChange = { 
+                                sendLocationSosEnabled = it
+                                sharedPref.edit().putBoolean("sos_send_location", it).apply() 
+                            })
+                        }
+                        
+                        val contactPickerLauncher = rememberLauncherForActivityResult(
+                            androidx.activity.result.contract.ActivityResultContracts.PickContact()
+                        ) { uri ->
+                            uri?.let {
+                                val cursor = context.contentResolver.query(it, null, null, null, null)
+                                if (cursor != null && cursor.moveToFirst()) {
+                                    val id = cursor.getString(cursor.getColumnIndexOrThrow(android.provider.ContactsContract.Contacts._ID))
+                                    val phones = context.contentResolver.query(
+                                        android.provider.ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                                        null,
+                                        android.provider.ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
+                                        arrayOf(id),
+                                        null
+                                    )
+                                    if (phones != null && phones.moveToFirst()) {
+                                        val num = phones.getString(phones.getColumnIndexOrThrow(android.provider.ContactsContract.CommonDataKinds.Phone.NUMBER))
+                                        sosNumber = num
+                                        sharedPref.edit().putString("sos_number", num).apply()
+                                        phones.close()
+                                    }
+                                    cursor.close()
+                                }
+                            }
+                        }
+
+                        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            TextField(
+                                value = sosNumber,
+                                onValueChange = { sosNumber = it; sharedPref.edit().putString("sos_number", it).apply() },
+                                label = { Text("Acil Durum Telefon Numarası") },
+                                modifier = Modifier.weight(1f),
+                                textStyle = androidx.compose.ui.text.TextStyle(fontSize = 22.sp),
+                                keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number)
+                            )
+                            IconButton(onClick = { contactPickerLauncher.launch(null) }) {
+                                Icon(androidx.compose.material.icons.Icons.Default.RecentActors, contentDescription = "Rehberden Seç", modifier = Modifier.size(48.dp))
+                            }
+                        }
+                        
                         TextField(
                             value = sosMessage,
                             onValueChange = { sosMessage = it; sharedPref.edit().putString("sos_message", it).apply() },
@@ -224,6 +274,24 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
                         Text(text = stringResource(R.string.add_page), style = MaterialTheme.typography.titleLarge)
                         Button(onClick = { viewModel.addPage(3, 2) }, modifier = Modifier.fillMaxWidth().height(80.dp), shape = RoundedCornerShape(16.dp)) { Text(stringResource(R.string.add_page_3x2), fontSize = 22.sp) }
                     }
+                    5 -> {
+                        // Medical ID
+                        val medName by viewModel.securityRepository.medName.collectAsState(initial = "")
+                        val medSurname by viewModel.securityRepository.medSurname.collectAsState(initial = "")
+                        val medAge by viewModel.securityRepository.medAge.collectAsState(initial = "")
+                        val medAddress by viewModel.securityRepository.medAddress.collectAsState(initial = "")
+                        val medBlood by viewModel.securityRepository.medBlood.collectAsState(initial = "")
+                        val medChronic by viewModel.securityRepository.medChronic.collectAsState(initial = "")
+
+                        Text(text = stringResource(R.string.medical_id_short), style = MaterialTheme.typography.titleLarge)
+                        
+                        TextField(value = medName, onValueChange = { scope.launch { viewModel.securityRepository.setMedicalInfo(it, medSurname, medAge, medAddress, medBlood, medChronic) } }, label = { Text("Ad") }, modifier = Modifier.fillMaxWidth())
+                        TextField(value = medSurname, onValueChange = { scope.launch { viewModel.securityRepository.setMedicalInfo(medName, it, medAge, medAddress, medBlood, medChronic) } }, label = { Text("Soyad") }, modifier = Modifier.fillMaxWidth())
+                        TextField(value = medAge, onValueChange = { scope.launch { viewModel.securityRepository.setMedicalInfo(medName, medSurname, it, medAddress, medBlood, medChronic) } }, label = { Text("Yaş") }, keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number), modifier = Modifier.fillMaxWidth())
+                        TextField(value = medBlood, onValueChange = { scope.launch { viewModel.securityRepository.setMedicalInfo(medName, medSurname, medAge, medAddress, it, medChronic) } }, label = { Text("Kan Grubu") }, modifier = Modifier.fillMaxWidth())
+                        TextField(value = medChronic, onValueChange = { scope.launch { viewModel.securityRepository.setMedicalInfo(medName, medSurname, medAge, medAddress, medBlood, it) } }, label = { Text("Kronik Rahatsızlıklar/İlaçlar") }, modifier = Modifier.fillMaxWidth())
+                        TextField(value = medAddress, onValueChange = { scope.launch { viewModel.securityRepository.setMedicalInfo(medName, medSurname, medAge, it, medBlood, medChronic) } }, label = { Text("Adres") }, modifier = Modifier.fillMaxWidth())
+                    }
                 }
             }
 
@@ -252,6 +320,6 @@ fun SettingsMenuButton(text: String, onClick: () -> Unit) {
         shape = RoundedCornerShape(16.dp),
         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer, contentColor = MaterialTheme.colorScheme.onPrimaryContainer)
     ) {
-        Text(text, fontSize = 26.sp, fontWeight = FontWeight.Bold)
+        Text(text, fontSize = 26.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis, lineHeight = 30.sp)
     }
 }

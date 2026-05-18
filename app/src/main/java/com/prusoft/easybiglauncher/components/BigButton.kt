@@ -108,27 +108,44 @@ fun BigButton(
                         )
                     }
                 }
-                
+        
                 // Show text and icon if no app icon or if icon is small
                 if (appIconPackageName == null || customImageUri != null) {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
+                        verticalArrangement = Arrangement.Center,
+                        modifier = Modifier.padding(16.dp)
                     ) {
                         if (customImageUri == null) {
                             Icon(finalIcon, contentDescription = text, modifier = Modifier.size(48.dp))
                             Spacer(modifier = Modifier.height(8.dp))
                         }
-                        Text(text = text, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                        Text(
+                            text = text, 
+                            fontSize = 24.sp, 
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                            lineHeight = 28.sp,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
                     }
                 } else {
                     // Just show label for apps below the icon
                     Column(
-                        modifier = Modifier.fillMaxSize().padding(8.dp),
+                        modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp, vertical = 12.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Bottom
                     ) {
-                        Text(text = text, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = contentColor)
+                        Text(
+                            text = text, 
+                            fontSize = 18.sp, 
+                            fontWeight = FontWeight.Bold, 
+                            color = contentColor,
+                            maxLines = 1,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
                     }
                 }
             }

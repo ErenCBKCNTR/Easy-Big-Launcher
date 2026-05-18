@@ -22,6 +22,10 @@ import androidx.navigation.NavController
 import com.prusoft.easybiglauncher.R
 import com.prusoft.easybiglauncher.utils.NotificationTracker
 
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.core.content.ContextCompat
+import androidx.activity.compose.rememberLauncherForActivityResult
 import android.provider.Telephony
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -41,12 +45,28 @@ fun BigSmsScreen(navController: NavController) {
 
     var messages by remember { mutableStateOf<List<SmsMessage>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
+    var hasPermission by remember { mutableStateOf(ContextCompat.checkSelfPermission(context, Manifest.permission.READ_SMS) == PackageManager.PERMISSION_GRANTED) }
 
-    LaunchedEffect(Unit) {
-        messages = withContext(Dispatchers.IO) {
-            fetchSms(context.contentResolver)
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = androidx.activity.result.contract.ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        hasPermission = isGranted
+        if (isGranted) {
+            isLoading = true
+        } else {
+            isLoading = false
         }
-        isLoading = false
+    }
+
+    LaunchedEffect(hasPermission) {
+        if (hasPermission) {
+            messages = withContext(Dispatchers.IO) {
+                fetchSms(context.contentResolver)
+            }
+            isLoading = false
+        } else {
+            permissionLauncher.launch(Manifest.permission.READ_SMS)
+        }
     }
 
     Scaffold(
@@ -76,6 +96,16 @@ fun BigSmsScreen(navController: NavController) {
             if (isLoading) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator()
+                }
+            } else if (!hasPermission) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Button(onClick = { permissionLauncher.launch(Manifest.permission.READ_SMS) }) {
+                        Text("Erişim İzni Ver (SMS)")
+                    }
+                }
+            } else if (messages.isEmpty()) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(stringResource(R.string.no_messages), fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.Gray)
                 }
             } else {
                 LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -187,26 +217,31 @@ fun BigSmsScreen(navController: NavController) {
 
 private fun fetchSms(contentResolver: android.content.ContentResolver): List<SmsMessage> {
     val smsList = mutableListOf<SmsMessage>()
-    val cursor = contentResolver.query(
-        Telephony.Sms.CONTENT_URI,
-        null,
-        null,
-        null,
-        Telephony.Sms.DATE + " DESC"
-    )
+    try {
+        val cursor = contentResolver.query(
+            Telephony.Sms.CONTENT_URI,
+            null,
+            null,
+            null,
+            Telephony.Sms.DATE + " DESC"
+        )
 
-    cursor?.use {
-        val addressIndex = it.getColumnIndex(Telephony.Sms.ADDRESS)
-        val bodyIndex = it.getColumnIndex(Telephony.Sms.BODY)
-        val personIndex = it.getColumnIndex(Telephony.Sms.PERSON)
-
-        var count = 0
-        while (it.moveToNext() && count < 30) {
-            val address = it.getString(addressIndex) ?: "Bilinmeyen"
-            val body = it.getString(bodyIndex) ?: ""
-            smsList.add(SmsMessage(address, address, body))
-            count++
+        cursor?.use {
+            val addressIndex = it.getColumnIndex(Telephony.Sms.ADDRESS)
+            val bodyIndex = it.getColumnIndex(Telephony.Sms.BODY)
+            
+            var count = 0
+            while (it.moveToNext() && count < 30) {
+                val address = if (addressIndex != -1) it.getString(addressIndex) ?: "Bilinmeyen" else "Bilinmeyen"
+                val body = if (bodyIndex != -1) it.getString(bodyIndex) ?: "" else ""
+                smsList.add(SmsMessage(address, address, body))
+                count++
+            }
         }
+    } catch (e: SecurityException) {
+        // Permission not granted or other security issue
+    } catch (e: Exception) {
+        // Other issues
     }
     return smsList
 }

@@ -45,9 +45,9 @@ fun BigLockScreen(onUnlock: () -> Unit) {
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(text = time.value, fontSize = 96.sp, fontWeight = FontWeight.Black, color = Color.White)
-            Text(text = date.value, fontSize = 32.sp, color = Color.White)
+            Text(text = date.value, fontSize = 32.sp, color = Color.White, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
             Spacer(modifier = Modifier.height(100.dp))
-            Text(text = "KİLİDİ AÇMAK İÇİN YUKARI KAYDIR", fontSize = 24.sp, color = Color.LightGray)
+            Text(text = "KİLİDİ AÇMAK İÇİN YUKARI KAYDIR", fontSize = 24.sp, color = Color.LightGray, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
         }
     }
 }

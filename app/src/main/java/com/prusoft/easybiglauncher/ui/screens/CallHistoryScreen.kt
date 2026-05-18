@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.sp
 import android.Manifest
 import android.content.pm.PackageManager
 import androidx.core.content.ContextCompat
+import androidx.activity.compose.rememberLauncherForActivityResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -43,17 +44,43 @@ fun CallHistoryScreen() {
     val context = LocalContext.current
     var callLogs by remember { mutableStateOf<List<CallLogInfo>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
+    var hasPermission by remember { mutableStateOf(ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CALL_LOG) == PackageManager.PERMISSION_GRANTED) }
 
-    LaunchedEffect(Unit) {
-        callLogs = withContext(Dispatchers.IO) {
-            fetchCallLogs(context.contentResolver, context)
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = androidx.activity.result.contract.ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        hasPermission = isGranted
+        if (isGranted) {
+            isLoading = true
+        } else {
+            isLoading = false
         }
-        isLoading = false
+    }
+
+    LaunchedEffect(hasPermission) {
+        if (hasPermission) {
+            callLogs = withContext(Dispatchers.IO) {
+                fetchCallLogs(context.contentResolver, context)
+            }
+            isLoading = false
+        } else {
+            permissionLauncher.launch(Manifest.permission.READ_CALL_LOG)
+        }
     }
 
     if (isLoading) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             CircularProgressIndicator()
+        }
+    } else if (!hasPermission) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Button(onClick = { permissionLauncher.launch(Manifest.permission.READ_CALL_LOG) }) {
+                Text("Erişim İzni Ver (Call Log)")
+            }
+        }
+    } else if (callLogs.isEmpty()) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text("Çağrı geçmişi boş.", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.Gray)
         }
     } else {
         LazyColumn(

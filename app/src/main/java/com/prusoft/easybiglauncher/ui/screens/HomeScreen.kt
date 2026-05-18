@@ -353,22 +353,36 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
                     .height(100.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Box(modifier = Modifier.weight(1f)) {
-                    BigFooterButton(
-                        text = "SOS",
-                        icon = Icons.Default.Call,
-                        containerColor = Color.Red,
-                        contentColor = Color.White,
-                        isTtsEnabled = isTtsEnabled,
-                        onClick = {
-                            val sosContact = sharedPref.getString("sos_number", "")
-                            if (sosContact.isNullOrEmpty()) {
-                                navController.navigate("settings") // Should point to Emergency category, handled later
-                            } else {
-                                EmergencyManager.triggerSos(context)
-                            }
-                        }
-                    )
+                Box(modifier = Modifier.weight(1.5f)) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxSize()) {
+                        BigFooterButton(
+                            text = "SOS",
+                            icon = Icons.Default.Call,
+                            containerColor = Color.Red,
+                            contentColor = Color.White,
+                            isTtsEnabled = isTtsEnabled,
+                            onClick = {
+                                val sosContact = sharedPref.getString("sos_number", "")
+                                if (sosContact.isNullOrEmpty()) {
+                                    navController.navigate("settings") // Should point to Emergency category, handled later
+                                } else {
+                                    EmergencyManager.triggerSos(context)
+                                }
+                            },
+                            modifier = Modifier.weight(1f).fillMaxHeight()
+                        )
+                        BigFooterButton(
+                            text = stringResource(R.string.medical_id_short),
+                            icon = Icons.Default.MedicalInformation,
+                            containerColor = Color.White,
+                            contentColor = Color.Red,
+                            isTtsEnabled = isTtsEnabled,
+                            onClick = {
+                                navController.navigate("medical_id")
+                            },
+                            modifier = Modifier.weight(1f).fillMaxHeight()
+                        )
+                    }
                 }
                 Box(modifier = Modifier.weight(1f)) {
                     BigFooterButton(

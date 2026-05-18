@@ -64,8 +64,18 @@ dependencies {
     // DataStore components
     implementation("androidx.datastore:datastore-preferences:1.0.0")
 
+    // Location
+    implementation("com.google.android.gms:play-services-location:21.2.0")
+
     // Image loading
     implementation("io.coil-kt:coil-compose:2.6.0")
+
+    // CameraX
+    val camerax_version = "1.3.1"
+    implementation("androidx.camera:camera-core:$camerax_version")
+    implementation("androidx.camera:camera-camera2:$camerax_version")
+    implementation("androidx.camera:camera-lifecycle:$camerax_version")
+    implementation("androidx.camera:camera-view:$camerax_version")
 
     // Timber
     implementation("com.jakewharton.timber:timber:5.0.1")

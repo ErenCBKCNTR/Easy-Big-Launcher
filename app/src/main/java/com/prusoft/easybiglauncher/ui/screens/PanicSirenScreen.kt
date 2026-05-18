@@ -64,10 +64,19 @@ fun PanicSirenScreen(navController: NavController) {
     ) {
         Button(
             onClick = { navController.popBackStack() },
-            modifier = Modifier.fillMaxWidth(0.8f).height(200.dp),
+            modifier = Modifier.fillMaxWidth(0.9f).height(200.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
         ) {
-            Text(stringResource(R.string.stop_siren), fontSize = 48.sp, fontWeight = FontWeight.Black, color = Color.White)
+            Text(
+                stringResource(R.string.stop_siren), 
+                fontSize = 40.sp, 
+                fontWeight = FontWeight.Black, 
+                color = Color.White,
+                maxLines = 2,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                lineHeight = 44.sp
+            )
         }
     }
 }

@@ -187,12 +187,22 @@ fun ToolsScreen(navController: NavController, viewModel: LauncherViewModel = vie
                     contentColor = Color.White,
                     isTtsEnabled = isTtsEnabled,
                     onClick = {
-                        val intent = Intent(Intent.ACTION_VOICE_COMMAND)
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        val intent = Intent(Intent.ACTION_VOICE_COMMAND).apply {
+                            setPackage("com.google.android.apps.bard")
+                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                        }
                         try {
                             context.startActivity(intent)
                         } catch (e: Exception) {
-                            if (isTtsEnabled) ttsManager.speak(context.getString(R.string.ai_not_found))
+                            try {
+                                val playStoreIntent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse("market://details?id=com.google.android.apps.bard"))
+                                playStoreIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                context.startActivity(playStoreIntent)
+                            } catch (e2: Exception) {
+                                val webIntent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://play.google.com/store/apps/details?id=com.google.android.apps.bard"))
+                                webIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                context.startActivity(webIntent)
+                            }
                         }
                     }
                 )

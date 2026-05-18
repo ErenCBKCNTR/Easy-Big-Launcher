@@ -31,14 +31,37 @@ import androidx.activity.result.contract.ActivityResultContracts
 import com.prusoft.easybiglauncher.utils.BatteryOptimizationManager
 import androidx.compose.ui.platform.LocalContext
 
+import android.app.NotificationManager
+import android.content.Context
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.compose.ui.platform.LocalLifecycleOwner
+
 @Composable
 fun OnboardingScreen(navController: NavController, viewModel: LauncherViewModel = viewModel()) {
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
     val scope = rememberCoroutineScope()
     var showSosDisclosure by remember { mutableStateOf(false) }
     var showContactsDisclosure by remember { mutableStateOf(false) }
     
     var isIgnoringBattery by remember { mutableStateOf(BatteryOptimizationManager.isIgnoringBatteryOptimizations(context)) }
+    var hasDndPermission by remember { 
+        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        mutableStateOf(notificationManager.isNotificationPolicyAccessGranted) 
+    }
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                isIgnoringBattery = BatteryOptimizationManager.isIgnoringBatteryOptimizations(context)
+                val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                hasDndPermission = notificationManager.isNotificationPolicyAccessGranted
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
 
     val sosPermissionsLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -148,7 +171,24 @@ fun OnboardingScreen(navController: NavController, viewModel: LauncherViewModel 
                         containerColor = if (isIgnoringBattery) Color(0xFF4CAF50) else Color(0xFFB71C1C)
                     )
                 ) {
-                    Text("PİL MUAFİYETİ / BATTERY EXEMPT", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    Text("PİL MUAFİYETİ / BATTERY EXEMPT", fontSize = 18.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                }
+
+                Button(
+                    onClick = { 
+                        try {
+                            val intent = android.content.Intent(android.provider.Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS)
+                            context.startActivity(intent)
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth().height(70.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = if (hasDndPermission) Color(0xFF4CAF50) else Color.DarkGray
+                    )
+                ) {
+                    Text("SES KONTROL / DND PERM", fontSize = 18.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
                 }
             }
 

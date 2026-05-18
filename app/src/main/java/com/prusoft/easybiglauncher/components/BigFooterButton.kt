@@ -23,13 +23,14 @@ fun BigFooterButton(
     containerColor: Color,
     contentColor: Color,
     isTtsEnabled: Boolean = false,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
     val context = LocalContext.current
     val ttsManager = remember { TTSManager.getInstance(context) }
 
     Surface(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxHeight()
             .pointerInput(isTtsEnabled) {
                 detectTapGestures(
@@ -57,7 +58,15 @@ fun BigFooterButton(
             verticalArrangement = Arrangement.Center
         ) {
             Icon(icon, contentDescription = null, modifier = Modifier.size(40.dp))
-            Text(text = text, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Text(
+                text = text, 
+                fontSize = 18.sp, 
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                lineHeight = 22.sp,
+                modifier = Modifier.padding(horizontal = 4.dp)
+            )
         }
     }
 }
