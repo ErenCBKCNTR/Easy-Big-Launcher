@@ -83,4 +83,6 @@
     <string name="panic_siren">Panik Sireni</string>
     <string name="stop_siren">SİRENİ SUSTUR</string>
     <string name="low_battery_sos">Düşük Pil Uyarısı SMS\'i</string>
+    <string name="no_messages">No messages found.</string>
+    <string name="medical_id_short">Medical ID</string>
 </resources>

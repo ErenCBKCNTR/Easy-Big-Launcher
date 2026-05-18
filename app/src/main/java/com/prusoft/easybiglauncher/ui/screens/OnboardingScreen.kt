@@ -151,7 +151,7 @@ fun OnboardingScreen(navController: NavController, viewModel: LauncherViewModel 
                     modifier = Modifier.fillMaxWidth().height(70.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray)
                 ) {
-                    Text("SOS İZİNLERİ / SOS PERMS", fontSize = 18.sp)
+                    Text("SOS İZİNLERİ / SOS PERMS", fontSize = 18.sp, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
                 }
 
                 Button(
@@ -159,7 +159,7 @@ fun OnboardingScreen(navController: NavController, viewModel: LauncherViewModel 
                     modifier = Modifier.fillMaxWidth().height(70.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray)
                 ) {
-                    Text("REHBER İZİNLERİ / CONTACT PERMS", fontSize = 18.sp)
+                    Text("REHBER İZİNLERİ / CONTACT PERMS", fontSize = 18.sp, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
                 }
 
                 Button(

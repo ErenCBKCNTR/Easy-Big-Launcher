@@ -76,4 +76,6 @@
     <string name="send">GÖNDER</string>
     <string name="enter_number">Numara Girin</string>
     <string name="enter_message">Mesaj Yazın</string>
+    <string name="no_messages">Mesaj bulunamadı.</string>
+    <string name="medical_id_short">Tıbbi Kimlik</string>
 </resources>
