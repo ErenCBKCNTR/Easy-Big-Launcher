@@ -1,7 +1,6 @@
 package com.prusoft.easybiglauncher.ui.screens
 
 import android.telephony.SmsManager
-import android.telephony.SmsManager
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn

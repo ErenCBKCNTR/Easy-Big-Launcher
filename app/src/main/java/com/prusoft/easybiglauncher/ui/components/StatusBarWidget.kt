@@ -20,6 +20,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
 import com.prusoft.easybiglauncher.utils.rememberBatteryStatus
 import com.prusoft.easybiglauncher.utils.rememberCurrentTime
 import com.prusoft.easybiglauncher.utils.rememberSignalStrength
@@ -37,6 +38,7 @@ import java.util.Date
 import java.util.Locale
 
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -185,7 +187,7 @@ fun CalendarDialog(onDismiss: () -> Unit) {
             }
         },
         confirmButton = {
-            Button(onClick = onDismiss, modifier = Modifier.fillMaxWidth().height(60.dp)) {
+            androidx.compose.material3.Button(onClick = onDismiss, modifier = Modifier.fillMaxWidth().height(60.dp)) {
                 Text(stringResource(R.string.cancel).uppercase(), fontSize = 24.sp, fontWeight = FontWeight.Bold)
             }
         }
