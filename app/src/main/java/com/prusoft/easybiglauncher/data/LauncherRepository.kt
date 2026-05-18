@@ -10,4 +10,9 @@ class LauncherRepository(private val dao: LauncherDao) {
     suspend fun insertPage(page: LauncherPage) = dao.insertPage(page)
     suspend fun insertItem(item: LauncherItem) = dao.insertItem(item)
     suspend fun updateItem(item: LauncherItem) = dao.updateItem(item)
+    
+    suspend fun deletePageWithItems(page: LauncherPage) {
+        dao.deleteItemsByPageId(page.id)
+        dao.deletePage(page)
+    }
 }

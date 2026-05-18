@@ -33,6 +33,7 @@ import com.prusoft.easybiglauncher.ui.components.ButtonEditorSheet
 import com.prusoft.easybiglauncher.components.BigButton
 import com.prusoft.easybiglauncher.utils.NotificationTracker
 import androidx.compose.foundation.combinedClickable
+import androidx.activity.compose.BackHandler
 
 import androidx.compose.ui.res.stringResource
 import com.prusoft.easybiglauncher.R
@@ -90,6 +91,10 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
     var showEditSheet by remember { mutableStateOf(false) }
     var itemToEdit by remember { mutableStateOf<LauncherItem?>(null) }
     val scope = rememberCoroutineScope()
+
+    BackHandler {
+        // Do nothing to prevent exiting the launcher via back button
+    }
 
     if (showPinDialog && itemToEdit != null) {
         PinPadDialog(
@@ -149,10 +154,10 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
                                 onClick = {
                                     if (item.itemType == ItemType.EMPTY) {
                                         if (!isProtectionEnabled) {
-                                            navController.navigate("all_apps") // Placeholder for adding app
+                                            viewModel.setPendingAssignmentItem(item)
+                                            navController.navigate("all_apps")
                                         }
                                     } else {
-                                        // Launch App/Contact logic should be here
                                         item.packageName?.let { pkg ->
                                             val intent = context.packageManager.getLaunchIntentForPackage(pkg)
                                             if (intent != null) context.startActivity(intent)

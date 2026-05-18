@@ -6,6 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.prusoft.easybiglauncher.data.*
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class LauncherViewModel(application: Application) : AndroidViewModel(application) {
@@ -16,9 +18,16 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
     val pages = repository.allPages
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
+    private val _pendingAssignmentItem = MutableStateFlow<LauncherItem?>(null)
+    val pendingAssignmentItem = _pendingAssignmentItem.asStateFlow()
+
+    fun setPendingAssignmentItem(item: LauncherItem?) {
+        _pendingAssignmentItem.value = item
+    }
+
     fun addPage(rowCount: Int, columnCount: Int) {
         viewModelScope.launch {
-            val pageId = repository.insertPage(LauncherPage(pageOrder = 0, rowCount = rowCount, columnCount = columnCount)).toInt()
+            val pageId = repository.insertPage(LauncherPage(pageOrder = pages.value.size, rowCount = rowCount, columnCount = columnCount)).toInt()
             // Create empty items
             for (i in 0 until (rowCount * columnCount)) {
                 repository.insertItem(LauncherItem(
@@ -30,6 +39,12 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
                     iconUri = null
                 ))
             }
+        }
+    }
+
+    fun deletePage(page: LauncherPage) {
+        viewModelScope.launch {
+            repository.deletePageWithItems(page)
         }
     }
     

@@ -19,4 +19,10 @@ interface LauncherDao {
 
     @Update
     suspend fun updateItem(item: LauncherItem)
+
+    @Delete
+    suspend fun deletePage(page: LauncherPage)
+
+    @Query("DELETE FROM launcher_items WHERE pageId = :pageId")
+    suspend fun deleteItemsByPageId(pageId: Int)
 }

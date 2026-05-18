@@ -17,6 +17,7 @@ import com.prusoft.easybiglauncher.ui.screens.OnboardingScreen
 import com.prusoft.easybiglauncher.ui.screens.SettingsWrapper
 import com.prusoft.easybiglauncher.ui.screens.ToolsScreen
 import com.prusoft.easybiglauncher.ui.screens.PrivacyPolicyScreen
+import com.prusoft.easybiglauncher.ui.screens.ManagePagesScreen
 
 @Composable
 fun AppNavigation(viewModel: LauncherViewModel = viewModel()) {
@@ -26,11 +27,12 @@ fun AppNavigation(viewModel: LauncherViewModel = viewModel()) {
 
     NavHost(navController = navController, startDestination = startDestination) {
         composable("onboarding") { OnboardingScreen(navController) }
-        composable("home") { HomeScreen(navController) }
-        composable("settings") { SettingsWrapper(navController) }
-        composable("all_apps") { AllAppsScreen(navController) }
-        composable("notification_summary") { NotificationSummaryScreen(navController) }
-        composable("tools") { ToolsScreen(navController) }
+        composable("home") { HomeScreen(navController, viewModel) }
+        composable("settings") { SettingsWrapper(navController, viewModel) }
+        composable("all_apps") { AllAppsScreen(navController, viewModel) }
+        composable("notification_summary") { NotificationSummaryScreen(navController, viewModel) }
+        composable("tools") { ToolsScreen(navController, viewModel) }
         composable("privacy_policy") { PrivacyPolicyScreen(navController) }
+        composable("manage_pages") { ManagePagesScreen(navController, viewModel) }
     }
 }

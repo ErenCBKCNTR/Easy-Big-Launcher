@@ -49,4 +49,8 @@
     <string name="flashlight_on_announcement">El feneri açıldı</string>
     <string name="flashlight_off_announcement">El feneri kapatıldı</string>
     <string name="missed_calls_announcement">%2$s kişisinden %1$d cevapsız çağrı</string>
+    <string name="search_hint">Uygulama ara...</string>
+    <string name="manage_pages">Sayfaları Yönet</string>
+    <string name="delete_page">Sayfayı Sil</string>
+    <string name="cannot_delete_last_page">Son sayfayı silemezsiniz.</string>
 </resources>

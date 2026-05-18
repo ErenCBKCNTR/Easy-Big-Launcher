@@ -49,4 +49,8 @@
     <string name="flashlight_on_announcement">Flashlight turned on</string>
     <string name="flashlight_off_announcement">Flashlight turned off</string>
     <string name="missed_calls_announcement">%1$d missed calls from %2$s</string>
+    <string name="search_hint">Search apps...</string>
+    <string name="manage_pages">Manage Pages</string>
+    <string name="delete_page">Delete Page</string>
+    <string name="cannot_delete_last_page">You cannot delete the last page.</string>
 </resources>

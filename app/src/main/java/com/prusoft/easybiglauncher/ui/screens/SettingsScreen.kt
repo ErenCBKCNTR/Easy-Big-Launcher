@@ -95,6 +95,15 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
                     scope.launch { viewModel.securityRepository.setTtsEnabled(it) }
                 })
             }
+
+            Button(
+                onClick = { navController.navigate("manage_pages") },
+                modifier = Modifier.fillMaxWidth().height(80.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer, contentColor = MaterialTheme.colorScheme.onPrimaryContainer)
+            ) {
+                Text(stringResource(R.string.manage_pages), fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            }
             
             Button(onClick = { LauncherUtils.requestSetDefaultLauncher(context) }) {
                 Text(if (isDefault) "${stringResource(R.string.set_default)} (${stringResource(R.string.active_status)})" else stringResource(R.string.set_default))
