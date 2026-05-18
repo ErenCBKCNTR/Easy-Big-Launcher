@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.accessibility.launcher"
+    namespace = "com.prusoft.easybiglauncher"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.accessibility.launcher"
+        applicationId = "com.prusoft.easybiglauncher"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
@@ -23,6 +23,13 @@ android {
 
     kotlinOptions {
         jvmTarget = "17"
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+        }
     }
 
     buildFeatures {
@@ -51,4 +58,13 @@ dependencies {
     implementation("androidx.room:room-runtime:$room_version")
     implementation("androidx.room:room-ktx:$room_version")
     kapt("androidx.room:room-compiler:$room_version")
+    
+    // DataStore components
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
+
+    // Image loading
+    implementation("io.coil-kt:coil-compose:2.6.0")
+
+    // Timber
+    implementation("com.jakewharton.timber:timber:5.0.1")
 }

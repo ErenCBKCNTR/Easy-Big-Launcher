@@ -44,4 +44,23 @@ object IntentUtils {
             Toast.makeText(context, "Galeri uygulaması açılamadı.", Toast.LENGTH_SHORT).show()
         }
     }
+
+    fun makeCall(context: Context, phoneNumber: String) {
+        try {
+            val intent = Intent(Intent.ACTION_CALL, Uri.parse("tel:$phoneNumber"))
+            context.startActivity(intent)
+        } catch (e: Exception) {
+            Toast.makeText(context, "Arama yapılamadı.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    fun sendSms(context: Context, phoneNumber: String, message: String) {
+        try {
+            val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("smsto:$phoneNumber"))
+            intent.putExtra("sms_body", message)
+            context.startActivity(intent)
+        } catch (e: Exception) {
+            Toast.makeText(context, "Mesaj gönderilemedi.", Toast.LENGTH_SHORT).show()
+        }
+    }
 }

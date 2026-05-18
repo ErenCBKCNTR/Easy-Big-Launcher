@@ -11,6 +11,7 @@ import kotlinx.coroutines.launch
 class LauncherViewModel(application: Application) : AndroidViewModel(application) {
     private val dao = AppDatabase.getDatabase(application).launcherDao()
     val repository = LauncherRepository(dao)
+    val securityRepository = SecurityRepository(application)
 
     val pages = repository.allPages
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())

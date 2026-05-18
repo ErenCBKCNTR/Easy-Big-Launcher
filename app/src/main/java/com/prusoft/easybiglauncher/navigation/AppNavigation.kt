@@ -1,20 +1,20 @@
-package com.accessibility.launcher.navigation
+package com.prusoft.easybiglauncher.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.accessibility.launcher.ui.screens.HomeScreen
-import com.accessibility.launcher.ui.screens.SettingsScreen
-import com.accessibility.launcher.ui.screens.AllAppsScreen
-import com.accessibility.launcher.ui.screens.NotificationSummaryScreen
+import com.prusoft.easybiglauncher.ui.screens.HomeScreen
+import com.prusoft.easybiglauncher.ui.screens.SettingsScreen
+import com.prusoft.easybiglauncher.ui.screens.AllAppsScreen
+import com.prusoft.easybiglauncher.ui.screens.NotificationSummaryScreen
 
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.accessibility.launcher.viewmodel.LauncherViewModel
-import com.accessibility.launcher.ui.screens.OnboardingScreen
-import com.accessibility.launcher.ui.screens.SettingsWrapper
+import com.prusoft.easybiglauncher.viewmodel.LauncherViewModel
+import com.prusoft.easybiglauncher.ui.screens.OnboardingScreen
+import com.prusoft.easybiglauncher.ui.screens.SettingsWrapper
 // ... (rest of imports)
 
 @Composable

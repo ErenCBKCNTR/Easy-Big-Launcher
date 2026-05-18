@@ -24,5 +24,9 @@ data class LauncherItem(
     val itemType: ItemType,
     val packageName: String?,
     val label: String?,
-    val iconUri: String? // Or store as blob/file path
+    val iconUri: String?,
+    val extraData: String?, // Store phone number for contacts
+    val customLabel: String?,
+    val customColor: String?,
+    val customImageUri: String?
 )
