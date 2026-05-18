@@ -14,7 +14,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Build
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import kotlinx.coroutines.launch
@@ -71,51 +77,96 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
     Column(modifier = Modifier.fillMaxSize()) {
         StatusBarWidget()
         
-        if (pages.isEmpty()) {
-            Box(modifier = Modifier.fillMaxSize().weight(1f), contentAlignment = Alignment.Center) {
-                Button(onClick = { navController.navigate("settings") }) {
-                    Text("Ayarlara git ve sayfa ekle")
+        Box(modifier = Modifier.weight(1f)) {
+            if (pages.isEmpty()) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Button(onClick = { navController.navigate("settings") }) {
+                        Text("Ayarlara git ve sayfa ekle")
+                    }
+                }
+            } else {
+                HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) { pageIndex ->
+                    val page = pages[pageIndex]
+                    val items by viewModel.repository.getItemsForPage(page.id).collectAsState(initial = emptyList())
+
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(page.columnCount),
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        items(items.size) { index ->
+                            val item = items[index]
+                            GridItem(item, 
+                                badgeCount = when {
+                                    item.packageName == "com.android.dialer" || item.packageName == "com.google.android.dialer" -> missedCalls
+                                    item.packageName == "com.android.messaging" || item.packageName == "com.google.android.apps.messaging" -> unreadSms
+                                    else -> 0
+                                },
+                                onClick = {
+                                    if (item.itemType == ItemType.EMPTY) {
+                                        if (!isProtectionEnabled) {
+                                            navController.navigate("all_apps") // Placeholder for adding app
+                                        }
+                                    } else {
+                                        // Launch App/Contact logic should be here
+                                        item.packageName?.let { pkg ->
+                                            val intent = context.packageManager.getLaunchIntentForPackage(pkg)
+                                            if (intent != null) context.startActivity(intent)
+                                        }
+                                    }
+                                },
+                                onLongClick = {
+                                    if (item.itemType != ItemType.EMPTY) {
+                                        if (isProtectionEnabled) {
+                                            itemToEdit = item
+                                            showPinDialog = true
+                                        } else {
+                                            itemToEdit = item
+                                            showEditSheet = true
+                                        }
+                                    }
+                                }
+                            )
+                        }
+                    }
                 }
             }
-        } else {
-            HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize().weight(1f)) { pageIndex ->
-                val page = pages[pageIndex]
-                val items by viewModel.repository.getItemsForPage(page.id).collectAsState(initial = emptyList())
+        }
 
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(page.columnCount),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+        // Bottom Navigation Bar with Huge Buttons
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            color = MaterialTheme.colorScheme.surface,
+            tonalElevation = 8.dp
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+                    .height(100.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Button(
+                    onClick = { navController.navigate("settings") },
+                    modifier = Modifier.weight(1f).fillMaxHeight(),
+                    shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondaryContainer, contentColor = MaterialTheme.colorScheme.onSecondaryContainer)
                 ) {
-                    items(items.size) { index ->
-                        val item = items[index]
-                        GridItem(item, 
-                            badgeCount = when {
-                                item.packageName == "com.android.dialer" || item.packageName == "com.google.android.dialer" -> missedCalls
-                                item.packageName == "com.android.messaging" || item.packageName == "com.google.android.apps.messaging" -> unreadSms
-                                else -> 0
-                            },
-                            onClick = {
-                                if (item.itemType == ItemType.EMPTY) {
-                                    if (!isProtectionEnabled) {
-                                        // TODO: Add App/Contact
-                                    }
-                                } else {
-                                    // Launch App/Contact
-                                }
-                            },
-                            onLongClick = {
-                                if (item.itemType != ItemType.EMPTY) {
-                                    if (isProtectionEnabled) {
-                                        itemToEdit = item
-                                        showPinDialog = true
-                                    } else {
-                                        // TODO: Remove/Edit
-                                    }
-                                }
-                            }
-                        )
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(androidx.compose.material.icons.Icons.Default.Settings, contentDescription = null, modifier = Modifier.size(40.dp))
+                        Text("AYARLAR", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+                Button(
+                    onClick = { navController.navigate("tools") },
+                    modifier = Modifier.weight(1f).fillMaxHeight(),
+                    shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE91E63), contentColor = Color.White)
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(androidx.compose.material.icons.Icons.Default.Build, contentDescription = null, modifier = Modifier.size(40.dp))
+                        Text("ARAÇLAR", fontSize = 18.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }

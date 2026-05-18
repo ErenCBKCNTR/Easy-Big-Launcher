@@ -15,7 +15,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.prusoft.easybiglauncher.viewmodel.LauncherViewModel
 import com.prusoft.easybiglauncher.ui.screens.OnboardingScreen
 import com.prusoft.easybiglauncher.ui.screens.SettingsWrapper
-// ... (rest of imports)
+import com.prusoft.easybiglauncher.ui.screens.ToolsScreen
 
 @Composable
 fun AppNavigation(viewModel: LauncherViewModel = viewModel()) {
@@ -29,5 +29,6 @@ fun AppNavigation(viewModel: LauncherViewModel = viewModel()) {
         composable("settings") { SettingsWrapper(navController) }
         composable("all_apps") { AllAppsScreen(navController) }
         composable("notification_summary") { NotificationSummaryScreen(navController) }
+        composable("tools") { ToolsScreen(navController) }
     }
 }
