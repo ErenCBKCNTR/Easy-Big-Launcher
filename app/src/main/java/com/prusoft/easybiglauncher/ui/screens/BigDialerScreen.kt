@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Backspace
@@ -30,7 +31,7 @@ import com.prusoft.easybiglauncher.R
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BigDialerScreen(navController: NavController) {
-    var number by remember { mutableStateOf("") }
+    var selectedTab by remember { mutableStateOf(0) } // 0: Dialer, 1: Contacts, 2: History
     val context = LocalContext.current
 
     Scaffold(
@@ -49,92 +50,137 @@ fun BigDialerScreen(navController: NavController) {
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Number Display
-            Card(
+            // Tab Buttons
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(120.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                    .padding(horizontal = 8.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(
-                        text = number,
-                        fontSize = 48.sp,
-                        fontWeight = FontWeight.ExtraBold,
-                        maxLines = 1
-                    )
-                }
+                TabButton("KLAVYE", isSelected = selectedTab == 0, modifier = Modifier.weight(1f)) { selectedTab = 0 }
+                TabButton("REHBER", isSelected = selectedTab == 1, modifier = Modifier.weight(1f)) { selectedTab = 1 }
+                TabButton("GEÇMİŞ", isSelected = selectedTab == 2, modifier = Modifier.weight(1f)) { selectedTab = 2 }
             }
 
-            // Dial Pad
-            val keys = listOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "*", "0", "#")
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(3),
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(keys) { key ->
-                    DialerButton(key) {
-                        if (number.length < 15) number += key
-                    }
+            Box(modifier = Modifier.weight(1f)) {
+                when (selectedTab) {
+                    0 -> DialerContent(context)
+                    1 -> BigContactsScreen()
+                    2 -> CallHistoryScreen()
                 }
             }
+        }
+    }
+}
 
-            // Bottom Actions
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Delete Button
-                Button(
-                    onClick = { if (number.isNotEmpty()) number = number.dropLast(1) },
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(90.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Gray),
-                    shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
-                ) {
-                    Icon(Icons.Default.Backspace, contentDescription = null, modifier = Modifier.size(40.dp))
+@Composable
+fun TabButton(text: String, isSelected: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
+    Button(
+        onClick = onClick,
+        modifier = modifier.height(70.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+            contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    ) {
+        Text(text = text, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+    }
+}
+
+@Composable
+fun DialerContent(context: Context) {
+    var number by remember { mutableStateOf("") }
+    
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        // Number Display
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(110.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+        ) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(
+                    text = number,
+                    fontSize = 48.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    maxLines = 1
+                )
+            }
+        }
+
+        // Dial Pad
+        val keys = listOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "*", "0", "#")
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(3),
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            items(keys) { key ->
+                DialerButton(key) {
+                    if (number.length < 15) number += key
                 }
+            }
+        }
 
-                // Call Button
-                Button(
-                    onClick = {
-                        if (number.isNotEmpty()) {
-                            val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-                            audioManager.mode = AudioManager.MODE_IN_CALL
-                            audioManager.isSpeakerphoneOn = true
+        // Bottom Actions
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Delete Button
+            Button(
+                onClick = { if (number.isNotEmpty()) number = number.dropLast(1) },
+                modifier = Modifier
+                    .weight(1f)
+                    .height(90.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Gray),
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
+            ) {
+                Icon(Icons.Default.Backspace, contentDescription = null, modifier = Modifier.size(40.dp))
+            }
 
-                            val intent = Intent(Intent.ACTION_CALL).apply {
+            // Call Button
+            Button(
+                onClick = {
+                    if (number.isNotEmpty()) {
+                        val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+                        audioManager.mode = AudioManager.MODE_IN_CALL
+                        audioManager.isSpeakerphoneOn = true
+
+                        val intent = Intent(Intent.ACTION_CALL).apply {
+                            data = Uri.parse("tel:$number")
+                        }
+                        try {
+                            context.startActivity(intent)
+                        } catch (e: Exception) {
+                            // Fallback to DIAL if CALL is not permitted
+                            val dialIntent = Intent(Intent.ACTION_DIAL).apply {
                                 data = Uri.parse("tel:$number")
                             }
-                            try {
-                                context.startActivity(intent)
-                            } catch (e: Exception) {
-                                // Fallback to DIAL if CALL is not permitted
-                                val dialIntent = Intent(Intent.ACTION_DIAL).apply {
-                                    data = Uri.parse("tel:$number")
-                                }
-                                context.startActivity(dialIntent)
-                            }
+                            context.startActivity(dialIntent)
                         }
-                    },
-                    modifier = Modifier
-                        .weight(2f)
-                        .height(90.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
-                    shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
-                ) {
-                    Icon(Icons.Default.Call, contentDescription = null, modifier = Modifier.size(48.dp))
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(stringResource(R.string.call), fontSize = 32.sp, fontWeight = FontWeight.Bold)
-                }
+                    }
+                },
+                modifier = Modifier
+                    .weight(2f)
+                    .height(90.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
+            ) {
+                Icon(Icons.Default.Call, contentDescription = null, modifier = Modifier.size(48.dp))
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(stringResource(R.string.call), fontSize = 32.sp, fontWeight = FontWeight.Bold)
             }
         }
     }

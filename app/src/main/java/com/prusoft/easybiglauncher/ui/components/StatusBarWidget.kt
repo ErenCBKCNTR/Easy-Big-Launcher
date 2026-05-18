@@ -30,9 +30,12 @@ import android.provider.AlarmClock
 import android.content.Intent
 import androidx.compose.foundation.clickable
 
+import com.prusoft.easybiglauncher.utils.TTSManager
+
 @Composable
-fun StatusBarWidget() {
+fun StatusBarWidget(isTtsEnabled: Boolean = false) {
     val context = LocalContext.current
+    val ttsManager = remember { TTSManager.getInstance(context) }
     val time by rememberCurrentTime()
     val date = remember { SimpleDateFormat("dd MMMM EEEE", Locale.getDefault()).format(Date()) }
     val battery by rememberBatteryStatus(context)
@@ -46,12 +49,16 @@ fun StatusBarWidget() {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.clickable {
-            try {
-                val intent = Intent(AlarmClock.ACTION_SHOW_ALARMS)
-                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                context.startActivity(intent)
-            } catch (e: Exception) {
-                // Silent fail to prevent crash
+            if (isTtsEnabled) {
+                ttsManager.speak("Bugün $date, saat şu an $time")
+            } else {
+                try {
+                    val intent = Intent(AlarmClock.ACTION_SHOW_ALARMS)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                    context.startActivity(intent)
+                } catch (e: Exception) {
+                    // Silent fail to prevent crash
+                }
             }
         }) {
             Text(text = time, style = MaterialTheme.typography.displayMedium, fontSize = 48.sp, modifier = Modifier.semantics { contentDescription = "Saat $time" })

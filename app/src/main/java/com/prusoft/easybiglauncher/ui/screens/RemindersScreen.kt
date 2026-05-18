@@ -19,6 +19,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.prusoft.easybiglauncher.R
@@ -159,7 +161,7 @@ fun ReminderItem(reminder: Reminder, onToggle: (Boolean) -> Unit, onDelete: () -
     }
 }
 
-private fun Modifier.scale(scale: Float): Modifier = this // Helper if needed, but Switch transforms can be tricky. Scale is enough.
+private fun Modifier.scale(scale: Float): Modifier = this // Helper if needed
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -183,17 +185,19 @@ fun AddReminderDialog(onDismiss: () -> Unit, onConfirm: (String, Long) -> Unit) 
                 Row(horizontalArrangement = Arrangement.spacedBy(16.dp), modifier = Modifier.fillMaxWidth()) {
                     OutlinedTextField(
                         value = hour,
-                        onValueChange = { if (it.length <= 2) hour = it },
+                        onValueChange = { if (it.all { char -> char.isDigit() } && it.length <= 2) hour = it },
                         label = { Text(stringResource(R.string.hour)) },
                         modifier = Modifier.weight(1f),
-                        textStyle = androidx.compose.ui.text.TextStyle(fontSize = 20.sp)
+                        textStyle = androidx.compose.ui.text.TextStyle(fontSize = 20.sp),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                     )
                     OutlinedTextField(
                         value = minute,
-                        onValueChange = { if (it.length <= 2) minute = it },
+                        onValueChange = { if (it.all { char -> char.isDigit() } && it.length <= 2) minute = it },
                         label = { Text(stringResource(R.string.minute)) },
                         modifier = Modifier.weight(1f),
-                        textStyle = androidx.compose.ui.text.TextStyle(fontSize = 20.sp)
+                        textStyle = androidx.compose.ui.text.TextStyle(fontSize = 20.sp),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                     )
                 }
             }

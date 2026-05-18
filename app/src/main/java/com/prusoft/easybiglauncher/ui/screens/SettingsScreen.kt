@@ -62,6 +62,8 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
     val scope = rememberCoroutineScope()
     val sharedPref = remember { context.getSharedPreferences("sos_prefs", Context.MODE_PRIVATE) }
     var sosMessage by remember { mutableStateOf(sharedPref.getString("sos_message", "Yardıma ihtiyacım var!") ?: "") }
+    var sosNumber by remember { mutableStateOf(sharedPref.getString("sos_number", "") ?: "") }
+    
     val isProtectionEnabled by viewModel.securityRepository.isProtectionEnabled.collectAsState(initial = false)
     val isTtsEnabled by viewModel.securityRepository.isTtsEnabled.collectAsState(initial = false)
     val savedPin by viewModel.securityRepository.savedPin.collectAsState(initial = null)
@@ -73,13 +75,24 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
 
     var isIgnoringBattery by remember { mutableStateOf(BatteryOptimizationManager.isIgnoringBatteryOptimizations(context)) }
     var showSetPinDialog by remember { mutableStateOf(false) }
+    var currentCategory by remember { mutableIntStateOf(0) } // 0: Main, 1: Language & Sound, 2: Security, 3: SOS, 4: Home Management
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = stringResource(id = R.string.settings_title)) },
+                title = { 
+                    Text(text = when(currentCategory) {
+                        1 -> "Dil ve Ses"
+                        2 -> "Güvenlik ve Şifre"
+                        3 -> "Acil Durum (SOS)"
+                        4 -> "Ana Ekran Yönetimi"
+                        else -> stringResource(id = R.string.settings_title)
+                    }) 
+                },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    IconButton(onClick = { 
+                        if (currentCategory != 0) currentCategory = 0 else navController.popBackStack() 
+                    }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = stringResource(id = R.string.go_back))
                     }
                 }
@@ -90,22 +103,118 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
             modifier = Modifier.padding(padding).padding(16.dp).fillMaxSize().verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Text(text = stringResource(id = R.string.language_option), style = MaterialTheme.typography.titleLarge)
-            
-            Button(onClick = { AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("en")) }) { Text("English") }
-            Button(onClick = { AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("tr")) }) { Text("Türkçe") }
-            
-            Divider()
-
-            Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                Text(stringResource(R.string.protection_mode), modifier = Modifier.weight(1f))
-                Switch(checked = isProtectionEnabled, onCheckedChange = { checked ->
-                    if (checked && savedPin == null) {
-                        showSetPinDialog = true
-                    } else {
-                        scope.launch { viewModel.securityRepository.setProtectionEnabled(checked) }
+            if (currentCategory == 0) {
+                // Main Menu
+                SettingsMenuButton("1. Dil ve Ses") { currentCategory = 1 }
+                SettingsMenuButton("2. Güvenlik ve Şifre") { currentCategory = 2 }
+                SettingsMenuButton("3. Acil Durum (SOS)") { currentCategory = 3 }
+                SettingsMenuButton("4. Ana Ekran Yönetimi") { currentCategory = 4 }
+                
+                Spacer(modifier = Modifier.weight(1f))
+                
+                Button(
+                    onClick = { 
+                        val intent = Intent(Intent.ACTION_DELETE, Uri.parse("package:${context.packageName}"))
+                        context.startActivity(intent)
+                    },
+                    modifier = Modifier.fillMaxWidth().height(100.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red, contentColor = Color.White),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Text("Uygulamayı Kaldır (Uninstall)", fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                }
+            } else {
+                when(currentCategory) {
+                    1 -> {
+                        // Language & Sound
+                        Text(text = stringResource(id = R.string.language_option), style = MaterialTheme.typography.titleLarge)
+                        Button(onClick = { AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("en")) }, modifier = Modifier.fillMaxWidth().height(80.dp), shape = RoundedCornerShape(16.dp)) { Text("English", fontSize = 24.sp) }
+                        Button(onClick = { AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("tr")) }, modifier = Modifier.fillMaxWidth().height(80.dp), shape = RoundedCornerShape(16.dp)) { Text("Türkçe", fontSize = 24.sp) }
+                        
+                        Divider()
+                        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                            Text(stringResource(R.string.voice_feedback), fontSize = 24.sp, modifier = Modifier.weight(1f))
+                            Switch(checked = isTtsEnabled, onCheckedChange = { 
+                                scope.launch { viewModel.securityRepository.setTtsEnabled(it) }
+                            })
+                        }
                     }
-                })
+                    2 -> {
+                        // Security
+                        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                            Text(stringResource(R.string.protection_mode), fontSize = 24.sp, modifier = Modifier.weight(1f))
+                            Switch(checked = isProtectionEnabled, onCheckedChange = { checked ->
+                                if (checked && savedPin == null) {
+                                    showSetPinDialog = true
+                                } else {
+                                    scope.launch { viewModel.securityRepository.setProtectionEnabled(checked) }
+                                }
+                            })
+                        }
+                        
+                        Button(onClick = { showSetPinDialog = true }, modifier = Modifier.fillMaxWidth().height(80.dp), shape = RoundedCornerShape(16.dp)) {
+                            Text("Şifre Değiştir", fontSize = 24.sp)
+                        }
+
+                        Divider()
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text(text = stringResource(R.string.battery_optimization_title), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                            Text(text = stringResource(R.string.battery_optimization_desc), style = MaterialTheme.typography.bodyMedium)
+                            Button(
+                                onClick = { BatteryOptimizationManager.requestIgnoreBatteryOptimizations(context) },
+                                modifier = Modifier.fillMaxWidth().height(80.dp),
+                                shape = RoundedCornerShape(16.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = if (isIgnoringBattery) Color(0xFF4CAF50) else Color.Red)
+                            ) {
+                                Text(
+                                    text = if (isIgnoringBattery) stringResource(R.string.battery_protection_active) else stringResource(R.string.battery_protection_inactive),
+                                    fontSize = 20.sp, fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
+                    3 -> {
+                        // SOS
+                        Text(text = stringResource(R.string.sos_settings), style = MaterialTheme.typography.titleLarge)
+                        TextField(
+                            value = sosNumber,
+                            onValueChange = { sosNumber = it; sharedPref.edit().putString("sos_number", it).apply() },
+                            label = { Text("Acil Durum Telefon Numarası") },
+                            modifier = Modifier.fillMaxWidth(),
+                            textStyle = androidx.compose.ui.text.TextStyle(fontSize = 22.sp)
+                        )
+                        TextField(
+                            value = sosMessage,
+                            onValueChange = { sosMessage = it; sharedPref.edit().putString("sos_message", it).apply() },
+                            label = { Text(stringResource(R.string.sos_message_label)) },
+                            modifier = Modifier.fillMaxWidth(),
+                            textStyle = androidx.compose.ui.text.TextStyle(fontSize = 22.sp)
+                        )
+                    }
+                    4 -> {
+                        // Home Management
+                        Button(
+                            onClick = { navController.navigate("manage_pages") },
+                            modifier = Modifier.fillMaxWidth().height(80.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer, contentColor = MaterialTheme.colorScheme.onPrimaryContainer)
+                        ) {
+                            Text(stringResource(R.string.manage_pages), fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                        }
+                        
+                        Button(onClick = { 
+                            val intent = LauncherUtils.getRoleRequestIntent(context)
+                            if (intent != null) launcher.launch(intent)
+                            else LauncherUtils.requestSetDefaultLauncher(context)
+                        }, modifier = Modifier.fillMaxWidth().height(80.dp), shape = RoundedCornerShape(16.dp)) {
+                            Text(if (isDefault) "${stringResource(R.string.set_default)} (${stringResource(R.string.active_status)})" else stringResource(R.string.set_default), fontSize = 20.sp)
+                        }
+                        
+                        Divider()
+                        Text(text = stringResource(R.string.add_page), style = MaterialTheme.typography.titleLarge)
+                        Button(onClick = { viewModel.addPage(3, 2) }, modifier = Modifier.fillMaxWidth().height(80.dp), shape = RoundedCornerShape(16.dp)) { Text(stringResource(R.string.add_page_3x2), fontSize = 22.sp) }
+                    }
+                }
             }
 
             if (showSetPinDialog) {
@@ -117,88 +226,22 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
                             viewModel.securityRepository.setProtectionEnabled(true)
                         }
                         showSetPinDialog = false
-                    }
+                    },
+                    isSettingNewPin = true
                 )
             }
-
-            Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                Text(stringResource(R.string.voice_feedback), modifier = Modifier.weight(1f))
-                Switch(checked = isTtsEnabled, onCheckedChange = { 
-                    scope.launch { viewModel.securityRepository.setTtsEnabled(it) }
-                })
-            }
-
-            Divider()
-
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(text = stringResource(R.string.battery_optimization_title), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                Text(text = stringResource(R.string.battery_optimization_desc), style = MaterialTheme.typography.bodyMedium)
-                
-                Button(
-                    onClick = { 
-                        BatteryOptimizationManager.requestIgnoreBatteryOptimizations(context)
-                    },
-                    modifier = Modifier.fillMaxWidth().height(80.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = if (isIgnoringBattery) Color(0xFF4CAF50) else MaterialTheme.colorScheme.error
-                    )
-                ) {
-                    Text(
-                        text = if (isIgnoringBattery) stringResource(R.string.battery_protection_active) else stringResource(R.string.battery_protection_inactive),
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-
-            Divider()
-
-            Button(
-                onClick = { navController.navigate("manage_pages") },
-                modifier = Modifier.fillMaxWidth().height(80.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer, contentColor = MaterialTheme.colorScheme.onPrimaryContainer)
-            ) {
-                Text(stringResource(R.string.manage_pages), fontSize = 20.sp, fontWeight = FontWeight.Bold)
-            }
-            
-            Button(onClick = { 
-                val intent = LauncherUtils.getRoleRequestIntent(context)
-                if (intent != null) {
-                    launcher.launch(intent)
-                } else {
-                    LauncherUtils.requestSetDefaultLauncher(context)
-                }
-            }) {
-                Text(if (isDefault) "${stringResource(R.string.set_default)} (${stringResource(R.string.active_status)})" else stringResource(R.string.set_default))
-            }
-            
-            Divider()
-            
-            Text(text = stringResource(R.string.add_page), style = MaterialTheme.typography.titleLarge)
-            Button(onClick = { viewModel.addPage(3, 2) }) { Text(stringResource(R.string.add_page_3x2)) }
-
-            Divider()
-            Text(text = stringResource(R.string.sos_settings), style = MaterialTheme.typography.titleLarge)
-            TextField(
-                value = sosMessage,
-                onValueChange = { sosMessage = it; sharedPref.edit().putString("sos_message", it).apply() },
-                label = { Text(stringResource(R.string.sos_message_label)) }
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-            Divider()
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Button(
-                onClick = { navController.navigate("privacy_policy") },
-                modifier = Modifier.fillMaxWidth().height(80.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary),
-                shape = RoundedCornerShape(16.dp)
-            ) {
-                Text(stringResource(R.string.privacy_policy_title), fontSize = 24.sp, fontWeight = FontWeight.Bold)
-            }
         }
+    }
+}
+
+@Composable
+fun SettingsMenuButton(text: String, onClick: () -> Unit) {
+    Button(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth().height(100.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer, contentColor = MaterialTheme.colorScheme.onPrimaryContainer)
+    ) {
+        Text(text, fontSize = 26.sp, fontWeight = FontWeight.Bold)
     }
 }

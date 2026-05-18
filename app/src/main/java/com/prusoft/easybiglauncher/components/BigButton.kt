@@ -32,12 +32,22 @@ fun BigButton(
     customColor: String? = null,
     customImageUri: String? = null,
     isTtsEnabled: Boolean = false,
+    appIconPackageName: String? = null,
+    isContact: Boolean = false,
     onClick: () -> Unit,
     onLongClick: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
     val ttsManager = remember { TTSManager.getInstance(context) }
-    val finalBackgroundColor = if (customColor != null) Color(android.graphics.Color.parseColor(customColor)) else backgroundColor
+    
+    val contactColor = Color(0xFF2196F3) // Blue for contacts
+    val finalBackgroundColor = when {
+        customColor != null -> Color(android.graphics.Color.parseColor(customColor))
+        isContact -> contactColor
+        else -> backgroundColor
+    }
+    
+    val finalIcon = if (isContact) androidx.compose.material.icons.Icons.Default.Person else icon
     
     Box(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
         Surface(
@@ -76,14 +86,47 @@ fun BigButton(
                         contentScale = ContentScale.Crop
                     )
                     Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.5f)))
+                } else if (appIconPackageName != null) {
+                    val appIcon = remember(appIconPackageName) {
+                        try {
+                            context.packageManager.getApplicationIcon(appIconPackageName)
+                        } catch (e: Exception) {
+                            null
+                        }
+                    }
+                    if (appIcon != null) {
+                        AndroidView(
+                            factory = { ctx ->
+                                android.widget.ImageView(ctx).apply {
+                                    setImageDrawable(appIcon)
+                                }
+                            },
+                            modifier = Modifier.size(64.dp)
+                        )
+                    }
                 }
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Icon(icon, contentDescription = text, modifier = Modifier.size(48.dp))
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(text = text, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                
+                // Show text and icon if no app icon or if icon is small
+                if (appIconPackageName == null || customImageUri != null) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        if (customImageUri == null) {
+                            Icon(finalIcon, contentDescription = text, modifier = Modifier.size(48.dp))
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
+                        Text(text = text, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                    }
+                } else {
+                    // Just show label for apps below the icon
+                    Column(
+                        modifier = Modifier.fillMaxSize().padding(8.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Bottom
+                    ) {
+                        Text(text = text, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = contentColor)
+                    }
                 }
             }
         }

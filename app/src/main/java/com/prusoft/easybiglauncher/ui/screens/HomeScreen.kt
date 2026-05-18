@@ -21,6 +21,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.material.icons.filled.Person
+import com.prusoft.easybiglauncher.utils.EmergencyManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -71,7 +73,11 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
             description = stringResource(R.string.disclosure_contacts_desc),
             onAccept = {
                 showContactsDisclosure = false
-                contactsLauncher.launch(arrayOf(Manifest.permission.READ_CONTACTS, Manifest.permission.CALL_PHONE))
+                contactsLauncher.launch(arrayOf(
+                    Manifest.permission.READ_CONTACTS,
+                    Manifest.permission.CALL_PHONE,
+                    Manifest.permission.READ_CALL_LOG
+                ))
             },
             onDecline = { showContactsDisclosure = false }
         )
@@ -213,7 +219,7 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        StatusBarWidget()
+        StatusBarWidget(isTtsEnabled = isTtsEnabled)
         
         Box(modifier = Modifier.weight(1f)) {
             if (pages.isEmpty()) {
@@ -249,12 +255,7 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
                                              showAddSlotDialog = true
                                          }
                                     } else if (item.itemType == ItemType.CONTACT) {
-                                        item.packageName?.let { number ->
-                                            val intent = Intent(Intent.ACTION_CALL).apply {
-                                                data = Uri.parse("tel:$number")
-                                            }
-                                            context.startActivity(intent)
-                                        }
+                                        navController.navigate("dialer")
                                     } else {
                                         item.packageName?.let { pkg ->
                                             when {
@@ -311,9 +312,12 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
                         contentColor = Color.White,
                         isTtsEnabled = isTtsEnabled,
                         onClick = {
-                            // SOS Logic: Send SMS with location and Call
-                            // This depends on previous implementation, let's assume it calls a helper
-                            navController.navigate("tools") // Fallback or navigate to a dedicated SOS screen if exists
+                            val sosContact = sharedPref.getString("sos_number", "")
+                            if (sosContact.isNullOrEmpty()) {
+                                navController.navigate("settings") // Should point to Emergency category, handled later
+                            } else {
+                                EmergencyManager.triggerSos(context)
+                            }
                         }
                     )
                 }
@@ -367,6 +371,8 @@ fun GridItem(item: LauncherItem, isTtsEnabled: Boolean, badgeCount: Int = 0, onC
         customColor = item.customColor,
         customImageUri = item.customImageUri,
         isTtsEnabled = isTtsEnabled,
+        appIconPackageName = if (item.itemType == ItemType.APP) item.packageName else null,
+        isContact = item.itemType == ItemType.CONTACT,
         onClick = onClick,
         onLongClick = onLongClick
     )

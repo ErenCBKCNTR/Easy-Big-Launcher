@@ -9,38 +9,170 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
+
 @Composable
 fun PinPadDialog(
     onPinDismiss: () -> Unit,
-    onPinEntered: (String) -> Unit
+    onPinEntered: (String) -> Unit,
+    isSettingNewPin: Boolean = false
 ) {
+    var firstEntry by remember { mutableStateOf("") }
+    var secondEntry by remember { mutableStateOf("") }
+    var isVerifying by remember { mutableStateOf(false) }
     var pin by remember { mutableStateOf("") }
+    var error by remember { mutableStateOf("") }
     
     Dialog(onDismissRequest = onPinDismiss) {
-        Surface(shape = MaterialTheme.shapes.medium, modifier = Modifier.padding(16.dp)) {
-            Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(text = "PIN: ${"*".repeat(pin.length)}", style = MaterialTheme.typography.headlineMedium)
+        Surface(
+            shape = RoundedCornerShape(24.dp),
+            modifier = Modifier.padding(16.dp).fillMaxWidth().wrapContentHeight(),
+            color = MaterialTheme.colorScheme.surface,
+            tonalElevation = 8.dp
+        ) {
+            Column(
+                modifier = Modifier.padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = if (isSettingNewPin) {
+                        if (isVerifying) "Şifreyi Tekrar Girin" else "Yeni Şifre Belirleyin"
+                    } else "Şifre Girin",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                
                 Spacer(modifier = Modifier.height(16.dp))
                 
-                // Pin Pad
-                for (row in listOf(listOf("1", "2", "3"), listOf("4", "5", "6"), listOf("7", "8", "9"))) {
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+                // Visualization of entered digits
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    for (i in 0 until 4) {
+                        Box(
+                            modifier = Modifier
+                                .size(24.dp)
+                                .background(
+                                    if (pin.length > i) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                                    CircleShape
+                                )
+                        )
+                    }
+                }
+                
+                if (error.isNotEmpty()) {
+                    Text(text = error, color = Color.Red, fontSize = 16.sp, modifier = Modifier.padding(top = 8.dp))
+                }
+                
+                Spacer(modifier = Modifier.height(32.dp))
+                
+                // Pin Pad 1-9
+                val numbers = listOf(
+                    listOf("1", "2", "3"),
+                    listOf("4", "5", "6"),
+                    listOf("7", "8", "9")
+                )
+                
+                for (row in numbers) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
                         for (digit in row) {
-                            Button(onClick = { if (pin.length < 4) pin += digit }, modifier = Modifier.size(64.dp), shape = CircleShape) {
-                                Text(digit, style = MaterialTheme.typography.headlineMedium)
+                            PinButton(digit, modifier = Modifier.weight(1f)) {
+                                if (pin.length < 4) {
+                                    pin += digit
+                                    if (pin.length == 4) {
+                                        if (isSettingNewPin) {
+                                            if (isVerifying) {
+                                                if (pin == firstEntry) {
+                                                    onPinEntered(pin)
+                                                } else {
+                                                    error = "Şifreler eşleşmiyor!"
+                                                    pin = ""
+                                                    isVerifying = false
+                                                    firstEntry = ""
+                                                }
+                                            } else {
+                                                firstEntry = pin
+                                                pin = ""
+                                                isVerifying = true
+                                                error = ""
+                                            }
+                                        } else {
+                                            onPinEntered(pin)
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
                 }
                 
-                // Bottom row
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-                    Button(onClick = { pin = "" }, modifier = Modifier.size(64.dp), shape = CircleShape) { Text("Sil") }
-                    Button(onClick = { if (pin.length < 4) pin += "0" }, modifier = Modifier.size(64.dp), shape = CircleShape) { Text("0") }
-                    Button(onClick = { onPinEntered(pin) }, modifier = Modifier.size(64.dp), shape = CircleShape) { Text("OK") }
+                // Bottom row: İptal, 0, Sil
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    PinButton("İPTAL", modifier = Modifier.weight(1f), isSpecial = true) {
+                        onPinDismiss()
+                    }
+                    PinButton("0", modifier = Modifier.weight(1f)) {
+                        if (pin.length < 4) {
+                            pin += "0"
+                            if (pin.length == 4) {
+                                if (isSettingNewPin) {
+                                    if (isVerifying) {
+                                        if (pin == firstEntry) {
+                                            onPinEntered(pin)
+                                        } else {
+                                            error = "Şifreler eşleşmiyor!"
+                                            pin = ""
+                                            isVerifying = false
+                                            firstEntry = ""
+                                        }
+                                    } else {
+                                        firstEntry = pin
+                                        pin = ""
+                                        isVerifying = true
+                                        error = ""
+                                    }
+                                } else {
+                                    onPinEntered(pin)
+                                }
+                            }
+                        }
+                    }
+                    PinButton("SİL", modifier = Modifier.weight(1f), isSpecial = true) {
+                        if (pin.isNotEmpty()) pin = pin.dropLast(1)
+                    }
                 }
             }
         }
+    }
+}
+
+@Composable
+fun PinButton(
+    text: String,
+    modifier: Modifier = Modifier,
+    isSpecial: Boolean = false,
+    onClick: () -> Unit
+) {
+    FilledTonalButton(
+        onClick = onClick,
+        modifier = modifier.height(80.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = if (isSpecial) ButtonDefaults.filledTonalButtonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant) else ButtonDefaults.filledTonalButtonColors()
+    ) {
+        Text(
+            text = text,
+            fontSize = if (isSpecial) 18.sp else 32.sp,
+            fontWeight = FontWeight.Bold
+        )
     }
 }
