@@ -2,6 +2,7 @@ package com.prusoft.easybiglauncher.utils
 
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
 
 data class AppInfo(
@@ -12,17 +13,24 @@ data class AppInfo(
 
 object AppManager {
     fun getInstalledApps(context: Context): List<AppInfo> {
-        val intent = Intent(Intent.ACTION_MAIN, null).addCategory(Intent.CATEGORY_LAUNCHER)
-        val packageManager = context.packageManager
-        val resolveInfos = packageManager.queryIntentActivities(intent, 0)
+        val pm = context.packageManager
+        val apps = pm.getInstalledApplications(PackageManager.GET_META_DATA)
         
-        return resolveInfos.map {
-            AppInfo(
-                it.loadLabel(packageManager),
-                it.activityInfo.packageName,
-                it.loadIcon(packageManager)
-            )
-        }
+        return apps.mapNotNull { appInfo ->
+            val name = appInfo.loadLabel(pm)
+            val packageName = appInfo.packageName
+            val icon = appInfo.loadIcon(pm)
+            
+            // Check if it has a launcher intent
+            val launchIntent = pm.getLaunchIntentForPackage(packageName)
+            
+            // Ensure it's not a service or provider masquerading as an app (though getLaunchIntentForPackage usually covers this)
+            if (launchIntent != null) {
+                AppInfo(name, packageName, icon)
+            } else {
+                null
+            }
+        }.distinctBy { it.packageName }.sortedBy { it.name.toString().lowercase() }
     }
 
     fun launchApp(context: Context, packageName: String) {

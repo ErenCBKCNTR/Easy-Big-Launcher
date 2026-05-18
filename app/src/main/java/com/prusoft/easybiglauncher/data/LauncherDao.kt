@@ -25,4 +25,20 @@ interface LauncherDao {
 
     @Query("DELETE FROM launcher_items WHERE pageId = :pageId")
     suspend fun deleteItemsByPageId(pageId: Int)
+
+    // Reminders
+    @Query("SELECT * FROM reminders ORDER BY timeInMillis ASC")
+    fun getAllReminders(): Flow<List<Reminder>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertReminder(reminder: Reminder): Long
+
+    @Update
+    suspend fun updateReminder(reminder: Reminder)
+
+    @Delete
+    suspend fun deleteReminder(reminder: Reminder)
+
+    @Query("SELECT * FROM reminders WHERE id = :id")
+    suspend fun getReminderById(id: Int): Reminder?
 }

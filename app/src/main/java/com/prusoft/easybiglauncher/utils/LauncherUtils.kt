@@ -17,15 +17,34 @@ object LauncherUtils {
 
     fun requestSetDefaultLauncher(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            val roleManager = context.getSystemService(Context.ROLE_SERVICE) as RoleManager
-            if (roleManager.isRoleAvailable(RoleManager.ROLE_HOME)) {
-                val intent = roleManager.createRequestRoleIntent(RoleManager.ROLE_HOME)
-                context.startActivity(intent)
+            val roleManager = context.getSystemService(RoleManager::class.java)
+            if (roleManager != null && roleManager.isRoleAvailable(RoleManager.ROLE_HOME)) {
+                if (roleManager.isRoleHeld(RoleManager.ROLE_HOME)) {
+                    // Already default
+                    return
+                }
+                // The intent should be started by an ActivityResultLauncher in the UI
+            } else {
+                openHomeSettings(context)
             }
         } else {
-            // For older versions, open settings
-            val intent = Intent(Settings.ACTION_HOME_SETTINGS)
-            context.startActivity(intent)
+            openHomeSettings(context)
         }
+    }
+
+    fun getRoleRequestIntent(context: Context): Intent? {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val roleManager = context.getSystemService(RoleManager::class.java)
+            if (roleManager != null && roleManager.isRoleAvailable(RoleManager.ROLE_HOME)) {
+                return roleManager.createRequestRoleIntent(RoleManager.ROLE_HOME)
+            }
+        }
+        return null
+    }
+
+    private fun openHomeSettings(context: Context) {
+        val intent = Intent(Settings.ACTION_HOME_SETTINGS)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        context.startActivity(intent)
     }
 }

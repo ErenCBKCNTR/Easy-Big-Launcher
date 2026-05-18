@@ -25,20 +25,39 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         _pendingAssignmentItem.value = item
     }
 
+    private var isAddingPage = false
+
     fun addPage(rowCount: Int, columnCount: Int) {
+        if (isAddingPage) return
+        isAddingPage = true
         viewModelScope.launch {
-            val pageId = repository.insertPage(LauncherPage(pageOrder = pages.value.size, rowCount = rowCount, columnCount = columnCount)).toInt()
-            // Create empty items
-            for (i in 0 until (rowCount * columnCount)) {
-                repository.insertItem(LauncherItem(
-                    pageId = pageId,
-                    slotIndex = i,
-                    itemType = ItemType.EMPTY,
-                    packageName = null,
-                    label = null,
-                    iconUri = null
-                ))
+            try {
+                val pageId = repository.insertPage(LauncherPage(pageOrder = pages.value.size, rowCount = rowCount, columnCount = columnCount)).toInt()
+                // Create empty items
+                for (i in 0 until (rowCount * columnCount)) {
+                    repository.insertItem(LauncherItem(
+                        pageId = pageId,
+                        slotIndex = i,
+                        itemType = ItemType.EMPTY,
+                        packageName = null,
+                        label = null,
+                        iconUri = null
+                    ))
+                }
+            } finally {
+                isAddingPage = false
             }
+        }
+    }
+
+    fun assignContactToItem(item: LauncherItem, name: String, number: String) {
+        viewModelScope.launch {
+            repository.updateItem(item.copy(
+                itemType = ItemType.CONTACT,
+                label = name,
+                packageName = number // We store number in packageName field for now, or we should use a proper field. 
+                // Given the current schema, let's use packageName for the "action data" which is the number.
+            ))
         }
     }
 

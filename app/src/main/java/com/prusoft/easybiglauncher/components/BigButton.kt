@@ -32,7 +32,8 @@ fun BigButton(
     customColor: String? = null,
     customImageUri: String? = null,
     isTtsEnabled: Boolean = false,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onLongClick: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
     val ttsManager = remember { TTSManager.getInstance(context) }
@@ -43,7 +44,7 @@ fun BigButton(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(140.dp)
-                .pointerInput(isTtsEnabled) {
+                .pointerInput(isTtsEnabled, text) {
                     detectTapGestures(
                         onTap = {
                             if (isTtsEnabled) {
@@ -56,6 +57,9 @@ fun BigButton(
                             if (isTtsEnabled) {
                                 onClick()
                             }
+                        },
+                        onLongPress = {
+                            onLongClick?.invoke()
                         }
                     )
                 },

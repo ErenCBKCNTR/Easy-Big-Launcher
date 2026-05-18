@@ -64,4 +64,16 @@
     <string name="page_label">Page</string>
     <string name="grid_label">%1$dx%2$d Grid</string>
     <string name="no_notifications">No new notifications</string>
+    <string name="reminders_title">Reminders</string>
+    <string name="add_reminder">Add Reminder</string>
+    <string name="reminder_hint">Reminder Name (Med/Appt)</string>
+    <string name="hour">Hour</string>
+    <string name="minute">Minute</string>
+    <string name="save">Save</string>
+    <string name="alarm_dismiss">DISMISS ALARM</string>
+    <string name="call">CALL</string>
+    <string name="new_message">NEW MESSAGE</string>
+    <string name="send">SEND</string>
+    <string name="enter_number">Enter Number</string>
+    <string name="enter_message">Enter Message</string>
 </resources>

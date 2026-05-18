@@ -15,6 +15,10 @@
     <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
 
     <uses-feature android:name="android.hardware.camera.flash" android:required="false" />
 
@@ -25,6 +29,10 @@
         android:theme="@style/Theme.EasyBigLauncher">
 
         <receiver
+            android:name=".receivers.AlarmReceiver"
+            android:exported="false" />
+
+        <receiver
             android:name=".receivers.BootCompletedReceiver"
             android:directBootAware="true"
             android:exported="true">
@@ -33,6 +41,15 @@
                 <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
+
+        <activity
+            android:name=".AlarmActivity"
+            android:exported="false"
+            android:showForAllUsers="true"
+            android:showOnLockScreen="true"
+            android:turnScreenOn="true"
+            android:theme="@style/Theme.EasyBigLauncher"
+            android:launchMode="singleInstance" />
 
         <activity
             android:name=".MainActivity"

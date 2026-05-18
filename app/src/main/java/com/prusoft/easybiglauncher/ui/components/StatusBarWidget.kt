@@ -61,7 +61,8 @@ fun StatusBarWidget() {
             Text(
                 text = "${battery.percentage}%",
                 style = MaterialTheme.typography.headlineMedium,
-                color = if (battery.percentage <= 15 && !battery.isCharging) Color.Red else if (battery.isCharging) Color.Green else MaterialTheme.colorScheme.onSurface,
+                color = if (battery.percentage <= 15 && !battery.isCharging) Color.Red else Color.Black,
+                fontWeight = FontWeight.ExtraBold,
                 modifier = Modifier.semantics { contentDescription = "Pil yüzde ${battery.percentage}" }
             )
             Spacer(modifier = Modifier.width(8.dp))

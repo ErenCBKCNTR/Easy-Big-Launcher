@@ -15,4 +15,11 @@ class LauncherRepository(private val dao: LauncherDao) {
         dao.deleteItemsByPageId(page.id)
         dao.deletePage(page)
     }
+
+    // Reminders
+    val allReminders: Flow<List<Reminder>> = dao.getAllReminders()
+    suspend fun insertReminder(reminder: Reminder) = dao.insertReminder(reminder)
+    suspend fun updateReminder(reminder: Reminder) = dao.updateReminder(reminder)
+    suspend fun deleteReminder(reminder: Reminder) = dao.deleteReminder(reminder)
+    suspend fun getReminderById(id: Int) = dao.getReminderById(id)
 }

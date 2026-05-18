@@ -1,6 +1,9 @@
 package com.prusoft.easybiglauncher.ui.screens
 
 import android.content.Context
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import android.app.role.RoleManager
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -61,9 +64,14 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
     var sosMessage by remember { mutableStateOf(sharedPref.getString("sos_message", "Yardıma ihtiyacım var!") ?: "") }
     val isProtectionEnabled by viewModel.securityRepository.isProtectionEnabled.collectAsState(initial = false)
     val isTtsEnabled by viewModel.securityRepository.isTtsEnabled.collectAsState(initial = false)
-    val isDefault = remember { LauncherUtils.isDefaultLauncher(context) }
+    var isDefault by remember { mutableStateOf(LauncherUtils.isDefaultLauncher(context)) }
     
+    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        isDefault = LauncherUtils.isDefaultLauncher(context)
+    }
+
     var isIgnoringBattery by remember { mutableStateOf(BatteryOptimizationManager.isIgnoringBatteryOptimizations(context)) }
+    var showSetPinDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -90,9 +98,26 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
 
             Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 Text(stringResource(R.string.protection_mode), modifier = Modifier.weight(1f))
-                Switch(checked = isProtectionEnabled, onCheckedChange = { 
-                    scope.launch { viewModel.securityRepository.setProtectionEnabled(it) }
+                Switch(checked = isProtectionEnabled, onCheckedChange = { checked ->
+                    if (checked && savedPin == null) {
+                        showSetPinDialog = true
+                    } else {
+                        scope.launch { viewModel.securityRepository.setProtectionEnabled(checked) }
+                    }
                 })
+            }
+
+            if (showSetPinDialog) {
+                PinPadDialog(
+                    onPinDismiss = { showSetPinDialog = false },
+                    onPinEntered = { pin ->
+                        scope.launch {
+                            viewModel.securityRepository.setPin(pin)
+                            viewModel.securityRepository.setProtectionEnabled(true)
+                        }
+                        showSetPinDialog = false
+                    }
+                )
             }
 
             Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
@@ -137,7 +162,14 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
                 Text(stringResource(R.string.manage_pages), fontSize = 20.sp, fontWeight = FontWeight.Bold)
             }
             
-            Button(onClick = { LauncherUtils.requestSetDefaultLauncher(context) }) {
+            Button(onClick = { 
+                val intent = LauncherUtils.getRoleRequestIntent(context)
+                if (intent != null) {
+                    launcher.launch(intent)
+                } else {
+                    LauncherUtils.requestSetDefaultLauncher(context)
+                }
+            }) {
                 Text(if (isDefault) "${stringResource(R.string.set_default)} (${stringResource(R.string.active_status)})" else stringResource(R.string.set_default))
             }
             

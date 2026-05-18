@@ -142,6 +142,18 @@ fun ToolsScreen(navController: NavController, viewModel: LauncherViewModel = vie
                     }
                 )
             }
+            item {
+                ToolButton(
+                    text = "HATIRLATICI / REMINDERS", // Localized string would be better
+                    icon = Icons.Default.Alarm,
+                    color = Color(0xFF9C27B0), // Purple
+                    contentColor = Color.White,
+                    isTtsEnabled = isTtsEnabled,
+                    onClick = {
+                        navController.navigate("reminders")
+                    }
+                )
+            }
         }
     }
 }
