@@ -12,6 +12,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -148,7 +149,7 @@ fun ReminderItem(reminder: Reminder, onToggle: (Boolean) -> Unit, onDelete: () -
                 Switch(
                     checked = reminder.isActive,
                     onCheckedChange = onToggle,
-                    scale = 1.8f
+                    modifier = Modifier.scale(1.8f)
                 )
                 IconButton(onClick = onDelete) {
                     Icon(Icons.Default.Delete, contentDescription = "Sil", tint = Color.Red, modifier = Modifier.size(36.dp))

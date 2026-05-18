@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.Call
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -95,6 +96,7 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
     var itemToEdit by remember { mutableStateOf<LauncherItem?>(null) }
     var showPinDialogForNav by remember { mutableStateOf(false) }
     var navDestination by remember { mutableStateOf("") }
+    var showEditSheet by remember { mutableStateOf(false) }
     
     var showAddSlotDialog by remember { mutableStateOf(false) }
     var slotToAssign by remember { mutableStateOf<LauncherItem?>(null) }

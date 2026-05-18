@@ -20,6 +20,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.prusoft.easybiglauncher.ui.theme.AccessibilityLauncherTheme
 import com.prusoft.easybiglauncher.utils.TTSManager
+import androidx.compose.ui.res.stringResource
+import com.prusoft.easybiglauncher.R
 import kotlinx.coroutines.delay
 
 class AlarmActivity : ComponentActivity() {
@@ -33,7 +35,7 @@ class AlarmActivity : ComponentActivity() {
         setupFlags()
         
         reminderTitle = intent.getStringExtra("reminder_title") ?: "HATIRLATICI"
-        ttsManager = TTSManager(this)
+        ttsManager = TTSManager.getInstance(this)
 
         setContent {
             AccessibilityLauncherTheme {
@@ -85,7 +87,7 @@ class AlarmActivity : ComponentActivity() {
     }
 
     override fun onDestroy() {
-        ttsManager.stop()
+        ttsManager.shutdown()
         super.onDestroy()
     }
 }

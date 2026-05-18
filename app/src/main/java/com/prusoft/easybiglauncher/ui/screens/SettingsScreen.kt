@@ -64,6 +64,7 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
     var sosMessage by remember { mutableStateOf(sharedPref.getString("sos_message", "Yardıma ihtiyacım var!") ?: "") }
     val isProtectionEnabled by viewModel.securityRepository.isProtectionEnabled.collectAsState(initial = false)
     val isTtsEnabled by viewModel.securityRepository.isTtsEnabled.collectAsState(initial = false)
+    val savedPin by viewModel.securityRepository.savedPin.collectAsState(initial = null)
     var isDefault by remember { mutableStateOf(LauncherUtils.isDefaultLauncher(context)) }
     
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
