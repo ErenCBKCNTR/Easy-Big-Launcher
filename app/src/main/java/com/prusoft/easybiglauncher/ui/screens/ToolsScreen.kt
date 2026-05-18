@@ -23,12 +23,23 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.prusoft.easybiglauncher.utils.ToolManager
 
+import androidx.compose.ui.res.stringResource
+import com.prusoft.easybiglauncher.R
+
+import com.prusoft.easybiglauncher.viewmodel.LauncherViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.prusoft.easybiglauncher.utils.TTSManager
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.input.pointer.pointerInput
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ToolsScreen(navController: NavController) {
+fun ToolsScreen(navController: NavController, viewModel: LauncherViewModel = viewModel()) {
     val context = LocalContext.current
     val isFlashOn by ToolManager.isFlashlightOn.collectAsState()
     val soundMode by ToolManager.soundMode.collectAsState()
+    val isTtsEnabled by viewModel.securityRepository.isTtsEnabled.collectAsState(initial = false)
+    val ttsManager = remember { TTSManager.getInstance(context) }
 
     LaunchedEffect(Unit) {
         ToolManager.updateState(context)
@@ -37,10 +48,10 @@ fun ToolsScreen(navController: NavController) {
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("ARAÇLAR / TOOLS", fontWeight = FontWeight.Bold) },
+                title = { Text("${stringResource(R.string.tools_title)}", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Geri", modifier = Modifier.size(40.dp))
+                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.go_back), modifier = Modifier.size(40.dp))
                     }
                 }
             )
@@ -55,30 +66,45 @@ fun ToolsScreen(navController: NavController) {
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item {
+                val flashlightOnAnn = stringResource(R.string.flashlight_on_announcement)
+                val flashlightOffAnn = stringResource(R.string.flashlight_off_announcement)
                 ToolButton(
-                    text = if (isFlashOn) "FENER: AÇIK\nFLASHLIGHT: ON" else "FENER: KAPALI\nFLASHLIGHT: OFF",
+                    text = if (isFlashOn) stringResource(R.string.flashlight_on) else stringResource(R.string.flashlight_off),
                     icon = if (isFlashOn) Icons.Default.FlashlightOn else Icons.Default.FlashlightOff,
                     color = if (isFlashOn) Color(0xFFFFEB3B) else Color.DarkGray,
                     contentColor = if (isFlashOn) Color.Black else Color.White,
-                    onClick = { ToolManager.toggleFlashlight(context) }
+                    isTtsEnabled = isTtsEnabled,
+                    onClick = { 
+                        ToolManager.toggleFlashlight(context)
+                        if (isTtsEnabled) {
+                            ttsManager.speak(if (!isFlashOn) flashlightOnAnn else flashlightOffAnn)
+                        }
+                    }
                 )
             }
             item {
                 val soundInfo = getSoundModeInfo(soundMode)
+                val soundModeText = "${stringResource(R.string.sound_mode)}: ${stringResource(soundInfo.first)} / ${stringResource(soundInfo.second)}"
                 ToolButton(
-                    text = "SES MODU: ${soundInfo.first}\nSOUND: ${soundInfo.second}",
+                    text = soundModeText,
                     icon = soundInfo.third,
                     color = soundInfo.fourth,
                     contentColor = Color.White,
-                    onClick = { ToolManager.cycleSoundMode(context) }
+                    isTtsEnabled = isTtsEnabled,
+                    onClick = { 
+                        ToolManager.cycleSoundMode(context)
+                        // Note: actual state update might be slightly delayed, but for TTS we speak the action
+                    }
                 )
             }
             item {
+                val wifiSettingsText = stringResource(R.string.wifi_settings)
                 ToolButton(
-                    text = "WI-FI AYARLARI\nWI-FI SETTINGS",
+                    text = wifiSettingsText,
                     icon = Icons.Default.Wifi,
                     color = Color(0xFF2196F3),
                     contentColor = Color.White,
+                    isTtsEnabled = isTtsEnabled,
                     onClick = {
                         val intent = Intent(Settings.ACTION_WIFI_SETTINGS)
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -87,13 +113,30 @@ fun ToolsScreen(navController: NavController) {
                 )
             }
             item {
+                val bluetoothSettingsText = stringResource(R.string.bluetooth_settings)
                 ToolButton(
-                    text = "BLUETOOTH AYARLARI\nBLUETOOTH SETTINGS",
+                    text = bluetoothSettingsText,
                     icon = Icons.Default.Bluetooth,
                     color = Color(0xFF3F51B5),
                     contentColor = Color.White,
+                    isTtsEnabled = isTtsEnabled,
                     onClick = {
                         val intent = Intent(Settings.ACTION_BLUETOOTH_SETTINGS)
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        context.startActivity(intent)
+                    }
+                )
+            }
+            item {
+                val mobileDataSettingsText = stringResource(R.string.mobile_data_settings)
+                ToolButton(
+                    text = mobileDataSettingsText,
+                    icon = Icons.Default.CellTower,
+                    color = Color(0xFFFF9800),
+                    contentColor = Color.White,
+                    isTtsEnabled = isTtsEnabled,
+                    onClick = {
+                        val intent = Intent(Settings.ACTION_DATA_ROAMING_SETTINGS)
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                         context.startActivity(intent)
                     }
@@ -109,15 +152,36 @@ fun ToolButton(
     icon: ImageVector,
     color: Color,
     contentColor: Color,
+    isTtsEnabled: Boolean = false,
     onClick: () -> Unit
 ) {
-    Card(
-        onClick = onClick,
+    val context = LocalContext.current
+    val ttsManager = remember { TTSManager.getInstance(context) }
+
+    Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .height(140.dp),
-        colors = CardDefaults.cardColors(containerColor = color, contentColor = contentColor),
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(24.dp)
+            .height(140.dp)
+            .pointerInput(isTtsEnabled) {
+                detectTapGestures(
+                    onTap = {
+                        if (isTtsEnabled) {
+                            ttsManager.speak(text)
+                        } else {
+                            onClick()
+                        }
+                    },
+                    onDoubleTap = {
+                        if (isTtsEnabled) {
+                            onClick()
+                        }
+                    }
+                )
+            },
+        color = color,
+        contentColor = contentColor,
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(24.dp),
+        shadowElevation = 8.dp
     ) {
         Row(
             modifier = Modifier
@@ -143,11 +207,11 @@ fun ToolButton(
     }
 }
 
-fun getSoundModeInfo(mode: Int): Triple4<String, String, ImageVector, Color> {
+fun getSoundModeInfo(mode: Int): Triple4<Int, Int, ImageVector, Color> {
     return when (mode) {
-        AudioManager.RINGER_MODE_NORMAL -> Triple4("SESLİ", "RING", Icons.Default.VolumeUp, Color(0xFF4CAF50))
-        AudioManager.RINGER_MODE_VIBRATE -> Triple4("TİTREŞİM", "VIBRATE", Icons.Default.Vibration, Color(0xFFFF9800))
-        else -> Triple4("SESSİZ", "SILENT", Icons.Default.VolumeOff, Color(0xFFF44336))
+        AudioManager.RINGER_MODE_NORMAL -> Triple4(R.string.ses_ring, R.string.sound_ring, Icons.Default.VolumeUp, Color(0xFF4CAF50))
+        AudioManager.RINGER_MODE_VIBRATE -> Triple4(R.string.ses_vibrate, R.string.sound_vibrate, Icons.Default.Vibration, Color(0xFFFF9800))
+        else -> Triple4(R.string.ses_silent, R.string.sound_silent, Icons.Default.VolumeOff, Color(0xFFF44336))
     }
 }
 

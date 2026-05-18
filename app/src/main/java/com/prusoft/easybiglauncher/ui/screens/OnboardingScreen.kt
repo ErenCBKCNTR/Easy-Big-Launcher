@@ -20,9 +20,59 @@ import kotlinx.coroutines.launch
 import androidx.core.os.LocaleListCompat
 import androidx.appcompat.app.AppCompatDelegate
 
+import androidx.compose.ui.res.stringResource
+import com.prusoft.easybiglauncher.R
+import com.prusoft.easybiglauncher.ui.components.PermissionDisclosureDialog
+import android.Manifest
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+
 @Composable
 fun OnboardingScreen(navController: NavController, viewModel: LauncherViewModel = viewModel()) {
     val scope = rememberCoroutineScope()
+    var showSosDisclosure by remember { mutableStateOf(false) }
+    var showContactsDisclosure by remember { mutableStateOf(false) }
+
+    val sosPermissionsLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { _ -> }
+
+    val contactsPermissionsLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { _ -> }
+
+    if (showSosDisclosure) {
+        PermissionDisclosureDialog(
+            description = stringResource(R.string.disclosure_sos_desc),
+            onAccept = {
+                showSosDisclosure = false
+                sosPermissionsLauncher.launch(
+                    arrayOf(
+                        Manifest.permission.SEND_SMS,
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    )
+                )
+            },
+            onDecline = { showSosDisclosure = false }
+        )
+    }
+
+    if (showContactsDisclosure) {
+        PermissionDisclosureDialog(
+            description = stringResource(R.string.disclosure_contacts_desc),
+            onAccept = {
+                showContactsDisclosure = false
+                contactsPermissionsLauncher.launch(
+                    arrayOf(
+                        Manifest.permission.READ_CONTACTS,
+                        Manifest.permission.CALL_PHONE
+                    )
+                )
+            },
+            onDecline = { showContactsDisclosure = false }
+        )
+    }
     
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -36,7 +86,7 @@ fun OnboardingScreen(navController: NavController, viewModel: LauncherViewModel 
         ) {
             Spacer(modifier = Modifier.height(40.dp))
             Text(
-                text = "Hoşgeldiniz\nWelcome",
+                text = stringResource(R.string.onboarding_welcome),
                 style = MaterialTheme.typography.displayLarge.copy(
                     fontSize = 54.sp,
                     fontWeight = FontWeight.Bold,
@@ -65,6 +115,24 @@ fun OnboardingScreen(navController: NavController, viewModel: LauncherViewModel 
                         scope.launch { viewModel.securityRepository.setLanguage("en") }
                     }
                 )
+
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                Button(
+                    onClick = { showSosDisclosure = true },
+                    modifier = Modifier.fillMaxWidth().height(80.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray)
+                ) {
+                    Text("SOS İZİNLERİ / SOS PERMS", fontSize = 20.sp)
+                }
+
+                Button(
+                    onClick = { showContactsDisclosure = true },
+                    modifier = Modifier.fillMaxWidth().height(80.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray)
+                ) {
+                    Text("REHBER İZİNLERİ / CONTACT PERMS", fontSize = 20.sp)
+                }
             }
 
             Spacer(modifier = Modifier.weight(1f))
@@ -82,7 +150,7 @@ fun OnboardingScreen(navController: NavController, viewModel: LauncherViewModel 
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                 shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
             ) {
-                Text("BAŞLA / START", fontSize = 28.sp, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.onboarding_start), fontSize = 28.sp, fontWeight = FontWeight.Bold)
             }
             Spacer(modifier = Modifier.height(24.dp))
         }

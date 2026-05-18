@@ -14,6 +14,7 @@ class SecurityRepository(private val context: Context) {
     private val PROTECTION_ENABLED_KEY = booleanPreferencesKey("protection_enabled")
     private val LANGUAGE_KEY = stringPreferencesKey("language")
     private val ONBOARDING_COMPLETED_KEY = booleanPreferencesKey("onboarding_completed")
+    private val TTS_ENABLED_KEY = booleanPreferencesKey("tts_enabled")
 
     val isProtectionEnabled: Flow<Boolean> = context.dataStore.data.map { preferences ->
         preferences[PROTECTION_ENABLED_KEY] ?: false
@@ -29,6 +30,10 @@ class SecurityRepository(private val context: Context) {
 
     val isOnboardingCompleted: Flow<Boolean> = context.dataStore.data.map { preferences ->
         preferences[ONBOARDING_COMPLETED_KEY] ?: false
+    }
+
+    val isTtsEnabled: Flow<Boolean> = context.dataStore.data.map { preferences ->
+        preferences[TTS_ENABLED_KEY] ?: false
     }
 
     suspend fun setProtectionEnabled(enabled: Boolean) {
@@ -52,6 +57,12 @@ class SecurityRepository(private val context: Context) {
     suspend fun setOnboardingCompleted(completed: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[ONBOARDING_COMPLETED_KEY] = completed
+        }
+    }
+
+    suspend fun setTtsEnabled(enabled: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[TTS_ENABLED_KEY] = enabled
         }
     }
 }

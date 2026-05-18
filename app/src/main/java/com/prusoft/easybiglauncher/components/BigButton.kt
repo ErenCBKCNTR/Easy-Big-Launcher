@@ -16,6 +16,11 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.layout.ContentScale
 import coil.compose.AsyncImage
 
+import com.prusoft.easybiglauncher.utils.TTSManager
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.input.pointer.pointerInput
+
 @Composable
 fun BigButton(
     text: String,
@@ -25,18 +30,37 @@ fun BigButton(
     badgeCount: Int = 0,
     customColor: String? = null,
     customImageUri: String? = null,
+    isTtsEnabled: Boolean = false,
     onClick: () -> Unit
 ) {
+    val context = LocalContext.current
+    val ttsManager = remember { TTSManager.getInstance(context) }
     val finalBackgroundColor = if (customColor != null) Color(android.graphics.Color.parseColor(customColor)) else backgroundColor
     
     Box(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
-        Button(
-            onClick = onClick,
+        Surface(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(140.dp),
+                .height(140.dp)
+                .pointerInput(isTtsEnabled) {
+                    detectTapGestures(
+                        onTap = {
+                            if (isTtsEnabled) {
+                                ttsManager.speak(text)
+                            } else {
+                                onClick()
+                            }
+                        },
+                        onDoubleTap = {
+                            if (isTtsEnabled) {
+                                onClick()
+                            }
+                        }
+                    )
+                },
             shape = RoundedCornerShape(24.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = finalBackgroundColor, contentColor = contentColor)
+            color = finalBackgroundColor,
+            contentColor = contentColor
         ) {
             Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
                 if (customImageUri != null) {

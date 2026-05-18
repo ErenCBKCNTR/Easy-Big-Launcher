@@ -16,6 +16,7 @@ import com.prusoft.easybiglauncher.viewmodel.LauncherViewModel
 import com.prusoft.easybiglauncher.ui.screens.OnboardingScreen
 import com.prusoft.easybiglauncher.ui.screens.SettingsWrapper
 import com.prusoft.easybiglauncher.ui.screens.ToolsScreen
+import com.prusoft.easybiglauncher.ui.screens.PrivacyPolicyScreen
 
 @Composable
 fun AppNavigation(viewModel: LauncherViewModel = viewModel()) {
@@ -30,5 +31,6 @@ fun AppNavigation(viewModel: LauncherViewModel = viewModel()) {
         composable("all_apps") { AllAppsScreen(navController) }
         composable("notification_summary") { NotificationSummaryScreen(navController) }
         composable("tools") { ToolsScreen(navController) }
+        composable("privacy_policy") { PrivacyPolicyScreen(navController) }
     }
 }

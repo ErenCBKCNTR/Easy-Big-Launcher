@@ -34,17 +34,58 @@ import com.prusoft.easybiglauncher.components.BigButton
 import com.prusoft.easybiglauncher.utils.NotificationTracker
 import androidx.compose.foundation.combinedClickable
 
+import androidx.compose.ui.res.stringResource
+import com.prusoft.easybiglauncher.R
+import com.prusoft.easybiglauncher.ui.components.PermissionDisclosureDialog
+import android.Manifest
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import android.content.pm.PackageManager
+import androidx.core.content.ContextCompat
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = viewModel()) {
     val context = LocalContext.current
+    var showContactsDisclosure by remember { mutableStateOf(false) }
+    
+    val contactsLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { _ -> }
+
+    LaunchedEffect(Unit) {
+        val hasContacts = ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED
+        if (!hasContacts) {
+            showContactsDisclosure = true
+        }
+    }
+
+    if (showContactsDisclosure) {
+        PermissionDisclosureDialog(
+            description = stringResource(R.string.disclosure_contacts_desc),
+            onAccept = {
+                showContactsDisclosure = false
+                contactsLauncher.launch(arrayOf(Manifest.permission.READ_CONTACTS, Manifest.permission.CALL_PHONE))
+            },
+            onDecline = { showContactsDisclosure = false }
+        )
+    }
+
     val pages by viewModel.pages.collectAsState(initial = emptyList())
     val pagerState = rememberPagerState(pageCount = { pages.size })
     val missedCalls by NotificationTracker.missedCalls.collectAsState()
     val unreadSms by NotificationTracker.unreadSmsCount.collectAsState()
     val isProtectionEnabled by viewModel.securityRepository.isProtectionEnabled.collectAsState(initial = false)
+    val isTtsEnabled by viewModel.securityRepository.isTtsEnabled.collectAsState(initial = false)
+    val language by viewModel.securityRepository.language.collectAsState(initial = "tr")
     val savedPin by viewModel.securityRepository.savedPin.collectAsState(initial = null)
     
+    val ttsManager = remember { com.prusoft.easybiglauncher.utils.TTSManager.getInstance(context) }
+    
+    LaunchedEffect(language) {
+        ttsManager.setLanguage(java.util.Locale(language))
+    }
+
     var showPinDialog by remember { mutableStateOf(false) }
     var showEditSheet by remember { mutableStateOf(false) }
     var itemToEdit by remember { mutableStateOf<LauncherItem?>(null) }
@@ -82,7 +123,7 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
             if (pages.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Button(onClick = { navController.navigate("settings") }) {
-                        Text("Ayarlara git ve sayfa ekle")
+                        Text(stringResource(R.string.go_to_settings_hint))
                     }
                 }
             } else {
@@ -99,6 +140,7 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
                         items(items.size) { index ->
                             val item = items[index]
                             GridItem(item, 
+                                isTtsEnabled = isTtsEnabled,
                                 badgeCount = when {
                                     item.packageName == "com.android.dialer" || item.packageName == "com.google.android.dialer" -> missedCalls
                                     item.packageName == "com.android.messaging" || item.packageName == "com.google.android.apps.messaging" -> unreadSms
@@ -156,7 +198,7 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Icon(androidx.compose.material.icons.Icons.Default.Settings, contentDescription = null, modifier = Modifier.size(40.dp))
-                        Text("AYARLAR", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.btn_settings), fontSize = 18.sp, fontWeight = FontWeight.Bold)
                     }
                 }
                 Button(
@@ -167,7 +209,7 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Icon(androidx.compose.material.icons.Icons.Default.Build, contentDescription = null, modifier = Modifier.size(40.dp))
-                        Text("ARAÇLAR", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.tools_title), fontSize = 18.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -177,16 +219,17 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun GridItem(item: LauncherItem, badgeCount: Int = 0, onClick: () -> Unit, onLongClick: () -> Unit) {
-    Box(modifier = Modifier.combinedClickable(onClick = onClick, onLongClick = onLongClick)) {
+fun GridItem(item: LauncherItem, isTtsEnabled: Boolean, badgeCount: Int = 0, onClick: () -> Unit, onLongClick: () -> Unit) {
+    Box(modifier = Modifier.combinedClickable(onClick = { /* handled by BigButton inner surface */ }, onLongClick = onLongClick)) {
         BigButton(
-            text = if (item.itemType == ItemType.EMPTY) "Ekle" else (item.customLabel ?: item.label ?: "Uygulama"),
+            text = if (item.itemType == ItemType.EMPTY) stringResource(R.string.add_btn) else (item.customLabel ?: item.label ?: stringResource(R.string.app_placeholder)),
             icon = if (item.itemType == ItemType.EMPTY) Icons.Default.Add else Icons.Default.Apps,
             backgroundColor = if (item.itemType == ItemType.EMPTY) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.primaryContainer,
             contentColor = if (item.itemType == ItemType.EMPTY) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onPrimaryContainer,
             badgeCount = badgeCount,
             customColor = item.customColor,
             customImageUri = item.customImageUri,
+            isTtsEnabled = isTtsEnabled,
             onClick = onClick
         )
     }

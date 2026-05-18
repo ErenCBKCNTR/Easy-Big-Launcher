@@ -16,6 +16,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.prusoft.easybiglauncher.ui.theme.AccessibilityLauncherTheme
 import com.prusoft.easybiglauncher.navigation.AppNavigation
+import com.prusoft.easybiglauncher.utils.TTSManager
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,5 +35,10 @@ class MainActivity : AppCompatActivity() {
 
     override fun onBackPressed() {
         // Launcher should not close
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        TTSManager.getInstance(this).shutdown()
     }
 }

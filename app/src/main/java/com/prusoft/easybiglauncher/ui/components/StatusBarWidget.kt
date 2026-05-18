@@ -25,6 +25,10 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+import android.provider.AlarmClock
+import android.content.Intent
+import androidx.compose.foundation.clickable
+
 @Composable
 fun StatusBarWidget() {
     val context = LocalContext.current
@@ -40,7 +44,15 @@ fun StatusBarWidget() {
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Column {
+        Column(modifier = Modifier.clickable {
+            try {
+                val intent = Intent(AlarmClock.ACTION_SHOW_ALARMS)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                context.startActivity(intent)
+            } catch (e: Exception) {
+                // Silent fail to prevent crash
+            }
+        }) {
             Text(text = time, style = MaterialTheme.typography.displayMedium, fontSize = 48.sp, modifier = Modifier.semantics { contentDescription = "Saat $time" })
             Text(text = date, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.semantics { contentDescription = "Tarih $date" })
         }
