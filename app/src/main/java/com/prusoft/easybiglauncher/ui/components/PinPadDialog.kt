@@ -156,10 +156,6 @@ fun PinPadDialog(
         }
     }
 }
-            }
-        }
-    }
-}
 
 @Composable
 fun PinButton(

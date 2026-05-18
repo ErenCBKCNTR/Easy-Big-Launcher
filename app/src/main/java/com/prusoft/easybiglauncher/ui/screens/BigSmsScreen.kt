@@ -99,36 +99,6 @@ fun BigSmsScreen(navController: NavController) {
             }
         }
     }
-    
-    // ... (rest of the dialogs)
-}
-
-private fun fetchSms(contentResolver: android.content.ContentResolver): List<SmsMessage> {
-    val smsList = mutableListOf<SmsMessage>()
-    val cursor = contentResolver.query(
-        Telephony.Sms.CONTENT_URI,
-        null,
-        null,
-        null,
-        Telephony.Sms.DATE + " DESC"
-    )
-
-    cursor?.use {
-        val addressIndex = it.getColumnIndex(Telephony.Sms.ADDRESS)
-        val bodyIndex = it.getColumnIndex(Telephony.Sms.BODY)
-        val personIndex = it.getColumnIndex(Telephony.Sms.PERSON)
-
-        var count = 0
-        while (it.moveToNext() && count < 30) { // Limit to 30 for performance
-            val address = it.getString(addressIndex) ?: "Bilinmeyen"
-            val body = it.getString(bodyIndex) ?: ""
-            // Not: Person ID ile isim çekmek için başka bir sorgu gerekebilir ama adres genellikle yeterlidir
-            smsList.add(SmsMessage(address, address, body))
-            count++
-        }
-    }
-    return smsList
-}
 
     if (showReplyDialog) {
         AlertDialog(
@@ -215,4 +185,31 @@ private fun fetchSms(contentResolver: android.content.ContentResolver): List<Sms
     }
 }
 
+private fun fetchSms(contentResolver: android.content.ContentResolver): List<SmsMessage> {
+    val smsList = mutableListOf<SmsMessage>()
+    val cursor = contentResolver.query(
+        Telephony.Sms.CONTENT_URI,
+        null,
+        null,
+        null,
+        Telephony.Sms.DATE + " DESC"
+    )
+
+    cursor?.use {
+        val addressIndex = it.getColumnIndex(Telephony.Sms.ADDRESS)
+        val bodyIndex = it.getColumnIndex(Telephony.Sms.BODY)
+        val personIndex = it.getColumnIndex(Telephony.Sms.PERSON)
+
+        var count = 0
+        while (it.moveToNext() && count < 30) {
+            val address = it.getString(addressIndex) ?: "Bilinmeyen"
+            val body = it.getString(bodyIndex) ?: ""
+            smsList.add(SmsMessage(address, address, body))
+            count++
+        }
+    }
+    return smsList
+}
+
 data class SmsMessage(val sender: String, val number: String, val text: String)
+
