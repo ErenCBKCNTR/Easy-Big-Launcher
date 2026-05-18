@@ -9,5 +9,6 @@ data class Reminder(
     val title: String,
     val timeInMillis: Long,
     val isActive: Boolean = true,
-    val type: String = "MEDICATION" // "MEDICATION" or "APPOINTMENT"
+    val type: String = "MEDICATION", // "MEDICATION" or "APPOINTMENT"
+    val imageUri: String? = null
 )

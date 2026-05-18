@@ -21,6 +21,8 @@ import com.prusoft.easybiglauncher.ui.screens.ManagePagesScreen
 import com.prusoft.easybiglauncher.ui.screens.BigDialerScreen
 import com.prusoft.easybiglauncher.ui.screens.BigSmsScreen
 import com.prusoft.easybiglauncher.ui.screens.RemindersScreen
+import com.prusoft.easybiglauncher.ui.screens.MagnifierScreen
+import com.prusoft.easybiglauncher.ui.screens.PanicSirenScreen
 
 @Composable
 fun AppNavigation(viewModel: LauncherViewModel = viewModel()) {
@@ -40,5 +42,7 @@ fun AppNavigation(viewModel: LauncherViewModel = viewModel()) {
         composable("dialer") { BigDialerScreen(navController) }
         composable("sms") { BigSmsScreen(navController) }
         composable("reminders") { RemindersScreen(navController, viewModel) }
+        composable("magnifier") { MagnifierScreen(navController) }
+        composable("siren") { PanicSirenScreen(navController) }
     }
 }

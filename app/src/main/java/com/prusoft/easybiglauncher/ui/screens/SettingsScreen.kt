@@ -178,6 +178,14 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
                     3 -> {
                         // SOS
                         Text(text = stringResource(R.string.sos_settings), style = MaterialTheme.typography.titleLarge)
+                        var isLowBatterySosEnabled by remember { mutableStateOf(sharedPref.getBoolean("low_battery_sos_enabled", false)) }
+                        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                            Text(stringResource(R.string.low_battery_sos), fontSize = 24.sp, modifier = Modifier.weight(1f))
+                            Switch(checked = isLowBatterySosEnabled, onCheckedChange = { 
+                                isLowBatterySosEnabled = it
+                                sharedPref.edit().putBoolean("low_battery_sos_enabled", it).apply() 
+                            })
+                        }
                         TextField(
                             value = sosNumber,
                             onValueChange = { sosNumber = it; sharedPref.edit().putString("sos_number", it).apply() },

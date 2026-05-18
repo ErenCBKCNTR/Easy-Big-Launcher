@@ -51,12 +51,23 @@ import androidx.activity.result.contract.ActivityResultContracts
 import android.content.pm.PackageManager
 import androidx.core.content.ContextCompat
 
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInWindow
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = viewModel()) {
     val context = LocalContext.current
     val sharedPref = remember { context.getSharedPreferences("sos_prefs", android.content.Context.MODE_PRIVATE) }
     var showContactsDisclosure by remember { mutableStateOf(false) }
+
+    // Drag and Drop state
+    var draggedItem by remember { mutableStateOf<LauncherItem?>(null) }
+    var currentDragPosition by remember { mutableStateOf(Offset.Zero) }
+    val itemPositions = remember { mutableMapOf<Int, androidx.compose.ui.layout.LayoutCoordinates>() }
     
     val contactsLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -238,12 +249,48 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
                         columns = GridCells.Fixed(page.columnCount),
                         contentPadding = PaddingValues(16.dp),
                         verticalArrangement = Arrangement.spacedBy(16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        modifier = Modifier.fillMaxSize()
                     ) {
                         items(items.size) { index ->
                             val item = items[index]
-                            GridItem(item, 
-                                isTtsEnabled = isTtsEnabled,
+                            Box(
+                                modifier = Modifier
+                                    .onGloballyPositioned { itemPositions[item.id] = it }
+                                    .pointerInput(item) {
+                                        detectDragGesturesAfterLongPress(
+                                            onDragStart = { currentDragPosition = it },
+                                            onDragEnd = {
+                                                val dropTarget = itemPositions.entries.find { (id, coords) ->
+                                                    if (id == item.id) return@find false
+                                                    val itemPos = itemPositions[item.id]?.positionInWindow() ?: Offset.Zero
+                                                    val absoluteTouchPos = itemPos + currentDragPosition
+                                                    
+                                                    val targetPos = coords.positionInWindow()
+                                                    val size = coords.size
+                                                    absoluteTouchPos.x >= targetPos.x && absoluteTouchPos.x <= targetPos.x + size.width &&
+                                                    absoluteTouchPos.y >= targetPos.y && absoluteTouchPos.y <= targetPos.y + size.height
+                                                }
+                                                
+                                                dropTarget?.let { entry ->
+                                                    val targetItem = items.find { it.id == entry.key }
+                                                    if (targetItem != null) {
+                                                        viewModel.swapItems(item, targetItem)
+                                                    }
+                                                }
+                                                draggedItem = null
+                                            },
+                                            onDragCancel = { draggedItem = null },
+                                            onDrag = { change, dragAmount ->
+                                                change.consume()
+                                                currentDragPosition += dragAmount
+                                                draggedItem = item
+                                            }
+                                        )
+                                    }
+                            ) {
+                                GridItem(item, 
+                                    isTtsEnabled = isTtsEnabled,
                                 badgeCount = when {
                                     item.packageName == "com.android.dialer" || item.packageName == "com.google.android.dialer" -> missedCalls
                                     item.packageName == "com.android.messaging" || item.packageName == "com.google.android.apps.messaging" -> unreadSms
@@ -347,12 +394,7 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
                         contentColor = Color.White,
                         isTtsEnabled = isTtsEnabled,
                         onClick = {
-                            if (isProtectionEnabled) {
-                                navDestination = "tools"
-                                showPinDialogForNav = true
-                            } else {
-                                navController.navigate("tools")
-                            }
+                            navController.navigate("tools")
                         }
                     )
                 }

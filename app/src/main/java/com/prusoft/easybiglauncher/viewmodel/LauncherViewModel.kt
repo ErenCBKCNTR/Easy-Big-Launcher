@@ -72,4 +72,15 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
             repository.updateItem(item.copy(itemType = ItemType.APP, packageName = pkgName, label = label))
         }
     }
+
+    fun swapItems(item1: LauncherItem, item2: LauncherItem) {
+        viewModelScope.launch {
+            // Swap slotIndex and pageId to move between slots/pages
+            val tempItem1 = item1.copy(slotIndex = item2.slotIndex, pageId = item2.pageId)
+            val tempItem2 = item2.copy(slotIndex = item1.slotIndex, pageId = item1.pageId)
+            
+            repository.updateItem(tempItem1)
+            repository.updateItem(tempItem2)
+        }
+    }
 }

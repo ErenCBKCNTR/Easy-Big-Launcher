@@ -76,81 +76,86 @@ fun PinPadDialog(
                     listOf("7", "8", "9")
                 )
                 
-                for (row in numbers) {
+                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    for (row in numbers) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            for (digit in row) {
+                                PinButton(digit, modifier = Modifier.weight(1f)) {
+                                    if (pin.length < 4) {
+                                        pin += digit
+                                        if (pin.length == 4) {
+                                            if (isSettingNewPin) {
+                                                if (isVerifying) {
+                                                    if (pin == firstEntry) {
+                                                        onPinEntered(pin)
+                                                    } else {
+                                                        error = "Şifreler eşleşmiyor!"
+                                                        pin = ""
+                                                        isVerifying = false
+                                                        firstEntry = ""
+                                                    }
+                                                } else {
+                                                    firstEntry = pin
+                                                    pin = ""
+                                                    isVerifying = true
+                                                    error = ""
+                                                }
+                                            } else {
+                                                onPinEntered(pin)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Bottom row: İptal, 0, Sil
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        for (digit in row) {
-                            PinButton(digit, modifier = Modifier.weight(1f)) {
-                                if (pin.length < 4) {
-                                    pin += digit
-                                    if (pin.length == 4) {
-                                        if (isSettingNewPin) {
-                                            if (isVerifying) {
-                                                if (pin == firstEntry) {
-                                                    onPinEntered(pin)
-                                                } else {
-                                                    error = "Şifreler eşleşmiyor!"
-                                                    pin = ""
-                                                    isVerifying = false
-                                                    firstEntry = ""
-                                                }
+                        PinButton("İPTAL", modifier = Modifier.weight(1f), isSpecial = true) {
+                            onPinDismiss()
+                        }
+                        PinButton("0", modifier = Modifier.weight(1f)) {
+                            if (pin.length < 4) {
+                                pin += "0"
+                                if (pin.length == 4) {
+                                    if (isSettingNewPin) {
+                                        if (isVerifying) {
+                                            if (pin == firstEntry) {
+                                                onPinEntered(pin)
                                             } else {
-                                                firstEntry = pin
+                                                error = "Şifreler eşleşmiyor!"
                                                 pin = ""
-                                                isVerifying = true
-                                                error = ""
+                                                isVerifying = false
+                                                firstEntry = ""
                                             }
                                         } else {
-                                            onPinEntered(pin)
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
-                
-                // Bottom row: İptal, 0, Sil
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    PinButton("İPTAL", modifier = Modifier.weight(1f), isSpecial = true) {
-                        onPinDismiss()
-                    }
-                    PinButton("0", modifier = Modifier.weight(1f)) {
-                        if (pin.length < 4) {
-                            pin += "0"
-                            if (pin.length == 4) {
-                                if (isSettingNewPin) {
-                                    if (isVerifying) {
-                                        if (pin == firstEntry) {
-                                            onPinEntered(pin)
-                                        } else {
-                                            error = "Şifreler eşleşmiyor!"
+                                            firstEntry = pin
                                             pin = ""
-                                            isVerifying = false
-                                            firstEntry = ""
+                                            isVerifying = true
+                                            error = ""
                                         }
                                     } else {
-                                        firstEntry = pin
-                                        pin = ""
-                                        isVerifying = true
-                                        error = ""
+                                        onPinEntered(pin)
                                     }
-                                } else {
-                                    onPinEntered(pin)
                                 }
                             }
                         }
-                    }
-                    PinButton("SİL", modifier = Modifier.weight(1f), isSpecial = true) {
-                        if (pin.isNotEmpty()) pin = pin.dropLast(1)
+                        PinButton("SİL", modifier = Modifier.weight(1f), isSpecial = true) {
+                            if (pin.isNotEmpty()) pin = pin.dropLast(1)
+                        }
                     }
                 }
+            }
+        }
+    }
+}
             }
         }
     }
@@ -165,14 +170,16 @@ fun PinButton(
 ) {
     FilledTonalButton(
         onClick = onClick,
-        modifier = modifier.height(80.dp),
+        modifier = modifier.height(90.dp).fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = if (isSpecial) ButtonDefaults.filledTonalButtonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant) else ButtonDefaults.filledTonalButtonColors()
     ) {
         Text(
             text = text,
-            fontSize = if (isSpecial) 18.sp else 32.sp,
-            fontWeight = FontWeight.Bold
+            fontSize = if (isSpecial) 22.sp else 36.sp,
+            fontWeight = FontWeight.Black,
+            maxLines = 1,
+            softWrap = false
         )
     }
 }

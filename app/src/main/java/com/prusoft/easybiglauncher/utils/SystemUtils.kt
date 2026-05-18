@@ -11,7 +11,44 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+import android.telephony.TelephonyManager
+import android.telephony.SignalStrength
+import android.telephony.TelephonyCallback
+import android.os.Build
+
 data class BatteryStatus(val percentage: Int, val isCharging: Boolean)
+
+@Composable
+fun rememberSignalStrength(context: Context): State<Int> {
+    val signalLevel = remember { mutableStateOf(0) }
+    val telephonyManager = remember { context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager }
+
+    DisposableEffect(context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val callback = object : TelephonyCallback(), TelephonyCallback.SignalStrengthsListener {
+                override fun onSignalStrengthsChanged(signalStrength: SignalStrength) {
+                    signalLevel.value = signalStrength.level
+                }
+            }
+            telephonyManager.registerTelephonyCallback(context.mainExecutor, callback)
+            onDispose { telephonyManager.unregisterTelephonyCallback(callback) }
+        } else {
+            val listener = object : android.telephony.PhoneStateListener() {
+                override fun onSignalStrengthsChanged(signalStrength: SignalStrength) {
+                    signalLevel.value = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        signalStrength.level
+                    } else {
+                        // Approximation for older versions if needed, but level is usually good
+                        0 // Default fallback
+                    }
+                }
+            }
+            telephonyManager.listen(listener, android.telephony.PhoneStateListener.LISTEN_SIGNAL_STRENGTHS)
+            onDispose { telephonyManager.listen(listener, android.telephony.PhoneStateListener.LISTEN_NONE) }
+        }
+    }
+    return signalLevel
+}
 
 @Composable
 fun rememberBatteryStatus(context: Context): State<BatteryStatus> {

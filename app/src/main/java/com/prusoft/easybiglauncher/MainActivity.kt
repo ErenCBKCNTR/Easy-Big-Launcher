@@ -14,6 +14,10 @@ import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import android.content.BroadcastReceiver
+import android.content.IntentFilter
+import com.prusoft.easybiglauncher.utils.BatteryMonitor
+import android.os.BatteryManager
 import com.prusoft.easybiglauncher.ui.theme.AccessibilityLauncherTheme
 import com.prusoft.easybiglauncher.navigation.AppNavigation
 import com.prusoft.easybiglauncher.utils.TTSManager
@@ -21,8 +25,15 @@ import android.content.ComponentCallbacks2
 import coil.imageLoader
 
 class MainActivity : AppCompatActivity() {
+    private val batteryReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            BatteryMonitor.checkAndAlert(context)
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        registerReceiver(batteryReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
         WindowCompat.setDecorFitsSystemWindows(window, false)
         WindowInsetsControllerCompat(window, window.decorView).let { controller ->
             controller.hide(WindowInsetsCompat.Type.systemBars())
@@ -49,6 +60,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+        unregisterReceiver(batteryReceiver)
         TTSManager.getInstance(this).shutdown()
     }
 }

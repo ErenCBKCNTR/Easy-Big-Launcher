@@ -77,4 +77,10 @@
     <string name="send">SEND</string>
     <string name="enter_number">Enter Number</string>
     <string name="enter_message">Enter Message</string>
+    <string name="ai_assistant">Yapay Zeka ile Konuş</string>
+    <string name="ai_not_found">Yapay Zeka uygulaması bulunamadı</string>
+    <string name="magnifier">Büyüteç</string>
+    <string name="panic_siren">Panik Sireni</string>
+    <string name="stop_siren">SİRENİ SUSTUR</string>
+    <string name="low_battery_sos">Düşük Pil Uyarısı SMS\'i</string>
 </resources>

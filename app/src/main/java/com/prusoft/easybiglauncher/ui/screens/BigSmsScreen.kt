@@ -22,6 +22,10 @@ import androidx.navigation.NavController
 import com.prusoft.easybiglauncher.R
 import com.prusoft.easybiglauncher.utils.NotificationTracker
 
+import android.provider.Telephony
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BigSmsScreen(navController: NavController) {
@@ -35,12 +39,15 @@ fun BigSmsScreen(navController: NavController) {
     var newMessageNumber by remember { mutableStateOf("") }
     var newMessageText by remember { mutableStateOf("") }
 
-    // Dummy messages for demonstration, ideally fetched from System ContentProvider
-    val messages = listOf(
-        SmsMessage("Ahmet", "5551234567", "Neredesin?"),
-        SmsMessage("Ayşe", "5559876543", "İlaçlarını aldın mı?"),
-        SmsMessage("Oğlum", "5550001122", "Akşam geleceğim.")
-    )
+    var messages by remember { mutableStateOf<List<SmsMessage>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(true) }
+
+    LaunchedEffect(Unit) {
+        messages = withContext(Dispatchers.IO) {
+            fetchSms(context.contentResolver)
+        }
+        isLoading = false
+    }
 
     Scaffold(
         topBar = {
@@ -66,26 +73,62 @@ fun BigSmsScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                items(messages) { msg ->
-                    Card(
-                        modifier = Modifier.fillMaxWidth().clickable {
-                            selectedContact = msg.sender
-                            selectedNumber = msg.number
-                            showReplyDialog = true
-                        },
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-                    ) {
-                        Column(modifier = Modifier.padding(20.dp)) {
-                            Text(text = msg.sender, fontSize = 26.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.primary)
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(text = msg.text, fontSize = 22.sp)
+            if (isLoading) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            } else {
+                LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    items(messages) { msg ->
+                        Card(
+                            modifier = Modifier.fillMaxWidth().clickable {
+                                selectedContact = msg.sender
+                                selectedNumber = msg.number
+                                showReplyDialog = true
+                            },
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                        ) {
+                            Column(modifier = Modifier.padding(20.dp)) {
+                                Text(text = msg.sender, fontSize = 26.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.primary)
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(text = msg.text, fontSize = 22.sp)
+                            }
                         }
                     }
                 }
             }
         }
     }
+    
+    // ... (rest of the dialogs)
+}
+
+private fun fetchSms(contentResolver: android.content.ContentResolver): List<SmsMessage> {
+    val smsList = mutableListOf<SmsMessage>()
+    val cursor = contentResolver.query(
+        Telephony.Sms.CONTENT_URI,
+        null,
+        null,
+        null,
+        Telephony.Sms.DATE + " DESC"
+    )
+
+    cursor?.use {
+        val addressIndex = it.getColumnIndex(Telephony.Sms.ADDRESS)
+        val bodyIndex = it.getColumnIndex(Telephony.Sms.BODY)
+        val personIndex = it.getColumnIndex(Telephony.Sms.PERSON)
+
+        var count = 0
+        while (it.moveToNext() && count < 30) { // Limit to 30 for performance
+            val address = it.getString(addressIndex) ?: "Bilinmeyen"
+            val body = it.getString(bodyIndex) ?: ""
+            // Not: Person ID ile isim çekmek için başka bir sorgu gerekebilir ama adres genellikle yeterlidir
+            smsList.add(SmsMessage(address, address, body))
+            count++
+        }
+    }
+    return smsList
+}
 
     if (showReplyDialog) {
         AlertDialog(

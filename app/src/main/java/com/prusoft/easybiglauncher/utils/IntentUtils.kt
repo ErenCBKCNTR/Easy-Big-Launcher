@@ -63,4 +63,16 @@ object IntentUtils {
             Toast.makeText(context, "Mesaj gönderilemedi.", Toast.LENGTH_SHORT).show()
         }
     }
+
+    fun callWhatsApp(context: Context, phoneNumber: String, video: Boolean) {
+        try {
+            val intent = Intent(Intent.ACTION_VIEW)
+            val url = "https://wa.me/$phoneNumber"
+            intent.data = Uri.parse(url)
+            intent.setPackage("com.whatsapp")
+            context.startActivity(intent)
+        } catch (e: Exception) {
+            Toast.makeText(context, "WhatsApp açılamadı.", Toast.LENGTH_SHORT).show()
+        }
+    }
 }

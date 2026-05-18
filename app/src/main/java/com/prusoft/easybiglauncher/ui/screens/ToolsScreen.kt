@@ -144,13 +144,56 @@ fun ToolsScreen(navController: NavController, viewModel: LauncherViewModel = vie
             }
             item {
                 ToolButton(
-                    text = "HATIRLATICI / REMINDERS", // Localized string would be better
+                    text = stringResource(R.string.reminders_title),
                     icon = Icons.Default.Alarm,
                     color = Color(0xFF9C27B0), // Purple
                     contentColor = Color.White,
                     isTtsEnabled = isTtsEnabled,
                     onClick = {
                         navController.navigate("reminders")
+                    }
+                )
+            }
+            item {
+                ToolButton(
+                    text = stringResource(R.string.magnifier),
+                    icon = Icons.Default.ZoomIn,
+                    color = Color(0xFF009688), // Teal
+                    contentColor = Color.White,
+                    isTtsEnabled = isTtsEnabled,
+                    onClick = {
+                        navController.navigate("magnifier")
+                    }
+                )
+            }
+            item {
+                ToolButton(
+                    text = stringResource(R.string.panic_siren),
+                    icon = Icons.Default.Warning,
+                    color = Color(0xFFF44336), // Red
+                    contentColor = Color.White,
+                    isTtsEnabled = isTtsEnabled,
+                    onClick = {
+                        navController.navigate("siren")
+                    }
+                )
+            }
+            item {
+                val aiAnn = stringResource(R.string.ai_assistant)
+                ToolButton(
+                    text = stringResource(R.string.ai_assistant),
+                    icon = Icons.Default.SmartToy,
+                    color = Color(0xFF673AB7), // Deep Purple
+                    contentColor = Color.White,
+                    isTtsEnabled = isTtsEnabled,
+                    onClick = {
+                        val intent = Intent(Intent.ACTION_VOICE_COMMAND)
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        try {
+                            context.startActivity(intent)
+                        } catch (e: Exception) {
+                            if (isTtsEnabled) ttsManager.speak(context.getString(R.string.ai_not_found))
+                        }
                     }
                 )
             }

@@ -24,6 +24,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.core.content.ContextCompat
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -43,7 +46,7 @@ fun CallHistoryScreen() {
 
     LaunchedEffect(Unit) {
         callLogs = withContext(Dispatchers.IO) {
-            fetchCallLogs(context.contentResolver)
+            fetchCallLogs(context.contentResolver, context)
         }
         isLoading = false
     }
@@ -130,36 +133,43 @@ private fun getFormattedDate(time: Long): String {
     return DateUtils.getRelativeTimeSpanString(time, System.currentTimeMillis(), DateUtils.SECOND_IN_MILLIS).toString()
 }
 
-private fun fetchCallLogs(contentResolver: ContentResolver): List<CallLogInfo> {
+private fun fetchCallLogs(contentResolver: ContentResolver, context: android.content.Context): List<CallLogInfo> {
+    if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CALL_LOG) != PackageManager.PERMISSION_GRANTED) {
+        return emptyList()
+    }
     val logs = mutableListOf<CallLogInfo>()
-    val cursor = contentResolver.query(
-        CallLog.Calls.CONTENT_URI,
-        null,
-        null,
-        null,
-        CallLog.Calls.DATE + " DESC"
-    )
+    try {
+        val cursor = contentResolver.query(
+            CallLog.Calls.CONTENT_URI,
+            null,
+            null,
+            null,
+            CallLog.Calls.DATE + " DESC"
+        )
 
-    cursor?.use {
-        val numberIndex = it.getColumnIndex(CallLog.Calls.NUMBER)
-        val nameIndex = it.getColumnIndex(CallLog.Calls.CACHED_NAME)
-        val typeIndex = it.getColumnIndex(CallLog.Calls.TYPE)
-        val dateIndex = it.getColumnIndex(CallLog.Calls.DATE)
-        val durationIndex = it.getColumnIndex(CallLog.Calls.DURATION)
+        cursor?.use {
+            val numberIndex = it.getColumnIndex(CallLog.Calls.NUMBER)
+            val nameIndex = it.getColumnIndex(CallLog.Calls.CACHED_NAME)
+            val typeIndex = it.getColumnIndex(CallLog.Calls.TYPE)
+            val dateIndex = it.getColumnIndex(CallLog.Calls.DATE)
+            val durationIndex = it.getColumnIndex(CallLog.Calls.DURATION)
 
-        var count = 0
-        while (it.moveToNext() && count < 50) {
-            logs.add(
-                CallLogInfo(
-                    number = it.getString(numberIndex),
-                    name = it.getString(nameIndex),
-                    type = it.getInt(typeIndex),
-                    date = it.getLong(dateIndex),
-                    duration = it.getString(durationIndex)
+            var count = 0
+            while (it.moveToNext() && count < 50) {
+                logs.add(
+                    CallLogInfo(
+                        number = it.getString(numberIndex) ?: "Unknown",
+                        name = it.getString(nameIndex),
+                        type = it.getInt(typeIndex),
+                        date = it.getLong(dateIndex),
+                        duration = it.getString(durationIndex) ?: "0"
+                    )
                 )
-            )
-            count++
+                count++
+            }
         }
+    } catch (e: Exception) {
+        e.printStackTrace()
     }
     return logs
 }
