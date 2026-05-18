@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -240,7 +241,7 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
                                 keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number)
                             )
                             IconButton(onClick = { contactPickerLauncher.launch(null) }) {
-                                Icon(androidx.compose.material.icons.Icons.Default.Person, contentDescription = "Rehberden Seç", modifier = Modifier.size(48.dp))
+                                Icon(Icons.Default.Person, contentDescription = "Rehberden Seç", modifier = Modifier.size(48.dp))
                             }
                         }
                         
