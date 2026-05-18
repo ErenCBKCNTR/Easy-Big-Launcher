@@ -55,6 +55,7 @@ import androidx.core.content.ContextCompat
 @Composable
 fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = viewModel()) {
     val context = LocalContext.current
+    val sharedPref = remember { context.getSharedPreferences("sos_prefs", android.content.Context.MODE_PRIVATE) }
     var showContactsDisclosure by remember { mutableStateOf(false) }
     
     val contactsLauncher = rememberLauncherForActivityResult(

@@ -65,7 +65,7 @@ fun BigContactsScreen() {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            placeholder = { Text(stringResource(R.string.search_hint), color = Color.LightGray, fontSize = 20.sp) },
+            placeholder = { Text(stringResource(R.string.search_contacts_hint), color = Color.LightGray, fontSize = 20.sp) },
             leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color.White) },
             singleLine = true,
             textStyle = androidx.compose.ui.text.TextStyle(color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold),

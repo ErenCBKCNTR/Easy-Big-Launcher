@@ -13,6 +13,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Person
 
 import androidx.compose.ui.layout.ContentScale
 import coil.compose.AsyncImage
@@ -47,7 +50,7 @@ fun BigButton(
         else -> backgroundColor
     }
     
-    val finalIcon = if (isContact) androidx.compose.material.icons.Icons.Default.Person else icon
+    val finalIcon = if (isContact) Icons.Default.Person else icon
     
     Box(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
         Surface(
