@@ -37,6 +37,22 @@ class TTSManager private constructor(context: Context) : TextToSpeech.OnInitList
         }
     }
 
+    fun setGender(isFemale: Boolean) {
+        if (!isInitialized) return
+        
+        val voices = tts?.voices
+        val selectedVoice = voices?.find { 
+            if (isFemale) it.name.contains("female", ignoreCase = true) 
+            else it.name.contains("male", ignoreCase = true) 
+        }
+        
+        if (selectedVoice != null) {
+            tts?.setVoice(selectedVoice)
+        } else {
+            tts?.setPitch(if (isFemale) 1.2f else 0.7f)
+        }
+    }
+
     fun speak(text: String) {
         if (isInitialized) {
             tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)

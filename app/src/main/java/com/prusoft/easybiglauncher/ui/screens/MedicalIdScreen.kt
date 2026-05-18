@@ -5,6 +5,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.runtime.DisposableEffect
+import android.view.WindowManager
+import android.app.Activity
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -21,6 +25,15 @@ import com.prusoft.easybiglauncher.viewmodel.LauncherViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MedicalIdScreen(navController: NavController, viewModel: LauncherViewModel = viewModel()) {
+    val context = LocalContext.current
+    DisposableEffect(Unit) {
+        val window = (context as? Activity)?.window
+        window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        onDispose {
+            window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        }
+    }
+    
     val medName by viewModel.securityRepository.medName.collectAsState(initial = "")
     val medSurname by viewModel.securityRepository.medSurname.collectAsState(initial = "")
     val medAge by viewModel.securityRepository.medAge.collectAsState(initial = "")

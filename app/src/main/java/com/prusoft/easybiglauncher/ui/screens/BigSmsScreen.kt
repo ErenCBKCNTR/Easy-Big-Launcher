@@ -106,7 +106,13 @@ fun BigSmsScreen(navController: NavController, viewModel: com.prusoft.easybiglau
                     onValueChange = { replyText = it },
                     label = { Text("Cevabınız...") },
                     modifier = Modifier.fillMaxWidth().height(120.dp),
-                    textStyle = LocalTextStyle.current.copy(fontSize = 24.sp)
+                    textStyle = LocalTextStyle.current.copy(fontSize = 24.sp),
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color.White,
+                        focusedTextColor = Color.Black,
+                        unfocusedTextColor = Color.Black
+                    )
                 )
                 
                 Spacer(modifier = Modifier.height(16.dp))

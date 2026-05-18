@@ -150,6 +150,17 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
                         
                         Divider()
                         Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                            var isFemale by remember { mutableStateOf(sharedPref.getBoolean("is_female", true)) }
+                            val ttsManager = remember { com.prusoft.easybiglauncher.utils.TTSManager.getInstance(context) }
+                            Text("Ses Tipi (Erkek/Kadın)", fontSize = 24.sp, modifier = Modifier.weight(1f))
+                            Switch(checked = isFemale, onCheckedChange = { 
+                                isFemale = it
+                                sharedPref.edit().putBoolean("is_female", it).apply()
+                                ttsManager.setGender(it)
+                            })
+                        }
+                        Divider()
+                        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                             Text(stringResource(R.string.voice_feedback), fontSize = 24.sp, modifier = Modifier.weight(1f))
                             Switch(checked = isTtsEnabled, onCheckedChange = { 
                                 scope.launch { viewModel.securityRepository.setTtsEnabled(it) }

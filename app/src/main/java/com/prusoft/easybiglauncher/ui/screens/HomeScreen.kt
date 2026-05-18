@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Call
+import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.MedicalInformation
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -398,11 +399,24 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
 
 @Composable
 fun GridItem(item: LauncherItem, isTtsEnabled: Boolean, badgeCount: Int = 0, onClick: () -> Unit, onLongClick: () -> Unit) {
+    val isPhone = item.packageName == "com.android.dialer" || item.packageName == "com.google.android.dialer"
+    val isSms = item.packageName == "com.android.messaging" || item.packageName == "com.google.android.apps.messaging"
+    
     BigButton(
         text = if (item.itemType == ItemType.EMPTY) stringResource(R.string.add_btn) else (item.customLabel ?: item.label ?: stringResource(R.string.app_placeholder)),
-        icon = if (item.itemType == ItemType.EMPTY) Icons.Default.Add else Icons.Default.Apps,
-        backgroundColor = if (item.itemType == ItemType.EMPTY) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.primaryContainer,
-        contentColor = if (item.itemType == ItemType.EMPTY) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onPrimaryContainer,
+        icon = when {
+            item.itemType == ItemType.EMPTY -> Icons.Default.Add
+            isPhone -> Icons.Default.Call
+            isSms -> Icons.Default.Email
+            else -> Icons.Default.Apps
+        },
+        backgroundColor = when {
+            item.itemType == ItemType.EMPTY -> MaterialTheme.colorScheme.surfaceVariant
+            isPhone -> Color.Green
+            isSms -> Color.Blue
+            else -> MaterialTheme.colorScheme.primaryContainer
+        },
+        contentColor = if (item.itemType == ItemType.EMPTY) MaterialTheme.colorScheme.onSurfaceVariant else Color.White,
         badgeCount = badgeCount,
         customColor = item.customColor,
         customImageUri = item.customImageUri,

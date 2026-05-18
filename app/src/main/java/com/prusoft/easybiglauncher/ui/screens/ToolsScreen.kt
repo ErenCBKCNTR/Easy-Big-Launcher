@@ -187,29 +187,25 @@ fun ToolsScreen(navController: NavController, viewModel: LauncherViewModel = vie
                     contentColor = Color.White,
                     isTtsEnabled = isTtsEnabled,
                     onClick = {
-                        val intent = Intent(Intent.ACTION_VOICE_COMMAND).apply {
-                            setPackage("com.google.android.googlequicksearchbox")
-                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                        }
                         try {
-                            context.startActivity(intent)
+                            val geminiIntent = context.packageManager.getLaunchIntentForPackage("com.google.android.apps.bard")
+                            if (geminiIntent != null) {
+                                geminiIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                context.startActivity(geminiIntent)
+                            } else {
+                                throw Exception("Gemini not installed")
+                            }
                         } catch (e: Exception) {
+                            val intent = Intent(Intent.ACTION_VOICE_COMMAND).apply {
+                                setPackage("com.google.android.googlequicksearchbox")
+                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                            }
                             try {
-                                val bardIntent = Intent(Intent.ACTION_MAIN).apply {
-                                    setPackage("com.google.android.apps.bard")
-                                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                                }
-                                context.startActivity(bardIntent)
+                                context.startActivity(intent)
                             } catch (e2: Exception) {
-                                try {
-                                    val fallbackIntent = Intent(Intent.ACTION_VOICE_COMMAND)
-                                    fallbackIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                    context.startActivity(fallbackIntent)
-                                } catch (e3: Exception) {
-                                    val playStoreIntent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse("market://details?id=com.google.android.googlequicksearchbox"))
-                                    playStoreIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                    context.startActivity(playStoreIntent)
-                                }
+                                val playStoreIntent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse("market://details?id=com.google.android.apps.bard"))
+                                playStoreIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                context.startActivity(playStoreIntent)
                             }
                         }
                     }

@@ -27,6 +27,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.prusoft.easybiglauncher.R
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.gestures.detectTapGestures
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -146,7 +150,12 @@ fun DialerContent(context: Context) {
                 onClick = { if (number.isNotEmpty()) number = number.dropLast(1) },
                 modifier = Modifier
                     .weight(1f)
-                    .height(90.dp),
+                    .height(90.dp)
+                    .pointerInput(Unit) {
+                        detectTapGestures(
+                            onLongPress = { number = "" }
+                        )
+                    },
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Gray),
                 shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
             ) {
@@ -191,8 +200,12 @@ fun DialerContent(context: Context) {
 
 @Composable
 fun DialerButton(text: String, onClick: () -> Unit) {
+    val haptic = LocalHapticFeedback.current
     Button(
-        onClick = onClick,
+        onClick = {
+            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+            onClick()
+        },
         modifier = Modifier.height(100.dp),
         shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
         colors = ButtonDefaults.buttonColors(
