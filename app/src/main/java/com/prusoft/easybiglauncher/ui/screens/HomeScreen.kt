@@ -332,7 +332,7 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
                                         }
                                     }
                                 }
-                            )
+                            }
                         }
                     }
                 }
