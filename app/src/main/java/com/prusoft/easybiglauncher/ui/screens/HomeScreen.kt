@@ -37,6 +37,7 @@ import androidx.compose.foundation.combinedClickable
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = viewModel()) {
+    val context = LocalContext.current
     val pages by viewModel.pages.collectAsState(initial = emptyList())
     val pagerState = rememberPagerState(pageCount = { pages.size })
     val missedCalls by NotificationTracker.missedCalls.collectAsState()

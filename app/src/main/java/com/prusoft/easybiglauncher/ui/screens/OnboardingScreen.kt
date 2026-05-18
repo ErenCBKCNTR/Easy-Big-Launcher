@@ -32,22 +32,24 @@ fun OnboardingScreen(navController: NavController, viewModel: LauncherViewModel 
             modifier = Modifier
                 .fillMaxSize()
                 .padding(24.dp),
-            verticalArrangement = Arrangement.SpaceEvenly,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Spacer(modifier = Modifier.height(40.dp))
             Text(
                 text = "Hoşgeldiniz\nWelcome",
                 style = MaterialTheme.typography.displayLarge.copy(
-                    fontSize = 48.sp,
+                    fontSize = 54.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White,
                     textAlign = TextAlign.Center
                 )
             )
 
+            Spacer(modifier = Modifier.weight(1f))
+
             Column(
                 modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(24.dp)
+                verticalArrangement = Arrangement.spacedBy(32.dp)
             ) {
                 LanguageButton(
                     text = "TÜRKÇE",
@@ -65,6 +67,8 @@ fun OnboardingScreen(navController: NavController, viewModel: LauncherViewModel 
                 )
             }
 
+            Spacer(modifier = Modifier.weight(1f))
+
             Button(
                 onClick = {
                     scope.launch {
@@ -74,11 +78,13 @@ fun OnboardingScreen(navController: NavController, viewModel: LauncherViewModel 
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(80.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+                    .height(90.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
             ) {
-                Text("BAŞLA / START", fontSize = 24.sp)
+                Text("BAŞLA / START", fontSize = 28.sp, fontWeight = FontWeight.Bold)
             }
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }
