@@ -1,6 +1,7 @@
 package com.prusoft.easybiglauncher
 
 import android.app.Application
+import com.prusoft.easybiglauncher.BuildConfig
 import timber.log.Timber
 
 class App : Application() {

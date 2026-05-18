@@ -9,6 +9,7 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,6 +23,7 @@ import com.prusoft.easybiglauncher.viewmodel.LauncherViewModel
 import com.prusoft.easybiglauncher.ui.components.PinPadDialog
 import com.prusoft.easybiglauncher.ui.components.StatusBarWidget
 import com.prusoft.easybiglauncher.ui.components.ButtonEditorSheet
+import com.prusoft.easybiglauncher.components.BigButton
 import com.prusoft.easybiglauncher.utils.NotificationTracker
 import androidx.compose.foundation.combinedClickable
 
@@ -38,6 +40,7 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
     var showPinDialog by remember { mutableStateOf(false) }
     var showEditSheet by remember { mutableStateOf(false) }
     var itemToEdit by remember { mutableStateOf<LauncherItem?>(null) }
+    val scope = rememberCoroutineScope()
 
     if (showPinDialog && itemToEdit != null) {
         PinPadDialog(
@@ -55,7 +58,9 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
         ButtonEditorSheet(
             item = itemToEdit!!,
             onSave = { label, color, image ->
-                viewModel.repository.updateItem(itemToEdit!!.copy(customLabel = label, customColor = color, customImageUri = image))
+                scope.launch {
+                    viewModel.repository.updateItem(itemToEdit!!.copy(customLabel = label, customColor = color, customImageUri = image))
+                }
                 showEditSheet = false
             },
             onDismiss = { showEditSheet = false }

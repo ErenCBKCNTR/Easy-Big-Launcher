@@ -25,8 +25,8 @@ data class LauncherItem(
     val packageName: String?,
     val label: String?,
     val iconUri: String?,
-    val extraData: String?, // Store phone number for contacts
-    val customLabel: String?,
-    val customColor: String?,
-    val customImageUri: String?
+    val extraData: String? = null,
+    val customLabel: String? = null,
+    val customColor: String? = null,
+    val customImageUri: String? = null
 )
