@@ -1,4 +1,4 @@
-package com.accessibility.launcher
+package com.prusoft.easybiglauncher
 
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
@@ -6,9 +6,9 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.assertIsDisplayed
 import org.junit.Rule
 import org.junit.Test
-import com.accessibility.launcher.ui.screens.SettingsScreen
+import com.prusoft.easybiglauncher.ui.screens.SettingsScreen
 import androidx.navigation.compose.rememberNavController
-import com.accessibility.launcher.ui.theme.AccessibilityLauncherTheme
+import com.prusoft.easybiglauncher.ui.theme.AccessibilityLauncherTheme
 
 class LanguageSwitchTest {
     @get:Rule
