@@ -52,12 +52,12 @@ fun ManagePagesScreen(navController: NavController, viewModel: LauncherViewModel
                     ) {
                         Column {
                             Text(
-                                text = "Sayfa ${page.pageOrder + 1}",
+                                text = "${stringResource(R.string.page_label)} ${page.pageOrder + 1}",
                                 fontSize = 24.sp,
                                 fontWeight = FontWeight.Bold
                             )
                             Text(
-                                text = "${page.rowCount}x${page.columnCount} Izgara",
+                                text = stringResource(R.string.grid_label, page.rowCount, page.columnCount),
                                 fontSize = 18.sp
                             )
                         }

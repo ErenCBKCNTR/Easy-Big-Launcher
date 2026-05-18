@@ -57,4 +57,11 @@
     <string name="battery_optimization_desc">SOS ve bildirimlerin arka planda sorunsuz çalışması için bu ayar kritiktir.</string>
     <string name="battery_protection_active">Koruma Aktif</string>
     <string name="battery_protection_inactive">Korumayı Etkinleştir</string>
+    <string name="add_app">Uygulama Ekle</string>
+    <string name="add_contact">Kişi Ekle</string>
+    <string name="cancel">İptal</string>
+    <string name="notification_summary_title">Bildirimler</string>
+    <string name="page_label">Sayfa</string>
+    <string name="grid_label">%1$dx%2$d Izgara</string>
+    <string name="no_notifications">Yeni bildirim yok</string>
 </resources>

@@ -90,10 +90,49 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
     var showPinDialog by remember { mutableStateOf(false) }
     var showEditSheet by remember { mutableStateOf(false) }
     var itemToEdit by remember { mutableStateOf<LauncherItem?>(null) }
+    var showAddSlotDialog by remember { mutableStateOf(false) }
+    var slotToAssign by remember { mutableStateOf<LauncherItem?>(null) }
     val scope = rememberCoroutineScope()
 
     BackHandler {
         // Do nothing to prevent exiting the launcher via back button
+    }
+
+    if (showAddSlotDialog && slotToAssign != null) {
+        AlertDialog(
+            onDismissRequest = { showAddSlotDialog = false },
+            title = { Text(stringResource(R.string.add_btn), fontSize = 28.sp, fontWeight = FontWeight.Bold) },
+            text = { Text("Lütfen eklemek istediğiniz türü seçin.", fontSize = 20.sp) }, // TODO: Localize correctly
+            confirmButton = {
+                Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    Button(
+                        onClick = {
+                            showAddSlotDialog = false
+                            viewModel.setPendingAssignmentItem(slotToAssign)
+                            navController.navigate("all_apps")
+                        },
+                        modifier = Modifier.fillMaxWidth().height(80.dp),
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
+                    ) {
+                        Text(stringResource(R.string.add_app), fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                    }
+                    Button(
+                        onClick = {
+                            showAddSlotDialog = false
+                            // TODO: Implement contact selection
+                        },
+                        modifier = Modifier.fillMaxWidth().height(80.dp),
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+                    ) {
+                        Text(stringResource(R.string.add_contact), fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                    }
+                    TextButton(onClick = { showAddSlotDialog = false }, modifier = Modifier.align(Alignment.CenterHorizontally)) {
+                        Text(stringResource(R.string.cancel), fontSize = 20.sp)
+                    }
+                }
+            }
+        )
     }
 
     if (showPinDialog && itemToEdit != null) {
@@ -154,8 +193,8 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
                                 onClick = {
                                     if (item.itemType == ItemType.EMPTY) {
                                         if (!isProtectionEnabled) {
-                                            viewModel.setPendingAssignmentItem(item)
-                                            navController.navigate("all_apps")
+                                            slotToAssign = item
+                                            showAddSlotDialog = true
                                         }
                                     } else {
                                         item.packageName?.let { pkg ->

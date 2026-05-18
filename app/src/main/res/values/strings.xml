@@ -57,4 +57,11 @@
     <string name="battery_optimization_desc">This is critical for SOS and notifications to work reliably in the background.</string>
     <string name="battery_protection_active">Protection Active</string>
     <string name="battery_protection_inactive">Enable Protection</string>
+    <string name="add_app">Add App</string>
+    <string name="add_contact">Add Contact</string>
+    <string name="cancel">Cancel</string>
+    <string name="notification_summary_title">Notifications</string>
+    <string name="page_label">Page</string>
+    <string name="grid_label">%1$dx%2$d Grid</string>
+    <string name="no_notifications">No new notifications</string>
 </resources>

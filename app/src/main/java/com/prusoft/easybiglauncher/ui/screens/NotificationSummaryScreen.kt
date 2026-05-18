@@ -54,7 +54,7 @@ fun NotificationSummaryScreen(navController: NavController, viewModel: LauncherV
             
             if (unreadSms > 0) {
                 item {
-                    val smsSummaryText = "${unreadSms} yeni mesaj" // Use a localized string if possible
+                    val smsSummaryText = "${unreadSms} ${stringResource(R.string.btn_messages)}" 
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -77,7 +77,7 @@ fun NotificationSummaryScreen(navController: NavController, viewModel: LauncherV
             if (missedCalls == 0 && unreadSms == 0) {
                 item {
                     Text(
-                        text = "Yeni bildirim yok",
+                        text = stringResource(R.string.no_notifications),
                         modifier = Modifier.padding(16.dp),
                         style = MaterialTheme.typography.bodyLarge
                     )
