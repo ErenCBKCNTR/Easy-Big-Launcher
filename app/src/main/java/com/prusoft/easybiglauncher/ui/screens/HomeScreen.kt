@@ -338,6 +338,7 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
                 }
             }
         }
+        }
 
         // Bottom Navigation Bar with Huge Buttons
         Surface(
