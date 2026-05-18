@@ -28,8 +28,12 @@ import android.Manifest
 import android.content.pm.PackageManager
 import androidx.core.content.ContextCompat
 import androidx.activity.compose.rememberLauncherForActivityResult
+import com.prusoft.easybiglauncher.R
+import com.prusoft.easybiglauncher.utils.FavoritesUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+
+import androidx.compose.ui.res.stringResource
 
 data class CallLogInfo(
     val number: String,
@@ -45,6 +49,9 @@ fun CallHistoryScreen() {
     var callLogs by remember { mutableStateOf<List<CallLogInfo>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var hasPermission by remember { mutableStateOf(ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CALL_LOG) == PackageManager.PERMISSION_GRANTED) }
+
+    var favoriteContactToAdd by remember { mutableStateOf<CallLogInfo?>(null) }
+    var showClearHistoryDialog by remember { mutableStateOf(false) }
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = androidx.activity.result.contract.ActivityResultContracts.RequestPermission()
@@ -75,33 +82,113 @@ fun CallHistoryScreen() {
     } else if (!hasPermission) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Button(onClick = { permissionLauncher.launch(Manifest.permission.READ_CALL_LOG) }) {
-                Text("Erişim İzni Ver (Call Log)")
+                Text(stringResource(R.string.grant_permission_call_log))
             }
         }
-    } else if (callLogs.isEmpty()) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("Çağrı geçmişi boş.", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.Gray)
-        }
     } else {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            items(callLogs) { log ->
-                CallLogRow(log) {
-                    val intent = Intent(Intent.ACTION_CALL).apply {
-                        data = Uri.parse("tel:${log.number}")
+        Column(modifier = Modifier.fillMaxSize()) {
+            if (callLogs.isNotEmpty()) {
+                Button(
+                    onClick = { showClearHistoryDialog = true },
+                    modifier = Modifier.fillMaxWidth().padding(16.dp).height(70.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red, contentColor = Color.White)
+                ) {
+                    Text(stringResource(R.string.clear_history), fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                }
+
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(callLogs) { log ->
+                        CallLogRow(
+                            log = log, 
+                            onClick = {
+                                val intent = Intent(Intent.ACTION_CALL).apply {
+                                    data = Uri.parse("tel:${log.number}")
+                                }
+                                try {
+                                    context.startActivity(intent)
+                                } catch (e: Exception) {
+                                    val dialIntent = Intent(Intent.ACTION_DIAL).apply {
+                                        data = Uri.parse("tel:${log.number}")
+                                    }
+                                    context.startActivity(dialIntent)
+                                }
+                            }, 
+                            onLongClick = {
+                                favoriteContactToAdd = log
+                            }
+                        )
                     }
-                    context.startActivity(intent)
+                }
+            } else {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(stringResource(R.string.history_empty), fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.Gray)
                 }
             }
         }
     }
+
+    if (favoriteContactToAdd != null) {
+        AlertDialog(
+            onDismissRequest = { favoriteContactToAdd = null },
+            title = { Text(stringResource(R.string.add_to_favorites), fontSize = 24.sp, fontWeight = FontWeight.Bold) },
+            text = { Text(stringResource(R.string.add_to_favorites_desc, favoriteContactToAdd!!.name ?: favoriteContactToAdd!!.number), fontSize = 20.sp) },
+            confirmButton = {
+                Button(onClick = {
+                    favoriteContactToAdd?.let {
+                        FavoritesUtils.addFavorite(context, it.name ?: it.number, it.number)
+                    }
+                    favoriteContactToAdd = null
+                }) {
+                    Text(stringResource(R.string.yes), fontSize = 20.sp)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { favoriteContactToAdd = null }) {
+                    Text(stringResource(R.string.no), fontSize = 20.sp)
+                }
+            }
+        )
+    }
+
+    if (showClearHistoryDialog) {
+        AlertDialog(
+            onDismissRequest = { showClearHistoryDialog = false },
+            title = { Text(stringResource(R.string.clear_history_title), fontSize = 24.sp, fontWeight = FontWeight.Bold) },
+            text = { Text(stringResource(R.string.clear_history_confirm), fontSize = 20.sp) },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        try {
+                            if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_CALL_LOG) == PackageManager.PERMISSION_GRANTED) {
+                                context.contentResolver.delete(CallLog.Calls.CONTENT_URI, null, null)
+                                callLogs = emptyList()
+                            }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+                        showClearHistoryDialog = false
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                ) {
+                    Text(stringResource(R.string.yes), fontSize = 20.sp)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showClearHistoryDialog = false }) {
+                    Text(stringResource(R.string.no), fontSize = 20.sp)
+                }
+            }
+        )
+    }
 }
 
 @Composable
-fun CallLogRow(log: CallLogInfo, onClick: () -> Unit) {
+fun CallLogRow(log: CallLogInfo, onClick: () -> Unit, onLongClick: () -> Unit = {}) {
     val backgroundColor = if (log.type == CallLog.Calls.MISSED_TYPE) Color(0xFFFFEBEE) else MaterialTheme.colorScheme.surfaceVariant
     val icon = when (log.type) {
         CallLog.Calls.INCOMING_TYPE -> Icons.Default.CallReceived
@@ -119,7 +206,12 @@ fun CallLogRow(log: CallLogInfo, onClick: () -> Unit) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick),
+            .androidx.compose.ui.input.pointer.pointerInput(Unit) {
+                androidx.compose.foundation.gestures.detectTapGestures(
+                    onLongPress = { onLongClick() },
+                    onTap = { onClick() }
+                )
+            },
         shape = RoundedCornerShape(16.dp),
         color = backgroundColor,
         tonalElevation = 2.dp

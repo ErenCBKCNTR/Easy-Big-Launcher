@@ -151,15 +151,20 @@ fun BigButton(
             }
         }
         if (badgeCount > 0) {
-            Badge(
+            Box(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .padding(16.dp)
-                    .size(40.dp),
-                containerColor = Color.Red,
-                contentColor = Color.White
+                    .offset(x = 8.dp, y = (-8).dp)
+                    .size(48.dp)
+                    .background(Color.Red, shape = androidx.compose.foundation.shape.CircleShape),
+                contentAlignment = Alignment.Center
             ) {
-                Text(text = badgeCount.toString(), fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                Text(
+                    text = badgeCount.toString(), 
+                    color = Color.White, 
+                    fontSize = 24.sp, 
+                    fontWeight = FontWeight.ExtraBold
+                )
             }
         }
     }

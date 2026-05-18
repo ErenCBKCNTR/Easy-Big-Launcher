@@ -62,16 +62,26 @@ fun ManagePagesScreen(navController: NavController, viewModel: LauncherViewModel
                             )
                         }
                         
-                        Button(
-                            onClick = { viewModel.deletePage(page) },
-                            enabled = pages.size > 1,
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.Red, contentColor = Color.White),
-                            modifier = Modifier.height(60.dp),
-                            shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp)
-                        ) {
-                            Icon(Icons.Default.Delete, contentDescription = null)
-                            Spacer(Modifier.width(8.dp))
-                            Text(stringResource(R.string.delete_page), fontWeight = FontWeight.Bold)
+                        if (page.pageOrder == 0) {
+                            Button(
+                                onClick = { },
+                                enabled = false,
+                                modifier = Modifier.height(60.dp),
+                                shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp)
+                            ) {
+                                Text(stringResource(R.string.default_page), fontWeight = FontWeight.Bold)
+                            }
+                        } else {
+                            Button(
+                                onClick = { viewModel.deletePage(page) },
+                                colors = ButtonDefaults.buttonColors(containerColor = Color.Red, contentColor = Color.White),
+                                modifier = Modifier.height(60.dp),
+                                shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp)
+                            ) {
+                                Icon(Icons.Default.Delete, contentDescription = null)
+                                Spacer(Modifier.width(8.dp))
+                                Text(stringResource(R.string.delete_page), fontWeight = FontWeight.Bold)
+                            }
                         }
                     }
                 }

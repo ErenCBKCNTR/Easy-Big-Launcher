@@ -1,6 +1,8 @@
 package com.prusoft.easybiglauncher.ui.screens
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
@@ -25,6 +27,9 @@ fun MedicalIdScreen(navController: NavController, viewModel: LauncherViewModel =
     val medAddress by viewModel.securityRepository.medAddress.collectAsState(initial = "")
     val medBlood by viewModel.securityRepository.medBlood.collectAsState(initial = "")
     val medChronic by viewModel.securityRepository.medChronic.collectAsState(initial = "")
+    val medContactName by viewModel.securityRepository.medContactName.collectAsState(initial = "")
+    val medContactNumber by viewModel.securityRepository.medContactNumber.collectAsState(initial = "")
+    val medContactRelation by viewModel.securityRepository.medContactRelation.collectAsState(initial = "")
 
     Scaffold(
         topBar = {
@@ -43,14 +48,20 @@ fun MedicalIdScreen(navController: NavController, viewModel: LauncherViewModel =
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp),
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            MedicalInfoCard("Ad Soyad", "$medName $medSurname")
-            MedicalInfoCard("Yaş", medAge)
-            MedicalInfoCard("Kan Grubu", medBlood, Color.Red)
-            MedicalInfoCard("Kronik Hastalıklar ve İlaçlar", medChronic)
-            MedicalInfoCard("Adres", medAddress)
+            MedicalInfoCard(stringResource(R.string.medical_firstname) + " " + stringResource(R.string.medical_lastname), "$medName $medSurname")
+            MedicalInfoCard(stringResource(R.string.medical_age), medAge)
+            MedicalInfoCard(stringResource(R.string.medical_blood), medBlood, Color.Red)
+            MedicalInfoCard(stringResource(R.string.medical_chronic), medChronic)
+            MedicalInfoCard(stringResource(R.string.medical_address), medAddress)
+            
+            Text(stringResource(R.string.medical_contact_title), fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.Red, modifier = Modifier.padding(top = 16.dp))
+            MedicalInfoCard(stringResource(R.string.medical_contact_name), medContactName)
+            MedicalInfoCard(stringResource(R.string.medical_contact_number), medContactNumber)
+            MedicalInfoCard(stringResource(R.string.medical_contact_relation), medContactRelation)
         }
     }
 }
@@ -64,7 +75,7 @@ fun MedicalInfoCard(title: String, value: String, color: Color = Color.Unspecifi
         Column(modifier = Modifier.padding(16.dp)) {
             Text(text = title, fontSize = 18.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(modifier = Modifier.height(4.dp))
-            val textValue = if (value.isBlank()) "Belirtilmemiş" else value
+            val textValue = if (value.isBlank()) stringResource(R.string.not_specified) else value
             Text(text = textValue, fontSize = 24.sp, fontWeight = FontWeight.Bold, color = if (color != Color.Unspecified) color else MaterialTheme.colorScheme.onSurface)
         }
     }

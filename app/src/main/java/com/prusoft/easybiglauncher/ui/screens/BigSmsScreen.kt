@@ -32,11 +32,10 @@ import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BigSmsScreen(navController: NavController) {
+fun BigSmsScreen(navController: NavController, viewModel: com.prusoft.easybiglauncher.viewmodel.LauncherViewModel = androidx.lifecycle.viewmodel.compose.viewModel()) {
     val context = LocalContext.current
-    var showReplyDialog by remember { mutableStateOf(false) }
-    var selectedContact by remember { mutableStateOf("") }
-    var selectedNumber by remember { mutableStateOf("") }
+    var showReplyDialog by remember { mutableStateOf(false) } // Still used for standard new msg dialog maybe, let's keep name
+    var selectedMessage by remember { mutableStateOf<SmsMessage?>(null) }
     var replyText by remember { mutableStateOf("") }
 
     var showNewMessageDialog by remember { mutableStateOf(false) }
@@ -69,149 +68,181 @@ fun BigSmsScreen(navController: NavController) {
         }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.btn_messages), fontSize = 24.sp, fontWeight = FontWeight.Bold) },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = null, modifier = Modifier.size(32.dp))
-                    }
-                }
-            )
-        }
-    ) { padding ->
-        Column(modifier = Modifier.padding(padding).fillMaxSize().padding(16.dp)) {
-            Button(
-                onClick = { showNewMessageDialog = true },
-                modifier = Modifier.fillMaxWidth().height(80.dp),
-                shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-            ) {
-                Text(stringResource(R.string.new_message).uppercase(), fontSize = 22.sp, fontWeight = FontWeight.Bold)
-            }
+    val isSmsTtsEnabled by viewModel.securityRepository.isSmsTtsEnabled.collectAsState(initial = false)
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            if (isLoading) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
-                }
-            } else if (!hasPermission) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Button(onClick = { permissionLauncher.launch(Manifest.permission.READ_SMS) }) {
-                        Text("Erişim İzni Ver (SMS)")
-                    }
-                }
-            } else if (messages.isEmpty()) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(stringResource(R.string.no_messages), fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.Gray)
-                }
-            } else {
-                LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    items(messages) { msg ->
-                        Card(
-                            modifier = Modifier.fillMaxWidth().clickable {
-                                selectedContact = msg.sender
-                                selectedNumber = msg.number
-                                showReplyDialog = true
-                            },
-                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-                        ) {
-                            Column(modifier = Modifier.padding(20.dp)) {
-                                Text(text = msg.sender, fontSize = 26.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.primary)
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text(text = msg.text, fontSize = 22.sp)
-                            }
+    if (selectedMessage != null) {
+        // SMS Detail Full Screen
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text(selectedMessage!!.sender, fontSize = 28.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis) },
+                    navigationIcon = {
+                        IconButton(onClick = { 
+                            selectedMessage = null
+                            replyText = ""
+                        }) {
+                            Icon(Icons.Default.ArrowBack, contentDescription = null, modifier = Modifier.size(40.dp))
                         }
                     }
-                }
+                )
             }
-        }
-    }
-
-    if (showReplyDialog) {
-        AlertDialog(
-            onDismissRequest = { showReplyDialog = false },
-            title = { Text("$selectedContact", fontSize = 24.sp, fontWeight = FontWeight.Bold) },
-            text = {
+        ) { padding ->
+            Column(modifier = Modifier.padding(padding).fillMaxSize().padding(16.dp)) {
+                Card(
+                    modifier = Modifier.fillMaxWidth().weight(1f),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                ) {
+                    Column(modifier = Modifier.padding(24.dp).verticalScroll(androidx.compose.foundation.rememberScrollState())) {
+                        Text(text = selectedMessage!!.text, fontSize = 28.sp, lineHeight = 36.sp)
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
                 OutlinedTextField(
                     value = replyText,
                     onValueChange = { replyText = it },
-                    label = { Text(stringResource(R.string.enter_message)) },
-                    modifier = Modifier.fillMaxWidth().height(200.dp),
-                    textStyle = LocalTextStyle.current.copy(fontSize = 22.sp)
+                    label = { Text("Cevabınız...") },
+                    modifier = Modifier.fillMaxWidth().height(120.dp),
+                    textStyle = LocalTextStyle.current.copy(fontSize = 24.sp)
                 )
-            },
-            confirmButton = {
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
                 Button(
                     onClick = {
                         if (replyText.isNotEmpty()) {
                             try {
                                 val smsManager = context.getSystemService(SmsManager::class.java)
-                                smsManager.sendTextMessage(selectedNumber, null, replyText, null, null)
-                                showReplyDialog = false
+                                smsManager.sendTextMessage(selectedMessage!!.number, null, replyText, null, null)
+                                selectedMessage = null
                                 replyText = ""
                             } catch (e: Exception) {
-                                // Handle error
+                                // Handle exception
                             }
                         }
                     },
-                    modifier = Modifier.height(70.dp).fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth().height(80.dp),
+                    shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
-                    Icon(Icons.Default.Send, contentDescription = null)
-                    Spacer(Modifier.width(8.dp))
-                    Text(stringResource(R.string.send), fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                    Icon(Icons.Default.Send, contentDescription = null, modifier = Modifier.size(32.dp))
+                    Spacer(Modifier.width(16.dp))
+                    Text("CEVAPLA", fontSize = 28.sp, fontWeight = FontWeight.Bold)
                 }
             }
-        )
-    }
-
-    if (showNewMessageDialog) {
-        AlertDialog(
-            onDismissRequest = { showNewMessageDialog = false },
-            title = { Text(stringResource(R.string.new_message), fontSize = 24.sp, fontWeight = FontWeight.Bold) },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                    OutlinedTextField(
-                        value = newMessageNumber,
-                        onValueChange = { newMessageNumber = it },
-                        label = { Text(stringResource(R.string.enter_number)) },
-                        modifier = Modifier.fillMaxWidth(),
-                        textStyle = LocalTextStyle.current.copy(fontSize = 22.sp)
-                    )
-                    OutlinedTextField(
-                        value = newMessageText,
-                        onValueChange = { newMessageText = it },
-                        label = { Text(stringResource(R.string.enter_message)) },
-                        modifier = Modifier.fillMaxWidth().height(150.dp),
-                        textStyle = LocalTextStyle.current.copy(fontSize = 22.sp)
-                    )
-                }
-            },
-            confirmButton = {
+        }
+    } else {
+        // List Screen
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text(stringResource(R.string.btn_messages), fontSize = 24.sp, fontWeight = FontWeight.Bold) },
+                    navigationIcon = {
+                        IconButton(onClick = { navController.popBackStack() }) {
+                            Icon(Icons.Default.ArrowBack, contentDescription = null, modifier = Modifier.size(32.dp))
+                        }
+                    }
+                )
+            }
+        ) { padding ->
+            Column(modifier = Modifier.padding(padding).fillMaxSize().padding(16.dp)) {
                 Button(
-                    onClick = {
-                        if (newMessageNumber.isNotEmpty() && newMessageText.isNotEmpty()) {
-                            try {
-                                val smsManager = context.getSystemService(SmsManager::class.java)
-                                smsManager.sendTextMessage(newMessageNumber, null, newMessageText, null, null)
-                                showNewMessageDialog = false
-                                newMessageNumber = ""
-                                newMessageText = ""
-                            } catch (e: Exception) {
-                                // Handle error
+                    onClick = { showNewMessageDialog = true },
+                    modifier = Modifier.fillMaxWidth().height(80.dp),
+                    shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                ) {
+                    Text(stringResource(R.string.new_message).uppercase(), fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                if (isLoading) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator()
+                    }
+                } else if (!hasPermission) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Button(onClick = { permissionLauncher.launch(Manifest.permission.READ_SMS) }) {
+                            Text("Erişim İzni Ver (SMS)")
+                        }
+                    }
+                } else if (messages.isEmpty()) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text(stringResource(R.string.no_messages), fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.Gray)
+                    }
+                } else {
+                    LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        items(messages) { msg ->
+                            Card(
+                                modifier = Modifier.fillMaxWidth().clickable {
+                                    selectedMessage = msg
+                                    if (isSmsTtsEnabled) {
+                                        val ttsText = "${msg.sender} kişisinden gelen mesajı okuyorum: ${msg.text}"
+                                        com.prusoft.easybiglauncher.utils.TTSManager.getInstance(context).speak(ttsText)
+                                    }
+                                },
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                            ) {
+                                Column(modifier = Modifier.padding(20.dp)) {
+                                    Text(text = msg.sender, fontSize = 26.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.primary)
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Text(text = msg.text, fontSize = 22.sp, maxLines = 2, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                                }
                             }
                         }
-                    },
-                    modifier = Modifier.height(70.dp).fillMaxWidth()
-                ) {
-                    Icon(Icons.Default.Send, contentDescription = null)
-                    Spacer(Modifier.width(8.dp))
-                    Text(stringResource(R.string.send), fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                    }
                 }
             }
-        )
+        }
+
+        if (showNewMessageDialog) {
+            AlertDialog(
+                onDismissRequest = { showNewMessageDialog = false },
+                title = { Text(stringResource(R.string.new_message), fontSize = 24.sp, fontWeight = FontWeight.Bold) },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                        OutlinedTextField(
+                            value = newMessageNumber,
+                            onValueChange = { newMessageNumber = it },
+                            label = { Text(stringResource(R.string.enter_number)) },
+                            modifier = Modifier.fillMaxWidth(),
+                            textStyle = LocalTextStyle.current.copy(fontSize = 22.sp)
+                        )
+                        OutlinedTextField(
+                            value = newMessageText,
+                            onValueChange = { newMessageText = it },
+                            label = { Text(stringResource(R.string.enter_message)) },
+                            modifier = Modifier.fillMaxWidth().height(150.dp),
+                            textStyle = LocalTextStyle.current.copy(fontSize = 22.sp)
+                        )
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            if (newMessageNumber.isNotEmpty() && newMessageText.isNotEmpty()) {
+                                try {
+                                    val smsManager = context.getSystemService(SmsManager::class.java)
+                                    smsManager.sendTextMessage(newMessageNumber, null, newMessageText, null, null)
+                                    showNewMessageDialog = false
+                                    newMessageNumber = ""
+                                    newMessageText = ""
+                                } catch (e: Exception) {
+                                    // Handle error
+                                }
+                            }
+                        },
+                        modifier = Modifier.height(70.dp).fillMaxWidth()
+                    ) {
+                        Icon(Icons.Default.Send, contentDescription = null)
+                        Spacer(Modifier.width(8.dp))
+                        Text(stringResource(R.string.send), fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+            )
+        }
     }
 }
 

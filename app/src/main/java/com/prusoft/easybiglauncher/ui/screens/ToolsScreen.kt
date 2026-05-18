@@ -188,20 +188,28 @@ fun ToolsScreen(navController: NavController, viewModel: LauncherViewModel = vie
                     isTtsEnabled = isTtsEnabled,
                     onClick = {
                         val intent = Intent(Intent.ACTION_VOICE_COMMAND).apply {
-                            setPackage("com.google.android.apps.bard")
+                            setPackage("com.google.android.googlequicksearchbox")
                             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
                         }
                         try {
                             context.startActivity(intent)
                         } catch (e: Exception) {
                             try {
-                                val playStoreIntent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse("market://details?id=com.google.android.apps.bard"))
-                                playStoreIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                context.startActivity(playStoreIntent)
+                                val bardIntent = Intent(Intent.ACTION_MAIN).apply {
+                                    setPackage("com.google.android.apps.bard")
+                                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                                }
+                                context.startActivity(bardIntent)
                             } catch (e2: Exception) {
-                                val webIntent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://play.google.com/store/apps/details?id=com.google.android.apps.bard"))
-                                webIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                context.startActivity(webIntent)
+                                try {
+                                    val fallbackIntent = Intent(Intent.ACTION_VOICE_COMMAND)
+                                    fallbackIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                    context.startActivity(fallbackIntent)
+                                } catch (e3: Exception) {
+                                    val playStoreIntent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse("market://details?id=com.google.android.googlequicksearchbox"))
+                                    playStoreIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                    context.startActivity(playStoreIntent)
+                                }
                             }
                         }
                     }

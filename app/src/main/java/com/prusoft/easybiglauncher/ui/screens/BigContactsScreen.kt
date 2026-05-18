@@ -28,6 +28,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.prusoft.easybiglauncher.R
+import com.prusoft.easybiglauncher.utils.FavoritesUtils
+import com.prusoft.easybiglauncher.utils.FavoriteContact
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -44,6 +46,8 @@ fun BigContactsScreen() {
     var contacts by remember { mutableStateOf<List<ContactInfo>>(emptyList()) }
     var searchQuery by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(true) }
+
+    var favoriteContactToAdd by remember { mutableStateOf<ContactInfo?>(null) }
 
     LaunchedEffect(Unit) {
         contacts = withContext(Dispatchers.IO) {
@@ -90,24 +94,61 @@ fun BigContactsScreen() {
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(filteredContacts) { contact ->
-                    ContactRow(contact) {
+                    ContactRow(contact = contact, onClick = {
                         val intent = Intent(Intent.ACTION_CALL).apply {
                             data = Uri.parse("tel:${contact.number}")
                         }
-                        context.startActivity(intent)
-                    }
+                        try {
+                            context.startActivity(intent)
+                        } catch (e: Exception) {
+                            val dialIntent = Intent(Intent.ACTION_DIAL).apply {
+                                data = Uri.parse("tel:${contact.number}")
+                            }
+                            context.startActivity(dialIntent)
+                        }
+                    }, onLongClick = {
+                        favoriteContactToAdd = contact
+                    })
                 }
             }
         }
     }
+
+    if (favoriteContactToAdd != null) {
+        AlertDialog(
+            onDismissRequest = { favoriteContactToAdd = null },
+            title = { Text(stringResource(R.string.add_to_favorites), fontSize = 24.sp, fontWeight = FontWeight.Bold) },
+            text = { Text(stringResource(R.string.add_to_favorites_desc, favoriteContactToAdd!!.name), fontSize = 20.sp) },
+            confirmButton = {
+                Button(onClick = {
+                    favoriteContactToAdd?.let {
+                        FavoritesUtils.addFavorite(context, it.name, it.number)
+                    }
+                    favoriteContactToAdd = null
+                }) {
+                    Text(stringResource(R.string.yes), fontSize = 20.sp)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { favoriteContactToAdd = null }) {
+                    Text(stringResource(R.string.no), fontSize = 20.sp)
+                }
+            }
+        )
+    }
 }
 
 @Composable
-fun ContactRow(contact: ContactInfo, onClick: () -> Unit) {
+fun ContactRow(contact: ContactInfo, onClick: () -> Unit, onLongClick: () -> Unit = {}) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick),
+            .androidx.compose.ui.input.pointer.pointerInput(Unit) {
+                androidx.compose.foundation.gestures.detectTapGestures(
+                    onLongPress = { onLongClick() },
+                    onTap = { onClick() }
+                )
+            },
         shape = RoundedCornerShape(16.dp),
         color = MaterialTheme.colorScheme.surfaceVariant,
         tonalElevation = 2.dp

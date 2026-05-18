@@ -73,6 +73,21 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
+    fun clearSlot(item: LauncherItem) {
+        viewModelScope.launch {
+            repository.updateItem(item.copy(
+                itemType = ItemType.EMPTY, 
+                packageName = null, 
+                label = null, 
+                iconUri = null, 
+                intentUri = null, 
+                customLabel = null, 
+                customColor = null, 
+                customImageUri = null
+            ))
+        }
+    }
+
     fun swapItems(item1: LauncherItem, item2: LauncherItem) {
         viewModelScope.launch {
             // Swap slotIndex and pageId to move between slots/pages

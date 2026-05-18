@@ -28,37 +28,52 @@ import android.provider.AlarmClock
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import com.prusoft.easybiglauncher.utils.TTSManager
+import com.prusoft.easybiglauncher.data.SecurityRepository
+import androidx.compose.runtime.collectAsState
+import android.app.Application
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.ui.text.style.TextAlign
+import java.util.Calendar
+
 @Composable
 fun StatusBarWidget(isTtsEnabled: Boolean = false) {
     val context = LocalContext.current
+    val securityRepository = remember { SecurityRepository(context.applicationContext as Application) }
+    val clockTapAction by securityRepository.clockTapAction.collectAsState(initial = 2)
+    
     val ttsManager = remember { TTSManager.getInstance(context) }
     val time by rememberCurrentTime()
     val date = remember { SimpleDateFormat("dd MMMM EEEE", Locale.getDefault()).format(Date()) }
     val battery by rememberBatteryStatus(context)
     val signalLevel by rememberSignalStrength(context)
+    
+    var showCalendarDialog by remember { mutableStateOf(false) }
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.surface)
-            .padding(horizontal = 16.dp, vertical = 24.dp), // Increased padding for better separation
+            .padding(horizontal = 16.dp, vertical = 24.dp), 
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.clickable {
-            if (isTtsEnabled) {
-                ttsManager.speak("Bugün $date, saat şu an $time")
-            } else {
-                try {
-                    val intent = Intent(AlarmClock.ACTION_SHOW_ALARMS)
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    context.startActivity(intent)
-                } catch (e: Exception) {
-                    // Silent fail to prevent crash
+            when (clockTapAction) {
+                0 -> ttsManager.speak(context.getString(R.string.clock_read_template, date, time))
+                1 -> showCalendarDialog = true
+                2 -> {
+                    ttsManager.speak(context.getString(R.string.clock_read_template, date, time))
+                    showCalendarDialog = true
                 }
             }
         }) {
@@ -88,6 +103,92 @@ fun StatusBarWidget(isTtsEnabled: Boolean = false) {
             )
         }
     }
+    
+    if (showCalendarDialog) {
+        CalendarDialog(onDismiss = { showCalendarDialog = false })
+    }
+}
+
+@Composable
+fun CalendarDialog(onDismiss: () -> Unit) {
+    val calendar = Calendar.getInstance()
+    val currentDay = calendar.get(Calendar.DAY_OF_MONTH)
+    val currentMonthStr = SimpleDateFormat("MMMM yyyy", Locale.getDefault()).format(calendar.time)
+
+    calendar.set(Calendar.DAY_OF_MONTH, 1)
+    val firstDayOfWeek = calendar.get(Calendar.DAY_OF_WEEK) // 1 = Sunday, 2 = Monday...
+    val maxDays = calendar.getActualMaximum(Calendar.DAY_OF_MONTH)
+
+    // Adjust so week starts on Monday
+    val offset = if (firstDayOfWeek == Calendar.SUNDAY) 6 else firstDayOfWeek - 2
+    
+    val days = mutableListOf<String>()
+    
+    // Add empty slots for days before 1st of month
+    for (i in 0 until offset) {
+        days.add("")
+    }
+    
+    // Add actual days
+    for (i in 1..maxDays) {
+        days.add(i.toString())
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = currentMonthStr.uppercase(), 
+                fontSize = 32.sp, 
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+        },
+        text = {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                // Weekday headers
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+                    val weekDays = listOf("Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz")
+                    weekDays.forEach {
+                        Text(it, fontSize = 20.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
+                    }
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(7),
+                    modifier = Modifier.fillMaxWidth().height(300.dp),
+                ) {
+                    items(days) { dayStr ->
+                        val isToday = dayStr == currentDay.toString()
+                        Box(
+                            modifier = Modifier
+                                .aspectRatio(1f)
+                                .padding(4.dp)
+                                .background(
+                                    color = if (isToday) MaterialTheme.colorScheme.primary else Color.Transparent,
+                                    shape = RoundedCornerShape(8.dp)
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = dayStr,
+                                fontSize = 24.sp,
+                                fontWeight = if (isToday) FontWeight.ExtraBold else FontWeight.Medium,
+                                color = if (isToday) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(onClick = onDismiss, modifier = Modifier.fillMaxWidth().height(60.dp)) {
+                Text(stringResource(R.string.cancel).uppercase(), fontSize = 24.sp, fontWeight = FontWeight.Bold)
+            }
+        }
+    )
 }
 
 @Composable

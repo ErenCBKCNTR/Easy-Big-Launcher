@@ -34,7 +34,7 @@ fun MagnifierScreen(navController: NavController) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     var zoom by remember { mutableStateOf(1f) }
-    val isFlashOn by ToolManager.isFlashlightOn.collectAsState()
+    var isFlashOn by remember { mutableStateOf(false) }
     
     var hasCameraPermission by remember {
         mutableStateOf(ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED)
@@ -148,7 +148,10 @@ fun MagnifierScreen(navController: NavController) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Button(
-                    onClick = { ToolManager.toggleFlashlight(context) },
+                    onClick = { 
+                        isFlashOn = !isFlashOn
+                        camera?.cameraControl?.enableTorch(isFlashOn)
+                    },
                     modifier = Modifier.size(80.dp),
                     shape = androidx.compose.foundation.shape.CircleShape,
                     colors = ButtonDefaults.buttonColors(

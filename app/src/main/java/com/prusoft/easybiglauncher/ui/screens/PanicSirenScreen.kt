@@ -29,10 +29,10 @@ fun PanicSirenScreen(navController: NavController) {
 
     LaunchedEffect(Unit) {
         val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-        originalVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
-        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC), 0)
+        originalVolume = audioManager.getStreamVolume(AudioManager.STREAM_ALARM)
+        audioManager.setStreamVolume(AudioManager.STREAM_ALARM, audioManager.getStreamMaxVolume(AudioManager.STREAM_ALARM), 0)
 
-        val uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+        val uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM) ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE)
         mediaPlayer = MediaPlayer().apply {
             setDataSource(context, uri)
             setAudioAttributes(
@@ -52,7 +52,7 @@ fun PanicSirenScreen(navController: NavController) {
             mediaPlayer?.stop()
             mediaPlayer?.release()
             val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-            audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, originalVolume, 0)
+            audioManager.setStreamVolume(AudioManager.STREAM_ALARM, originalVolume, 0)
         }
     }
 

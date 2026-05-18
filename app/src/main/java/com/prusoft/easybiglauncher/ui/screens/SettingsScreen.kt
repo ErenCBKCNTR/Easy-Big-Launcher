@@ -5,7 +5,6 @@ import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import android.app.role.RoleManager
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -33,6 +32,7 @@ import kotlinx.coroutines.launch
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.clickable
 
 @Composable
 fun SettingsWrapper(navController: NavController, viewModel: LauncherViewModel = viewModel()) {
@@ -65,11 +65,15 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val sharedPref = remember { context.getSharedPreferences("sos_prefs", Context.MODE_PRIVATE) }
-    var sosMessage by remember { mutableStateOf(sharedPref.getString("sos_message", "Yardıma ihtiyacım var!") ?: "") }
+    
+    val sosMessageDefault = stringResource(R.string.sos_message_label)
+    var sosMessage by remember { mutableStateOf(sharedPref.getString("sos_message", sosMessageDefault) ?: "") }
     var sosNumber by remember { mutableStateOf(sharedPref.getString("sos_number", "") ?: "") }
     
     val isProtectionEnabled by viewModel.securityRepository.isProtectionEnabled.collectAsState(initial = false)
     val isTtsEnabled by viewModel.securityRepository.isTtsEnabled.collectAsState(initial = false)
+    val isHomeFavLockEnabled by viewModel.securityRepository.isHomeFavLockEnabled.collectAsState(initial = false)
+    val clockTapAction by viewModel.securityRepository.clockTapAction.collectAsState(initial = 2)
     val savedPin by viewModel.securityRepository.savedPin.collectAsState(initial = null)
     var isDefault by remember { mutableStateOf(LauncherUtils.isDefaultLauncher(context)) }
     
@@ -79,17 +83,18 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
 
     var isIgnoringBattery by remember { mutableStateOf(BatteryOptimizationManager.isIgnoringBatteryOptimizations(context)) }
     var showSetPinDialog by remember { mutableStateOf(false) }
-    var currentCategory by remember { mutableIntStateOf(0) } // 0: Main, 1: Language & Sound, 2: Security, 3: SOS, 4: Home Management
+    var currentCategory by remember { mutableIntStateOf(0) } // 0: Main, 1: Language & Sound, 2: Security, 3: SOS, 4: Home Management, 5: Medical
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { 
                     Text(text = when(currentCategory) {
-                        1 -> "Dil ve Ses"
-                        2 -> "Güvenlik ve Şifre"
-                        3 -> "Acil Durum (SOS)"
-                        4 -> "Ana Ekran Yönetimi"
+                        1 -> stringResource(R.string.settings_category_1)
+                        2 -> stringResource(R.string.settings_category_2)
+                        3 -> stringResource(R.string.settings_category_3)
+                        4 -> stringResource(R.string.settings_category_4)
+                        5 -> stringResource(R.string.settings_category_5)
                         else -> stringResource(id = R.string.settings_title)
                     }) 
                 },
@@ -109,11 +114,11 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
         ) {
             if (currentCategory == 0) {
                 // Main Menu
-                SettingsMenuButton("1. Dil ve Ses") { currentCategory = 1 }
-                SettingsMenuButton("2. Güvenlik ve Şifre") { currentCategory = 2 }
-                SettingsMenuButton("3. Acil Durum (SOS)") { currentCategory = 3 }
-                SettingsMenuButton("4. Ana Ekran Yönetimi") { currentCategory = 4 }
-                SettingsMenuButton("5. Tıbbi Kimlik Bilgileri") { currentCategory = 5 }
+                SettingsMenuButton(stringResource(R.string.settings_category_1)) { currentCategory = 1 }
+                SettingsMenuButton(stringResource(R.string.settings_category_2)) { currentCategory = 2 }
+                SettingsMenuButton(stringResource(R.string.settings_category_3)) { currentCategory = 3 }
+                SettingsMenuButton(stringResource(R.string.settings_category_4)) { currentCategory = 4 }
+                SettingsMenuButton(stringResource(R.string.settings_category_5)) { currentCategory = 5 }
                 
                 Spacer(modifier = Modifier.weight(1f))
                 
@@ -133,12 +138,12 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Red, contentColor = Color.White),
                     shape = RoundedCornerShape(16.dp)
                 ) {
-                    Text("Uygulamayı Kaldır (Uninstall)", fontSize = 22.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(stringResource(R.string.uninstall_app), fontSize = 22.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
             } else {
                 when(currentCategory) {
                     1 -> {
-                        // Language & Sound
+                        val isSmsTtsEnabled by viewModel.securityRepository.isSmsTtsEnabled.collectAsState(initial = false)
                         Text(text = stringResource(id = R.string.language_option), style = MaterialTheme.typography.titleLarge)
                         Button(onClick = { AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("en")) }, modifier = Modifier.fillMaxWidth().height(80.dp), shape = RoundedCornerShape(16.dp)) { Text("English", fontSize = 24.sp) }
                         Button(onClick = { AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("tr")) }, modifier = Modifier.fillMaxWidth().height(80.dp), shape = RoundedCornerShape(16.dp)) { Text("Türkçe", fontSize = 24.sp) }
@@ -150,24 +155,54 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
                                 scope.launch { viewModel.securityRepository.setTtsEnabled(it) }
                             })
                         }
+                        Divider()
+                        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                            Text(stringResource(R.string.sms_read_incoming), fontSize = 24.sp, modifier = Modifier.weight(1f))
+                            Switch(checked = isSmsTtsEnabled, onCheckedChange = { 
+                                scope.launch { viewModel.securityRepository.setSmsTtsEnabled(it) }
+                            })
+                        }
+                        Divider()
+                        Text(text = stringResource(R.string.clock_tap_action), fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                        Column {
+                            val options = listOf(
+                                0 to stringResource(R.string.clock_action_read),
+                                1 to stringResource(R.string.clock_action_calendar),
+                                2 to stringResource(R.string.clock_action_both)
+                            )
+                            options.forEach { (value, label) ->
+                                Row(
+                                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                                    modifier = Modifier.fillMaxWidth().height(56.dp).clickable { 
+                                        scope.launch { viewModel.securityRepository.setClockTapAction(value) }
+                                    }
+                                ) {
+                                    RadioButton(selected = clockTapAction == value, onClick = {
+                                        scope.launch { viewModel.securityRepository.setClockTapAction(value) }
+                                    })
+                                    Text(text = label, fontSize = 22.sp, modifier = Modifier.padding(start = 16.dp))
+                                }
+                            }
+                        }
                     }
                     2 -> {
-                        // Security
                         Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                             Text(stringResource(R.string.protection_mode), fontSize = 24.sp, modifier = Modifier.weight(1f))
                             Switch(checked = isProtectionEnabled, onCheckedChange = { checked ->
-                                if (checked && savedPin == null) {
-                                    showSetPinDialog = true
-                                } else {
-                                    scope.launch { viewModel.securityRepository.setProtectionEnabled(checked) }
-                                }
+                                if (checked && savedPin == null) showSetPinDialog = true
+                                else scope.launch { viewModel.securityRepository.setProtectionEnabled(checked) }
                             })
                         }
-                        
                         Button(onClick = { showSetPinDialog = true }, modifier = Modifier.fillMaxWidth().height(80.dp), shape = RoundedCornerShape(16.dp)) {
-                            Text("Şifre Değiştir", fontSize = 24.sp)
+                            Text(stringResource(R.string.change_pin), fontSize = 24.sp)
                         }
-
+                        Divider()
+                        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                            Text(stringResource(R.string.home_fav_lock), fontSize = 24.sp, modifier = Modifier.weight(1f))
+                            Switch(checked = isHomeFavLockEnabled, onCheckedChange = { 
+                                scope.launch { viewModel.securityRepository.setHomeFavLockEnabled(it) }
+                            })
+                        }
                         Divider()
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             Text(text = stringResource(R.string.battery_optimization_title), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
@@ -186,7 +221,6 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
                         }
                     }
                     3 -> {
-                        // SOS
                         Text(text = stringResource(R.string.sos_settings), style = MaterialTheme.typography.titleLarge)
                         var isLowBatterySosEnabled by remember { mutableStateOf(sharedPref.getBoolean("low_battery_sos_enabled", false)) }
                         Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
@@ -196,55 +230,52 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
                                 sharedPref.edit().putBoolean("low_battery_sos_enabled", it).apply() 
                             })
                         }
-                        
                         var sendLocationSosEnabled by remember { mutableStateOf(sharedPref.getBoolean("sos_send_location", false)) }
                         Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                            Text("Konumumu da Gönder", fontSize = 24.sp, modifier = Modifier.weight(1f))
+                            Text(stringResource(R.string.sos_send_location), fontSize = 24.sp, modifier = Modifier.weight(1f))
                             Switch(checked = sendLocationSosEnabled, onCheckedChange = { 
                                 sendLocationSosEnabled = it
                                 sharedPref.edit().putBoolean("sos_send_location", it).apply() 
                             })
                         }
                         
-                        val contactPickerLauncher = rememberLauncherForActivityResult(
-                            androidx.activity.result.contract.ActivityResultContracts.PickContact()
-                        ) { uri ->
+                        val contactPickerLauncher = rememberLauncherForActivityResult(ActivityResultContracts.PickContact()) { uri ->
                             uri?.let {
                                 val cursor = context.contentResolver.query(it, null, null, null, null)
-                                if (cursor != null && cursor.moveToFirst()) {
-                                    val id = cursor.getString(cursor.getColumnIndexOrThrow(android.provider.ContactsContract.Contacts._ID))
-                                    val phones = context.contentResolver.query(
-                                        android.provider.ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
-                                        null,
-                                        android.provider.ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
-                                        arrayOf(id),
-                                        null
-                                    )
-                                    if (phones != null && phones.moveToFirst()) {
-                                        val num = phones.getString(phones.getColumnIndexOrThrow(android.provider.ContactsContract.CommonDataKinds.Phone.NUMBER))
-                                        sosNumber = num
-                                        sharedPref.edit().putString("sos_number", num).apply()
-                                        phones.close()
+                                cursor?.use { c ->
+                                    if (c.moveToFirst()) {
+                                        val id = c.getString(c.getColumnIndexOrThrow(android.provider.ContactsContract.Contacts._ID))
+                                        val phones = context.contentResolver.query(
+                                            android.provider.ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                                            null,
+                                            android.provider.ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
+                                            arrayOf(id),
+                                            null
+                                        )
+                                        phones?.use { p ->
+                                            if (p.moveToFirst()) {
+                                                val num = p.getString(p.getColumnIndexOrThrow(android.provider.ContactsContract.CommonDataKinds.Phone.NUMBER))
+                                                sosNumber = num
+                                                sharedPref.edit().putString("sos_number", num).apply()
+                                            }
+                                        }
                                     }
-                                    cursor.close()
                                 }
                             }
                         }
-
                         Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             TextField(
                                 value = sosNumber,
                                 onValueChange = { sosNumber = it; sharedPref.edit().putString("sos_number", it).apply() },
-                                label = { Text("Acil Durum Telefon Numarası") },
+                                label = { Text(stringResource(R.string.sos_number_label)) },
                                 modifier = Modifier.weight(1f),
                                 textStyle = androidx.compose.ui.text.TextStyle(fontSize = 22.sp),
                                 keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number)
                             )
                             IconButton(onClick = { contactPickerLauncher.launch(null) }) {
-                                Icon(Icons.Default.Person, contentDescription = "Rehberden Seç", modifier = Modifier.size(48.dp))
+                                Icon(Icons.Default.Person, contentDescription = stringResource(R.string.sos_pick_contact), modifier = Modifier.size(48.dp))
                             }
                         }
-                        
                         TextField(
                             value = sosMessage,
                             onValueChange = { sosMessage = it; sharedPref.edit().putString("sos_message", it).apply() },
@@ -254,16 +285,9 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
                         )
                     }
                     4 -> {
-                        // Home Management
-                        Button(
-                            onClick = { navController.navigate("manage_pages") },
-                            modifier = Modifier.fillMaxWidth().height(80.dp),
-                            shape = RoundedCornerShape(16.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer, contentColor = MaterialTheme.colorScheme.onPrimaryContainer)
-                        ) {
+                        Button(onClick = { navController.navigate("manage_pages") }, modifier = Modifier.fillMaxWidth().height(80.dp), shape = RoundedCornerShape(16.dp), colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer, contentColor = MaterialTheme.colorScheme.onPrimaryContainer)) {
                             Text(stringResource(R.string.manage_pages), fontSize = 24.sp, fontWeight = FontWeight.Bold)
                         }
-                        
                         Button(onClick = { 
                             val intent = LauncherUtils.getRoleRequestIntent(context)
                             if (intent != null) launcher.launch(intent)
@@ -271,28 +295,80 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
                         }, modifier = Modifier.fillMaxWidth().height(80.dp), shape = RoundedCornerShape(16.dp)) {
                             Text(if (isDefault) "${stringResource(R.string.set_default)} (${stringResource(R.string.active_status)})" else stringResource(R.string.set_default), fontSize = 20.sp)
                         }
-                        
                         Divider()
                         Text(text = stringResource(R.string.add_page), style = MaterialTheme.typography.titleLarge)
                         Button(onClick = { viewModel.addPage(3, 2) }, modifier = Modifier.fillMaxWidth().height(80.dp), shape = RoundedCornerShape(16.dp)) { Text(stringResource(R.string.add_page_3x2), fontSize = 22.sp) }
                     }
                     5 -> {
-                        // Medical ID
                         val medName by viewModel.securityRepository.medName.collectAsState(initial = "")
                         val medSurname by viewModel.securityRepository.medSurname.collectAsState(initial = "")
                         val medAge by viewModel.securityRepository.medAge.collectAsState(initial = "")
                         val medAddress by viewModel.securityRepository.medAddress.collectAsState(initial = "")
                         val medBlood by viewModel.securityRepository.medBlood.collectAsState(initial = "")
                         val medChronic by viewModel.securityRepository.medChronic.collectAsState(initial = "")
+                        val medContactName by viewModel.securityRepository.medContactName.collectAsState(initial = "")
+                        val medContactNumber by viewModel.securityRepository.medContactNumber.collectAsState(initial = "")
+                        val medContactRelation by viewModel.securityRepository.medContactRelation.collectAsState(initial = "")
+
+                        var localName by remember(medName) { mutableStateOf(medName) }
+                        var localSurname by remember(medSurname) { mutableStateOf(medSurname) }
+                        var localAge by remember(medAge) { mutableStateOf(medAge) }
+                        var localAddress by remember(medAddress) { mutableStateOf(medAddress) }
+                        var localChronic by remember(medChronic) { mutableStateOf(medChronic) }
+                        val bloodParts = if (medBlood.contains(" ")) medBlood.split(" ") else listOf("A", "Pozitif (+)")
+                        var localBloodType by remember(medBlood) { mutableStateOf(bloodParts.getOrElse(0) { "A" }) }
+                        var localBloodRh by remember(medBlood) { mutableStateOf(bloodParts.getOrElse(1) { "Pozitif (+)" }) }
+                        var localContactName by remember(medContactName) { mutableStateOf(medContactName) }
+                        var localContactNumber by remember(medContactNumber) { mutableStateOf(medContactNumber) }
+                        var localContactRelation by remember(medContactRelation) { mutableStateOf(if(medContactRelation.isEmpty()) context.getString(R.string.other) else medContactRelation) }
 
                         Text(text = stringResource(R.string.medical_id_short), style = MaterialTheme.typography.titleLarge)
+                        TextField(value = localName, onValueChange = { localName = it }, label = { Text(stringResource(R.string.medical_firstname)) }, modifier = Modifier.fillMaxWidth())
+                        TextField(value = localSurname, onValueChange = { localSurname = it }, label = { Text(stringResource(R.string.medical_lastname)) }, modifier = Modifier.fillMaxWidth())
+                        TextField(value = localAge, onValueChange = { localAge = it }, label = { Text(stringResource(R.string.medical_age)) }, keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number), modifier = Modifier.fillMaxWidth())
                         
-                        TextField(value = medName, onValueChange = { scope.launch { viewModel.securityRepository.setMedicalInfo(it, medSurname, medAge, medAddress, medBlood, medChronic) } }, label = { Text("Ad") }, modifier = Modifier.fillMaxWidth())
-                        TextField(value = medSurname, onValueChange = { scope.launch { viewModel.securityRepository.setMedicalInfo(medName, it, medAge, medAddress, medBlood, medChronic) } }, label = { Text("Soyad") }, modifier = Modifier.fillMaxWidth())
-                        TextField(value = medAge, onValueChange = { scope.launch { viewModel.securityRepository.setMedicalInfo(medName, medSurname, it, medAddress, medBlood, medChronic) } }, label = { Text("Yaş") }, keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number), modifier = Modifier.fillMaxWidth())
-                        TextField(value = medBlood, onValueChange = { scope.launch { viewModel.securityRepository.setMedicalInfo(medName, medSurname, medAge, medAddress, it, medChronic) } }, label = { Text("Kan Grubu") }, modifier = Modifier.fillMaxWidth())
-                        TextField(value = medChronic, onValueChange = { scope.launch { viewModel.securityRepository.setMedicalInfo(medName, medSurname, medAge, medAddress, medBlood, it) } }, label = { Text("Kronik Rahatsızlıklar/İlaçlar") }, modifier = Modifier.fillMaxWidth())
-                        TextField(value = medAddress, onValueChange = { scope.launch { viewModel.securityRepository.setMedicalInfo(medName, medSurname, medAge, it, medBlood, medChronic) } }, label = { Text("Adres") }, modifier = Modifier.fillMaxWidth())
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            var expandedType by remember { mutableStateOf(false) }
+                            ExposedDropdownMenuBox(expanded = expandedType, onExpandedChange = { expandedType = !expandedType }, modifier = Modifier.weight(1f)) {
+                                TextField(value = localBloodType, onValueChange = {}, readOnly = true, label = { Text(stringResource(R.string.medical_blood)) }, trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedType) }, modifier = Modifier.menuAnchor())
+                                ExposedDropdownMenu(expanded = expandedType, onDismissRequest = { expandedType = false }) {
+                                    listOf("A", "B", "AB", "0").forEach { type ->
+                                        DropdownMenuItem(text = { Text(type) }, onClick = { localBloodType = type; expandedType = false })
+                                    }
+                                }
+                            }
+                            var expandedRh by remember { mutableStateOf(false) }
+                            ExposedDropdownMenuBox(expanded = expandedRh, onExpandedChange = { expandedRh = !expandedRh }, modifier = Modifier.weight(1f)) {
+                                TextField(value = localBloodRh, onValueChange = {}, readOnly = true, label = { Text(stringResource(R.string.medical_rh)) }, trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedRh) }, modifier = Modifier.menuAnchor())
+                                ExposedDropdownMenu(expanded = expandedRh, onDismissRequest = { expandedRh = false }) {
+                                    listOf("Pozitif (+)", "Negatif (-)").forEach { rh ->
+                                        DropdownMenuItem(text = { Text(rh) }, onClick = { localBloodRh = rh; expandedRh = false })
+                                    }
+                                }
+                            }
+                        }
+                        TextField(value = localChronic, onValueChange = { localChronic = it }, label = { Text(stringResource(R.string.medical_chronic)) }, modifier = Modifier.fillMaxWidth())
+                        TextField(value = localAddress, onValueChange = { localAddress = it }, label = { Text(stringResource(R.string.medical_address)) }, modifier = Modifier.fillMaxWidth())
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(text = stringResource(R.string.medical_contact_title), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                        TextField(value = localContactName, onValueChange = { localContactName = it }, label = { Text(stringResource(R.string.medical_contact_name)) }, modifier = Modifier.fillMaxWidth())
+                        TextField(value = localContactNumber, onValueChange = { localContactNumber = it }, label = { Text(stringResource(R.string.medical_contact_number)) }, keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Phone), modifier = Modifier.fillMaxWidth())
+                        var expandedRelation by remember { mutableStateOf(false) }
+                        ExposedDropdownMenuBox(expanded = expandedRelation, onExpandedChange = { expandedRelation = !expandedRelation }, modifier = Modifier.fillMaxWidth()) {
+                            TextField(value = localContactRelation, onValueChange = {}, readOnly = true, label = { Text(stringResource(R.string.medical_contact_relation)) }, trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedRelation) }, modifier = Modifier.menuAnchor().fillMaxWidth())
+                            ExposedDropdownMenu(expanded = expandedRelation, onDismissRequest = { expandedRelation = false }) {
+                                val relations = listOf(stringResource(R.string.son), stringResource(R.string.daughter), stringResource(R.string.spouse), stringResource(R.string.mother), stringResource(R.string.father), stringResource(R.string.grandchild), stringResource(R.string.other))
+                                relations.forEach { relation ->
+                                    DropdownMenuItem(text = { Text(relation) }, onClick = { localContactRelation = relation; expandedRelation = false })
+                                }
+                            }
+                        }
+                        Button(onClick = {
+                            scope.launch { viewModel.securityRepository.setMedicalInfo(localName, localSurname, localAge, localAddress, "$localBloodType $localBloodRh", localChronic, localContactName, localContactNumber, localContactRelation) }
+                            navController.popBackStack()
+                        }, modifier = Modifier.fillMaxWidth().height(80.dp).padding(top = 16.dp), shape = RoundedCornerShape(16.dp)) {
+                            Text(stringResource(R.string.medical_save), fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                        }
                     }
                 }
             }

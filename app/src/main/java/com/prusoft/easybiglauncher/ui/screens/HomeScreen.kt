@@ -102,6 +102,7 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
     val unreadSms by NotificationTracker.unreadSmsCount.collectAsState()
     val isProtectionEnabled by viewModel.securityRepository.isProtectionEnabled.collectAsState(initial = false)
     val isTtsEnabled by viewModel.securityRepository.isTtsEnabled.collectAsState(initial = false)
+    val isHomeFavLockEnabled by viewModel.securityRepository.isHomeFavLockEnabled.collectAsState(initial = false)
     val language by viewModel.securityRepository.language.collectAsState(initial = "tr")
     val savedPin by viewModel.securityRepository.savedPin.collectAsState(initial = null)
     
@@ -161,7 +162,7 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
         AlertDialog(
             onDismissRequest = { showAddSlotDialog = false },
             title = { Text(stringResource(R.string.add_btn), fontSize = 28.sp, fontWeight = FontWeight.Bold) },
-            text = { Text("Lütfen eklemek istediğiniz türü seçin.", fontSize = 20.sp) }, 
+            text = { Text(stringResource(R.string.add_item_type_desc), fontSize = 20.sp) }, 
             confirmButton = {
                 Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                     Button(
@@ -227,6 +228,12 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
                 }
                 showEditSheet = false
             },
+            onDelete = {
+                scope.launch {
+                    viewModel.clearSlot(itemToEdit!!)
+                }
+                showEditSheet = false
+            },
             onDismiss = { showEditSheet = false }
         )
     }
@@ -257,38 +264,6 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
                             val item = items[index]
                             Box(
                                 modifier = Modifier
-                                    .onGloballyPositioned { itemPositions[item.id] = it }
-                                    .pointerInput(item) {
-                                        detectDragGesturesAfterLongPress(
-                                            onDragStart = { currentDragPosition = it },
-                                            onDragEnd = {
-                                                val dropTarget = itemPositions.entries.find { (id, coords) ->
-                                                    if (id == item.id) return@find false
-                                                    val itemPos = itemPositions[item.id]?.positionInWindow() ?: Offset.Zero
-                                                    val absoluteTouchPos = itemPos + currentDragPosition
-                                                    
-                                                    val targetPos = coords.positionInWindow()
-                                                    val size = coords.size
-                                                    absoluteTouchPos.x >= targetPos.x && absoluteTouchPos.x <= targetPos.x + size.width &&
-                                                    absoluteTouchPos.y >= targetPos.y && absoluteTouchPos.y <= targetPos.y + size.height
-                                                }
-                                                
-                                                dropTarget?.let { entry ->
-                                                    val targetItem = items.find { it.id == entry.key }
-                                                    if (targetItem != null) {
-                                                        viewModel.swapItems(item, targetItem)
-                                                    }
-                                                }
-                                                draggedItem = null
-                                            },
-                                            onDragCancel = { draggedItem = null },
-                                            onDrag = { change, dragAmount ->
-                                                change.consume()
-                                                currentDragPosition += dragAmount
-                                                draggedItem = item
-                                            }
-                                        )
-                                    }
                             ) {
                                 GridItem(item, 
                                     isTtsEnabled = isTtsEnabled,
@@ -298,6 +273,7 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
                                     else -> 0
                                 },
                                 onClick = {
+                                    if (isProtectionEnabled && showPinDialogForNav) return@GridItem
                                     if (item.itemType == ItemType.EMPTY) {
                                          if (!isProtectionEnabled) {
                                              slotToAssign = item
@@ -323,6 +299,7 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
                                     }
                                 },
                                 onLongClick = {
+                                    if (isHomeFavLockEnabled) return@GridItem // Lock Home Screen and Favorites
                                     if (item.itemType != ItemType.EMPTY) {
                                         if (isProtectionEnabled) {
                                             itemToEdit = item

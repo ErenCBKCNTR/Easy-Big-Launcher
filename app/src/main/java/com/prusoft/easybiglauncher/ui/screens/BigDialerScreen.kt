@@ -55,19 +55,21 @@ fun BigDialerScreen(navController: NavController) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    .padding(horizontal = 4.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                TabButton("KLAVYE", isSelected = selectedTab == 0, modifier = Modifier.weight(1f)) { selectedTab = 0 }
-                TabButton("REHBER", isSelected = selectedTab == 1, modifier = Modifier.weight(1f)) { selectedTab = 1 }
-                TabButton("GEÇMİŞ", isSelected = selectedTab == 2, modifier = Modifier.weight(1f)) { selectedTab = 2 }
+                TabButton(stringResource(R.string.tab_numpad), isSelected = selectedTab == 0, modifier = Modifier.weight(1f)) { selectedTab = 0 }
+                TabButton(stringResource(R.string.tab_favorites), isSelected = selectedTab == 1, modifier = Modifier.weight(1f)) { selectedTab = 1 }
+                TabButton(stringResource(R.string.tab_contacts), isSelected = selectedTab == 2, modifier = Modifier.weight(1f)) { selectedTab = 2 }
+                TabButton(stringResource(R.string.tab_history), isSelected = selectedTab == 3, modifier = Modifier.weight(1f)) { selectedTab = 3 }
             }
 
             Box(modifier = Modifier.weight(1f)) {
                 when (selectedTab) {
                     0 -> DialerContent(context)
-                    1 -> BigContactsScreen()
-                    2 -> CallHistoryScreen()
+                    1 -> FavoritesScreen()
+                    2 -> BigContactsScreen()
+                    3 -> CallHistoryScreen()
                 }
             }
         }
@@ -80,12 +82,13 @@ fun TabButton(text: String, isSelected: Boolean, modifier: Modifier = Modifier, 
         onClick = onClick,
         modifier = modifier.height(70.dp),
         shape = RoundedCornerShape(12.dp),
+        contentPadding = PaddingValues(0.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
             contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
         )
     ) {
-        Text(text = text, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+        Text(text = text, fontSize = 16.sp, fontWeight = FontWeight.Bold, maxLines = 1)
     }
 }
 
