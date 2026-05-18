@@ -9,6 +9,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -24,7 +25,7 @@ import androidx.compose.ui.res.stringResource
 fun PanicSirenScreen(navController: NavController) {
     val context = LocalContext.current
     var mediaPlayer by remember { mutableStateOf<MediaPlayer?>(null) }
-    var originalVolume by remember { mutableIntOf(0) }
+    var originalVolume by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(Unit) {
         val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager

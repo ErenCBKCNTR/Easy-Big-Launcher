@@ -3,6 +3,8 @@ package com.prusoft.easybiglauncher
 import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.ComponentActivity
 import android.os.Bundle
+import android.content.Context
+import android.content.Intent
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize

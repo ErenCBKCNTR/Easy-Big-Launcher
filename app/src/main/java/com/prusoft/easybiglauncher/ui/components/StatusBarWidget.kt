@@ -23,6 +23,14 @@ import androidx.compose.ui.unit.sp
 import com.prusoft.easybiglauncher.utils.rememberBatteryStatus
 import com.prusoft.easybiglauncher.utils.rememberCurrentTime
 import com.prusoft.easybiglauncher.utils.rememberSignalStrength
+import android.content.Intent
+import android.provider.AlarmClock
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.RoundedCornerShape
+import com.prusoft.easybiglauncher.utils.TTSManager
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun StatusBarWidget(isTtsEnabled: Boolean = false) {
@@ -47,7 +55,7 @@ fun StatusBarWidget(isTtsEnabled: Boolean = false) {
             } else {
                 try {
                     val intent = Intent(AlarmClock.ACTION_SHOW_ALARMS)
-                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     context.startActivity(intent)
                 } catch (e: Exception) {
                     // Silent fail to prevent crash
