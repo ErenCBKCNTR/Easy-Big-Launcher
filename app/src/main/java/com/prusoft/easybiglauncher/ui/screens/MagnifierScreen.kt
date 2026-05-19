@@ -25,6 +25,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
+import androidx.compose.ui.res.stringResource
+import com.prusoft.easybiglauncher.R
 import com.prusoft.easybiglauncher.utils.ToolManager
 import com.google.common.util.concurrent.ListenableFuture
 
