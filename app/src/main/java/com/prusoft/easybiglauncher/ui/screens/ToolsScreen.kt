@@ -188,12 +188,20 @@ fun ToolsScreen(navController: NavController, viewModel: LauncherViewModel = vie
                     isTtsEnabled = isTtsEnabled,
                     onClick = {
                         try {
-                            val geminiIntent = context.packageManager.getLaunchIntentForPackage("com.google.android.apps.bard")
-                            if (geminiIntent != null) {
-                                geminiIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                context.startActivity(geminiIntent)
+                            val geminiVoiceIntent = Intent(Intent.ACTION_VOICE_COMMAND).apply {
+                                setPackage("com.google.android.apps.bard")
+                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                            }
+                            if (geminiVoiceIntent.resolveActivity(context.packageManager) != null) {
+                                context.startActivity(geminiVoiceIntent)
                             } else {
-                                throw Exception("Gemini not installed")
+                                val geminiIntent = context.packageManager.getLaunchIntentForPackage("com.google.android.apps.bard")
+                                if (geminiIntent != null) {
+                                    geminiIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                    context.startActivity(geminiIntent)
+                                } else {
+                                    throw Exception("Gemini not installed")
+                                }
                             }
                         } catch (e: Exception) {
                             val intent = Intent(Intent.ACTION_VOICE_COMMAND).apply {

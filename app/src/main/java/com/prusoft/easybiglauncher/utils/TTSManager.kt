@@ -20,9 +20,12 @@ class TTSManager private constructor(context: Context) : TextToSpeech.OnInitList
         }
     }
 
+    private val sharedPrefs = context.getSharedPreferences("sos_prefs", Context.MODE_PRIVATE)
+
     override fun onInit(status: Int) {
         if (status == TextToSpeech.SUCCESS) {
             isInitialized = true
+            setGender(sharedPrefs.getBoolean("is_female", true))
         } else {
             Log.e("TTSManager", "Initialization failed")
         }

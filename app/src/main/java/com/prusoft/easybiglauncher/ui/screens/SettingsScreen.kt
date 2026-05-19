@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -360,6 +361,66 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
                         }
                         TextField(value = localChronic, onValueChange = { localChronic = it }, label = { Text(stringResource(R.string.medical_chronic)) }, modifier = Modifier.fillMaxWidth())
                         TextField(value = localAddress, onValueChange = { localAddress = it }, label = { Text(stringResource(R.string.medical_address)) }, modifier = Modifier.fillMaxWidth())
+                        
+                        val locationPermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+                            if (isGranted) {
+                                try {
+                                    val fusedLocationClient = com.google.android.gms.location.LocationServices.getFusedLocationProviderClient(context)
+                                    fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                                        if (location != null) {
+                                            try {
+                                                val geocoder = android.location.Geocoder(context, java.util.Locale.getDefault())
+                                                val addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
+                                                if (addresses != null && addresses.isNotEmpty()) {
+                                                    val address = addresses[0]
+                                                    localAddress = address.getAddressLine(0) ?: ""
+                                                }
+                                            } catch (e: Exception) {
+                                                e.printStackTrace()
+                                            }
+                                        }
+                                    }
+                                } catch (e: SecurityException) {
+                                    e.printStackTrace()
+                                }
+                            }
+                        }
+                        
+                        Button(
+                            onClick = {
+                                if (androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_FINE_LOCATION) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                                    try {
+                                        val fusedLocationClient = com.google.android.gms.location.LocationServices.getFusedLocationProviderClient(context)
+                                        fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                                            if (location != null) {
+                                                try {
+                                                    val geocoder = android.location.Geocoder(context, java.util.Locale.getDefault())
+                                                    val addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
+                                                    if (addresses != null && addresses.isNotEmpty()) {
+                                                        val address = addresses[0]
+                                                        localAddress = address.getAddressLine(0) ?: ""
+                                                    }
+                                                } catch (e: Exception) {
+                                                    e.printStackTrace()
+                                                }
+                                            }
+                                        }
+                                    } catch (e: SecurityException) {
+                                        e.printStackTrace()
+                                    }
+                                } else {
+                                    locationPermissionLauncher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth().height(80.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+                        ) {
+                            Icon(Icons.Default.LocationOn, contentDescription = null, modifier = Modifier.size(32.dp))
+                            Spacer(Modifier.width(16.dp))
+                            Text("Mevcut Konumu Al", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                        }
+
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(text = stringResource(R.string.medical_contact_title), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                         TextField(value = localContactName, onValueChange = { localContactName = it }, label = { Text(stringResource(R.string.medical_contact_name)) }, modifier = Modifier.fillMaxWidth())

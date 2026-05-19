@@ -101,35 +101,8 @@ fun BigSmsScreen(navController: NavController, viewModel: com.prusoft.easybiglau
                 
                 Spacer(modifier = Modifier.height(16.dp))
                 
-                OutlinedTextField(
-                    value = replyText,
-                    onValueChange = { replyText = it },
-                    label = { Text("Cevabınız...") },
-                    modifier = Modifier.fillMaxWidth().height(120.dp),
-                    textStyle = LocalTextStyle.current.copy(fontSize = 24.sp),
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color.White,
-                        unfocusedContainerColor = Color.White,
-                        focusedTextColor = Color.Black,
-                        unfocusedTextColor = Color.Black
-                    )
-                )
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                
                 Button(
-                    onClick = {
-                        if (replyText.isNotEmpty()) {
-                            try {
-                                val smsManager = context.getSystemService(SmsManager::class.java)
-                                smsManager.sendTextMessage(selectedMessage!!.number, null, replyText, null, null)
-                                selectedMessage = null
-                                replyText = ""
-                            } catch (e: Exception) {
-                                // Handle exception
-                            }
-                        }
-                    },
+                    onClick = { showReplyDialog = true },
                     modifier = Modifier.fillMaxWidth().height(80.dp),
                     shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
@@ -137,6 +110,73 @@ fun BigSmsScreen(navController: NavController, viewModel: com.prusoft.easybiglau
                     Icon(Icons.Default.Send, contentDescription = null, modifier = Modifier.size(32.dp))
                     Spacer(Modifier.width(16.dp))
                     Text("CEVAPLA", fontSize = 28.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+        }
+
+        if (showReplyDialog) {
+            androidx.compose.ui.window.Dialog(onDismissRequest = { showReplyDialog = false }) {
+                Surface(
+                    modifier = Modifier.fillMaxWidth().fillMaxHeight(0.8f),
+                    shape = androidx.compose.foundation.shape.RoundedCornerShape(24.dp),
+                    color = Color.White
+                ) {
+                    Column(modifier = Modifier.padding(24.dp)) {
+                        Text(
+                            text = "Mesaj Gönder",
+                            fontSize = 32.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Black
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        OutlinedTextField(
+                            value = replyText,
+                            onValueChange = { replyText = it },
+                            label = { Text("Cevabınız...", color = Color.DarkGray) },
+                            modifier = Modifier.fillMaxWidth().weight(1f),
+                            textStyle = LocalTextStyle.current.copy(fontSize = 28.sp),
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = Color(0xFFF0F0F0),
+                                unfocusedContainerColor = Color(0xFFF0F0F0),
+                                focusedTextColor = Color.Black,
+                                unfocusedTextColor = Color.Black,
+                                cursorColor = Color.Black,
+                                focusedIndicatorColor = Color.Black
+                            )
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(
+                            onClick = {
+                                if (replyText.isNotEmpty()) {
+                                    try {
+                                        val smsManager = context.getSystemService(SmsManager::class.java)
+                                        smsManager.sendTextMessage(selectedMessage!!.number, null, replyText, null, null)
+                                        selectedMessage = null
+                                        replyText = ""
+                                        showReplyDialog = false
+                                    } catch (e: Exception) {
+                                        // Handle exception
+                                    }
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth().height(90.dp),
+                            shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF007AFF)) // Mavi
+                        ) {
+                            Icon(Icons.Default.Send, contentDescription = null, modifier = Modifier.size(36.dp), tint = Color.White)
+                            Spacer(Modifier.width(16.dp))
+                            Text("GÖNDER", fontSize = 32.sp, fontWeight = FontWeight.ExtraBold, color = Color.White)
+                        }
+                        
+                        Spacer(modifier = Modifier.height(8.dp))
+                        
+                        TextButton(
+                            onClick = { showReplyDialog = false },
+                            modifier = Modifier.fillMaxWidth().height(70.dp)
+                        ) {
+                            Text("İPTAL", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.Red)
+                        }
+                    }
                 }
             }
         }

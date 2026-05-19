@@ -11,6 +11,8 @@ import android.view.WindowManager
 import android.app.Activity
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import android.content.Context
+import android.content.ContextWrapper
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -23,12 +25,23 @@ import androidx.navigation.NavController
 import com.prusoft.easybiglauncher.R
 import com.prusoft.easybiglauncher.viewmodel.LauncherViewModel
 
+fun findActivity(context: Context): Activity? {
+    var currentContext = context
+    while (currentContext is ContextWrapper) {
+        if (currentContext is Activity) {
+            return currentContext
+        }
+        currentContext = currentContext.baseContext
+    }
+    return null
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MedicalIdScreen(navController: NavController, viewModel: LauncherViewModel = viewModel()) {
     val context = LocalContext.current
     DisposableEffect(Unit) {
-        val window = (context as? Activity)?.window
+        val window = findActivity(context)?.window
         window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         onDispose {
             window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)

@@ -96,7 +96,9 @@ fun StatusBarWidget(isTtsEnabled: Boolean = false) {
                 color = if (battery.percentage <= 15 && !battery.isCharging) Color.Red else Color.Black,
                 fontWeight = FontWeight.Black,
                 modifier = Modifier.semantics { contentDescription = "Pil yüzde ${battery.percentage}" }.clickable {
-                    ttsManager.speak("Telefonunuzun pil seviyesi yüzde ${battery.percentage}")
+                    if (isTtsEnabled) {
+                        ttsManager.speak("Telefonunuzun pil seviyesi yüzde ${battery.percentage}")
+                    }
                 }
             )
             Spacer(modifier = Modifier.width(8.dp))

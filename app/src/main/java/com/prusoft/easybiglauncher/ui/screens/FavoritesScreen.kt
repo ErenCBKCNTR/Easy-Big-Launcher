@@ -36,19 +36,27 @@ fun FavoritesScreen() {
     val securityRepository = remember { SecurityRepository(context as android.app.Application) }
     val isHomeFavLockEnabled by securityRepository.isHomeFavLockEnabled.collectAsState(initial = false)
     
-    var favorites by remember { mutableStateOf(FavoritesUtils.getFavorites(context)) }
+    var favorites by remember { mutableStateOf<List<FavoriteContact>>(emptyList()) }
     var favoriteToDelete by remember { mutableStateOf<FavoriteContact?>(null) }
+    
+    LaunchedEffect(Unit) {
+        try {
+            favorites = FavoritesUtils.getFavorites(context).distinctBy { it.number }
+        } catch (e: Exception) {
+            favorites = emptyList()
+        }
+    }
 
     if (favorites.isEmpty()) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text(stringResource(R.string.no_favorites_yet), fontSize = 24.sp, color = Color.Gray)
+            Text("HENÜZ FAVORİ KİŞİ EKLENMEDİ", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = Color.Gray)
         }
     } else {
         LazyColumn(
             modifier = Modifier.fillMaxSize().padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            items(favorites) { fav ->
+            items(items = favorites, key = { it.number + it.name.hashCode() }) { fav ->
                 Card(
                     modifier = Modifier.fillMaxWidth().combinedClickable(
                         onClick = {

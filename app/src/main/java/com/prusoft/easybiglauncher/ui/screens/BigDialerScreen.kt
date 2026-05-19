@@ -147,12 +147,13 @@ fun DialerContent(context: Context) {
         ) {
             // Delete Button
             Button(
-                onClick = { if (number.isNotEmpty()) number = number.dropLast(1) },
+                onClick = {},
                 modifier = Modifier
                     .weight(1f)
                     .height(90.dp)
                     .pointerInput(Unit) {
                         detectTapGestures(
+                            onTap = { if (number.isNotEmpty()) number = number.dropLast(1) },
                             onLongPress = { number = "" }
                         )
                     },

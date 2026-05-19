@@ -18,6 +18,8 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material.icons.filled.Mail
 import androidx.compose.material.icons.filled.MedicalInformation
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -406,8 +408,8 @@ fun GridItem(item: LauncherItem, isTtsEnabled: Boolean, badgeCount: Int = 0, onC
         text = if (item.itemType == ItemType.EMPTY) stringResource(R.string.add_btn) else (item.customLabel ?: item.label ?: stringResource(R.string.app_placeholder)),
         icon = when {
             item.itemType == ItemType.EMPTY -> Icons.Default.Add
-            isPhone -> Icons.Default.Call
-            isSms -> Icons.Default.Email
+            isPhone -> Icons.Default.Phone
+            isSms -> Icons.Default.Mail
             else -> Icons.Default.Apps
         },
         backgroundColor = when {
@@ -421,7 +423,7 @@ fun GridItem(item: LauncherItem, isTtsEnabled: Boolean, badgeCount: Int = 0, onC
         customColor = item.customColor,
         customImageUri = item.customImageUri,
         isTtsEnabled = isTtsEnabled,
-        appIconPackageName = if (item.itemType == ItemType.APP) item.packageName else null,
+        appIconPackageName = if (item.itemType == ItemType.APP && !isPhone && !isSms) item.packageName else null,
         isContact = item.itemType == ItemType.CONTACT,
         onClick = onClick,
         onLongClick = onLongClick
