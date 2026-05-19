@@ -41,4 +41,13 @@ interface LauncherDao {
 
     @Query("SELECT * FROM reminders WHERE id = :id")
     suspend fun getReminderById(id: Int): Reminder?
+
+    @Query("DELETE FROM launcher_pages")
+    suspend fun deleteAllPages()
+
+    @Query("DELETE FROM launcher_items")
+    suspend fun deleteAllItems()
+
+    @Query("DELETE FROM reminders")
+    suspend fun deleteAllReminders()
 }

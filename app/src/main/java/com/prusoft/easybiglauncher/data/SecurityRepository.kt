@@ -78,9 +78,13 @@ class SecurityRepository(private val context: Context) {
         }
     }
 
-    suspend fun setPin(pin: String) {
+    suspend fun setPin(pin: String?) {
         context.dataStore.edit { preferences ->
-            preferences[PIN_KEY] = pin
+            if (pin == null) {
+                preferences.remove(PIN_KEY)
+            } else {
+                preferences[PIN_KEY] = pin
+            }
         }
     }
 

@@ -22,4 +22,19 @@ class LauncherRepository(private val dao: LauncherDao) {
     suspend fun updateReminder(reminder: Reminder) = dao.updateReminder(reminder)
     suspend fun deleteReminder(reminder: Reminder) = dao.deleteReminder(reminder)
     suspend fun getReminderById(id: Int) = dao.getReminderById(id)
+
+    suspend fun nukeTable() {
+        dao.deleteAllItems()
+        dao.deleteAllPages()
+        dao.deleteAllReminders()
+    }
+
+    suspend fun insertInitialData() {
+        val pageId = dao.insertPage(LauncherPage(pageOrder = 0, rowCount = 3, columnCount = 2)).toInt()
+        dao.insertItem(LauncherItem(pageId = pageId, slotIndex = 0, itemType = ItemType.APP, packageName = "com.android.dialer", label = "Telefon"))
+        dao.insertItem(LauncherItem(pageId = pageId, slotIndex = 1, itemType = ItemType.APP, packageName = "com.android.messaging", label = "Mesajlar"))
+        for (i in 2 until 6) {
+            dao.insertItem(LauncherItem(pageId = pageId, slotIndex = i, itemType = ItemType.EMPTY))
+        }
+    }
 }

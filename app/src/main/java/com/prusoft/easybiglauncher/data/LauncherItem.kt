@@ -15,7 +15,8 @@ enum class ItemType {
         parentColumns = ["id"],
         childColumns = ["pageId"],
         onDelete = ForeignKey.CASCADE
-    )]
+    )],
+    indices = [androidx.room.Index("pageId")]
 )
 data class LauncherItem(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,

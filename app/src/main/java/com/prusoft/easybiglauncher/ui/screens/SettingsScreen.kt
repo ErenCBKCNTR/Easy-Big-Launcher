@@ -143,7 +143,7 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
                                 scope.launch {
                                     // Reset DB
                                     viewModel.repository.nukeTable()
-                                    viewModel.repository.insertInitialData(context)
+                                    viewModel.repository.insertInitialData()
                                     // Reset preferences
                                     sharedPref.edit().clear().apply()
                                     viewModel.securityRepository.setPin(null)

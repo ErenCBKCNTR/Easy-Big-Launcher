@@ -31,6 +31,10 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import android.provider.Telephony
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.gestures.detectTapGestures
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 
 @Composable
 fun CustomQwertyKeyboard(
@@ -72,8 +76,8 @@ fun CustomQwertyKeyboard(
                     .weight(1.5f)
                     .padding(horizontal = 2.dp)
                     .height(80.dp)
-                    .androidx.compose.ui.input.pointer.pointerInput(Unit) {
-                        androidx.compose.foundation.gestures.detectTapGestures(
+                    .pointerInput(Unit) {
+                        detectTapGestures(
                             onTap = { onBackspace() },
                             onPress = {
                                 val job = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
@@ -395,6 +399,7 @@ fun BigSmsScreen(navController: NavController, viewModel: com.prusoft.easybiglau
                     }
                 }
             }
+        }
     } else {
         // List Screen
         Scaffold(
