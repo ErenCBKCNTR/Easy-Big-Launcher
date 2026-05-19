@@ -174,5 +174,4 @@
     <string name="new_message_hint_phone">Telefon Numarası</string>
     <string name="reset_app_settings">Uygulamayı Sıfırla (Fabrika Ayarları)</string>
     <string name="reset_app_confirm">Uygulamadaki tüm ayarlar, sayfalar ve kayıtlar silinip fabrika ayarlarına dönülecek. Onaylıyor musunuz?</string>
-    <string name="yes">EVET</string>
 </resources>

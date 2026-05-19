@@ -29,12 +29,14 @@ import com.prusoft.easybiglauncher.data.SecurityRepository
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.collectAsState
 
+import com.prusoft.easybiglauncher.viewmodel.LauncherViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun FavoritesScreen() {
+fun FavoritesScreen(viewModel: LauncherViewModel = viewModel()) {
     val context = LocalContext.current
-    val securityRepository = remember { SecurityRepository(context.applicationContext as android.app.Application) }
-    val isHomeFavLockEnabled by securityRepository.isHomeFavLockEnabled.collectAsState(initial = false)
+    val isHomeFavLockEnabled by viewModel.securityRepository.isHomeFavLockEnabled.collectAsState(initial = false)
     
     var favorites by remember { mutableStateOf<List<FavoriteContact>>(emptyList()) }
     var favoriteToDelete by remember { mutableStateOf<FavoriteContact?>(null) }

@@ -283,72 +283,7 @@ fun BigSmsScreen(navController: NavController, viewModel: com.prusoft.easybiglau
                 }
             }
         }
-    } else {
-        // List Screen
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = { Text(stringResource(R.string.btn_messages), fontSize = 24.sp, fontWeight = FontWeight.Bold) },
-                    navigationIcon = {
-                        IconButton(onClick = { navController.popBackStack() }) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = null, modifier = Modifier.size(32.dp))
-                        }
-                    }
-                )
-            }
-        ) { padding ->
-            Column(modifier = Modifier.padding(padding).fillMaxSize().padding(16.dp)) {
-                Button(
-                    onClick = { showNewMessageDialog = true },
-                    modifier = Modifier.fillMaxWidth().height(80.dp),
-                    shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-                ) {
-                    Text(stringResource(R.string.new_message).uppercase(), fontSize = 22.sp, fontWeight = FontWeight.Bold)
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                if (isLoading) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator()
-                    }
-                } else if (!hasPermission) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Button(onClick = { permissionLauncher.launch(Manifest.permission.READ_SMS) }) {
-                            Text("Erişim İzni Ver (SMS)")
-                        }
-                    }
-                } else if (messages.isEmpty()) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text(stringResource(R.string.no_messages), fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.Gray)
-                    }
-                } else {
-                    LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        items(messages) { msg ->
-                            Card(
-                                modifier = Modifier.fillMaxWidth().clickable {
-                                    selectedMessage = msg
-                                    if (isSmsTtsEnabled) {
-                                        val ttsText = "${msg.sender} kişisinden gelen mesajı okuyorum: ${msg.text}"
-                                        com.prusoft.easybiglauncher.utils.TTSManager.getInstance(context).speak(ttsText)
-                                    }
-                                },
-                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-                            ) {
-                                Column(modifier = Modifier.padding(20.dp)) {
-                                    Text(text = msg.sender, fontSize = 26.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.primary)
-                                    Spacer(modifier = Modifier.height(8.dp))
-                                    Text(text = msg.text, fontSize = 22.sp, maxLines = 2, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        if (showNewMessageDialog) {
+    } else if (showNewMessageDialog) {
             var isEditingNumber by remember { mutableStateOf(true) }
             
             Scaffold(
@@ -455,6 +390,70 @@ fun BigSmsScreen(navController: NavController, viewModel: com.prusoft.easybiglau
                             Icon(Icons.Default.Send, contentDescription = null, modifier = Modifier.size(36.dp), tint = Color.White)
                             Spacer(Modifier.width(16.dp))
                             Text(stringResource(R.string.reply_send_btn), fontSize = 32.sp, fontWeight = FontWeight.ExtraBold, color = Color.White)
+                        }
+                    }
+                }
+            }
+        }
+    } else {
+        // List Screen
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text(stringResource(R.string.btn_messages), fontSize = 24.sp, fontWeight = FontWeight.Bold) },
+                    navigationIcon = {
+                        IconButton(onClick = { navController.popBackStack() }) {
+                            Icon(Icons.Default.ArrowBack, contentDescription = null, modifier = Modifier.size(32.dp))
+                        }
+                    }
+                )
+            }
+        ) { padding ->
+            Column(modifier = Modifier.padding(padding).fillMaxSize().padding(16.dp)) {
+                Button(
+                    onClick = { showNewMessageDialog = true },
+                    modifier = Modifier.fillMaxWidth().height(80.dp),
+                    shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                ) {
+                    Text(stringResource(R.string.new_message).uppercase(), fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                if (isLoading) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator()
+                    }
+                } else if (!hasPermission) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Button(onClick = { permissionLauncher.launch(Manifest.permission.READ_SMS) }) {
+                            Text("Erişim İzni Ver (SMS)")
+                        }
+                    }
+                } else if (messages.isEmpty()) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text(stringResource(R.string.no_messages), fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.Gray)
+                    }
+                } else {
+                    LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        items(messages) { msg ->
+                            Card(
+                                modifier = Modifier.fillMaxWidth().clickable {
+                                    selectedMessage = msg
+                                    if (isSmsTtsEnabled) {
+                                        val ttsText = "${msg.sender} kişisinden gelen mesajı okuyorum: ${msg.text}"
+                                        com.prusoft.easybiglauncher.utils.TTSManager.getInstance(context).speak(ttsText)
+                                    }
+                                },
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                            ) {
+                                Column(modifier = Modifier.padding(20.dp)) {
+                                    Text(text = msg.sender, fontSize = 26.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.primary)
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Text(text = msg.text, fontSize = 22.sp, maxLines = 2, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                                }
+                            }
                         }
                     }
                 }

@@ -175,5 +175,4 @@
     <string name="new_message_hint_phone">Phone Number</string>
     <string name="reset_app_settings">Reset Application Settings</string>
     <string name="reset_app_confirm">This will erase all settings, pages and records to factory defaults. Are you sure?</string>
-    <string name="yes">YES</string>
 </resources>
