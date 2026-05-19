@@ -160,4 +160,8 @@
     <string name="action_wa_audio">WhatsApp Sesli</string>
     <string name="action_wa_video">WhatsApp Görüntülü</string>
     <string name="action_choose_tool">Araç Seç</string>
+    <string name="reply_message_title">Mesaj Gönder</string>
+    <string name="reply_message_hint">Mesajınızı yazın...</string>
+    <string name="reply_send_btn">GÖNDER</string>
+    <string name="reply_cancel_btn">İPTAL</string>
 </resources>

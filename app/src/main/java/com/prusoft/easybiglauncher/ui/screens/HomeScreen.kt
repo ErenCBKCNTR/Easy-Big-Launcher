@@ -28,6 +28,10 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Wifi
+import androidx.compose.material.icons.filled.Bluetooth
+import androidx.compose.material.icons.filled.FlashlightOn
 import androidx.compose.material.icons.filled.Person
 import com.prusoft.easybiglauncher.utils.EmergencyManager
 import androidx.compose.ui.platform.LocalContext
@@ -170,14 +174,14 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
     if (contactToConfigure != null) {
         AlertDialog(
             onDismissRequest = { contactToConfigure = null },
-            title = { Text("Eylem Seçin", fontSize = 24.sp, fontWeight = FontWeight.Bold) },
-            text = { Text("Bu kişi için kısayol eylemi ne olsun?", fontSize = 20.sp) },
+            title = { Text(stringResource(R.string.action_choose), fontSize = 24.sp, fontWeight = FontWeight.Bold) },
+            text = { Text(stringResource(R.string.action_choose_desc), fontSize = 20.sp) },
             confirmButton = {
                 Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     val (name, number, slot) = contactToConfigure!!
-                    Button(onClick = { viewModel.assignContactToItem(slot, name, number); contactToConfigure = null }, modifier = Modifier.fillMaxWidth().height(60.dp)) { Text("Telefon ile Arama", fontSize = 20.sp) }
-                    Button(onClick = { viewModel.assignContactToItem(slot, name, "whatsapp_audio:$number"); contactToConfigure = null }, modifier = Modifier.fillMaxWidth().height(60.dp), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF25D366))) { Text("WhatsApp Sesli", fontSize = 20.sp) }
-                    Button(onClick = { viewModel.assignContactToItem(slot, name, "whatsapp_video:$number"); contactToConfigure = null }, modifier = Modifier.fillMaxWidth().height(60.dp), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF128C7E))) { Text("WhatsApp Görüntülü", fontSize = 20.sp) }
+                    Button(onClick = { viewModel.assignContactToItem(slot, name, number); contactToConfigure = null }, modifier = Modifier.fillMaxWidth().height(60.dp)) { Text(stringResource(R.string.action_phone_call), fontSize = 20.sp) }
+                    Button(onClick = { viewModel.assignContactToItem(slot, name, "whatsapp_audio:$number"); contactToConfigure = null }, modifier = Modifier.fillMaxWidth().height(60.dp), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF25D366))) { Text(stringResource(R.string.action_wa_audio), fontSize = 20.sp) }
+                    Button(onClick = { viewModel.assignContactToItem(slot, name, "whatsapp_video:$number"); contactToConfigure = null }, modifier = Modifier.fillMaxWidth().height(60.dp), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF128C7E))) { Text(stringResource(R.string.action_wa_video), fontSize = 20.sp) }
                 }
             },
             dismissButton = {
@@ -189,15 +193,25 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
     if (showToolDialog && slotToAssign != null) {
         AlertDialog(
             onDismissRequest = { showToolDialog = false },
-            title = { Text("Araç Seç", fontSize = 24.sp, fontWeight = FontWeight.Bold) },
+            title = { Text(stringResource(R.string.action_choose_tool), fontSize = 24.sp, fontWeight = FontWeight.Bold) },
             confirmButton = {
-                Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                val scrollState = rememberScrollState()
+                Column(modifier = Modifier.fillMaxWidth().height(300.dp).verticalScroll(scrollState), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     val magnifierName = stringResource(R.string.magnifier)
                     val sirenName = stringResource(R.string.panic_siren)
                     val aiName = stringResource(R.string.ai_assistant)
-                    Button(onClick = { viewModel.assignContactToItem(slotToAssign!!, magnifierName, "tool_magnifier"); showToolDialog = false; slotToAssign = null }, modifier = Modifier.fillMaxWidth().height(60.dp)) { Text(stringResource(R.string.magnifier), fontSize = 20.sp) }
-                    Button(onClick = { viewModel.assignContactToItem(slotToAssign!!, sirenName, "tool_siren"); showToolDialog = false; slotToAssign = null }, modifier = Modifier.fillMaxWidth().height(60.dp)) { Text(stringResource(R.string.panic_siren), fontSize = 20.sp) }
-                    Button(onClick = { viewModel.assignContactToItem(slotToAssign!!, aiName, "tool_ai"); showToolDialog = false; slotToAssign = null }, modifier = Modifier.fillMaxWidth().height(60.dp)) { Text(stringResource(R.string.ai_assistant), fontSize = 20.sp) }
+                    val flashlightName = stringResource(R.string.flashlight_on)
+                    val wifiName = stringResource(R.string.wifi_settings)
+                    val btName = stringResource(R.string.bluetooth_settings)
+                    val remindersName = stringResource(R.string.reminders_title)
+                    
+                    Button(onClick = { viewModel.assignContactToItem(slotToAssign!!, magnifierName, "tool_magnifier"); showToolDialog = false; slotToAssign = null }, modifier = Modifier.fillMaxWidth().height(60.dp)) { Text(magnifierName, fontSize = 20.sp) }
+                    Button(onClick = { viewModel.assignContactToItem(slotToAssign!!, sirenName, "tool_siren"); showToolDialog = false; slotToAssign = null }, modifier = Modifier.fillMaxWidth().height(60.dp)) { Text(sirenName, fontSize = 20.sp) }
+                    Button(onClick = { viewModel.assignContactToItem(slotToAssign!!, aiName, "tool_ai"); showToolDialog = false; slotToAssign = null }, modifier = Modifier.fillMaxWidth().height(60.dp)) { Text(aiName, fontSize = 20.sp) }
+                    Button(onClick = { viewModel.assignContactToItem(slotToAssign!!, flashlightName, "tool_flashlight"); showToolDialog = false; slotToAssign = null }, modifier = Modifier.fillMaxWidth().height(60.dp)) { Text(flashlightName, fontSize = 20.sp) }
+                    Button(onClick = { viewModel.assignContactToItem(slotToAssign!!, wifiName, "tool_wifi"); showToolDialog = false; slotToAssign = null }, modifier = Modifier.fillMaxWidth().height(60.dp)) { Text(wifiName, fontSize = 20.sp) }
+                    Button(onClick = { viewModel.assignContactToItem(slotToAssign!!, btName, "tool_bluetooth"); showToolDialog = false; slotToAssign = null }, modifier = Modifier.fillMaxWidth().height(60.dp)) { Text(btName, fontSize = 20.sp) }
+                    Button(onClick = { viewModel.assignContactToItem(slotToAssign!!, remindersName, "tool_reminders"); showToolDialog = false; slotToAssign = null }, modifier = Modifier.fillMaxWidth().height(60.dp)) { Text(remindersName, fontSize = 20.sp) }
                 }
             },
             dismissButton = {
@@ -244,7 +258,7 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
                         shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray)
                     ) {
-                        Text("Araç Seç", color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.action_choose_tool), color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.Bold)
                     }
                     TextButton(onClick = { showAddSlotDialog = false }, modifier = Modifier.align(Alignment.CenterHorizontally)) {
                         Text(stringResource(R.string.cancel), fontSize = 20.sp)
@@ -353,6 +367,18 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
                                             when (pkg) {
                                                 "tool_magnifier" -> navController.navigate("magnifier")
                                                 "tool_siren" -> navController.navigate("siren")
+                                                "tool_reminders" -> navController.navigate("reminders")
+                                                "tool_flashlight" -> ToolManager.toggleFlashlight(context)
+                                                "tool_wifi" -> {
+                                                    val intent = Intent(android.provider.Settings.ACTION_WIFI_SETTINGS)
+                                                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                                    context.startActivity(intent)
+                                                }
+                                                "tool_bluetooth" -> {
+                                                    val intent = Intent(android.provider.Settings.ACTION_BLUETOOTH_SETTINGS)
+                                                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                                    context.startActivity(intent)
+                                                }
                                                 "tool_ai" -> {
                                                     try {
                                                         val intent = Intent(Intent.ACTION_VOICE_COMMAND).apply {
@@ -503,18 +529,33 @@ fun GridItem(item: LauncherItem, isTtsEnabled: Boolean, badgeCount: Int = 0, onC
     val toolIcon = when(item.packageName) {
         "tool_magnifier" -> Icons.Default.Search
         "tool_siren" -> Icons.Default.Warning
+        "tool_reminders" -> Icons.Default.DateRange
+        "tool_flashlight" -> Icons.Default.FlashlightOn
+        "tool_wifi" -> Icons.Default.Wifi
+        "tool_bluetooth" -> Icons.Default.Bluetooth
         "tool_ai" -> Icons.Default.Mic
         else -> Icons.Default.Build
     }
     
     val waColor = if (item.packageName?.contains("video") == true) Color(0xFF128C7E) else Color(0xFF25D366)
 
+    val toolName = when(item.packageName) {
+        "tool_magnifier" -> stringResource(R.string.magnifier)
+        "tool_siren" -> stringResource(R.string.panic_siren)
+        "tool_reminders" -> stringResource(R.string.reminders_title)
+        "tool_flashlight" -> stringResource(R.string.flashlight_on)
+        "tool_wifi" -> stringResource(R.string.wifi_settings)
+        "tool_bluetooth" -> stringResource(R.string.bluetooth_settings)
+        "tool_ai" -> stringResource(R.string.ai_assistant)
+        else -> item.label ?: ""
+    }
+
     BigButton(
         text = when {
             item.itemType == ItemType.EMPTY -> stringResource(R.string.add_btn)
             isPhone -> item.customLabel ?: stringResource(R.string.btn_phone)
             isSms -> item.customLabel ?: stringResource(R.string.btn_messages)
-            isTool -> item.customLabel ?: item.label ?: ""
+            isTool -> item.customLabel ?: toolName
             else -> item.customLabel ?: item.label ?: stringResource(R.string.app_placeholder)
         },
         icon = when {

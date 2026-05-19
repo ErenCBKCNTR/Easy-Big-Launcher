@@ -122,25 +122,6 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
                 SettingsMenuButton(stringResource(R.string.settings_category_5)) { currentCategory = 5 }
                 
                 Spacer(modifier = Modifier.weight(1f))
-                
-                Button(
-                    onClick = { 
-                        try {
-                            val intent = Intent(Intent.ACTION_UNINSTALL_PACKAGE).apply {
-                                data = Uri.fromParts("package", context.packageName, null)
-                                flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                            }
-                            context.startActivity(intent)
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth().height(100.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red, contentColor = Color.White),
-                    shape = RoundedCornerShape(16.dp)
-                ) {
-                    Text(stringResource(R.string.uninstall_app), fontSize = 22.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                }
             } else {
                 when(currentCategory) {
                     1 -> {
@@ -149,40 +130,6 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
                         Button(onClick = { AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("en")) }, modifier = Modifier.fillMaxWidth().height(80.dp), shape = RoundedCornerShape(16.dp)) { Text("English", fontSize = 24.sp) }
                         Button(onClick = { AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("tr")) }, modifier = Modifier.fillMaxWidth().height(80.dp), shape = RoundedCornerShape(16.dp)) { Text("Türkçe", fontSize = 24.sp) }
                         
-                        Divider()
-                        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                            var isFemale by remember { mutableStateOf(sharedPref.getBoolean("is_female", true)) }
-                            val ttsManager = remember { com.prusoft.easybiglauncher.utils.TTSManager.getInstance(context) }
-                            Text(stringResource(R.string.voice_type), fontSize = 24.sp, modifier = Modifier.weight(1f))
-                            var expandedVoice by remember { mutableStateOf(false) }
-                            val voiceOptions = listOf("Erkek Sesi", "Kadın Sesi")
-                            @OptIn(ExperimentalMaterial3Api::class)
-                            ExposedDropdownMenuBox(
-                                expanded = expandedVoice,
-                                onExpandedChange = { expandedVoice = !expandedVoice }
-                            ) {
-                                TextField(
-                                    value = if (isFemale) voiceOptions[1] else voiceOptions[0],
-                                    onValueChange = {},
-                                    readOnly = true,
-                                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedVoice) },
-                                    modifier = Modifier.menuAnchor().width(150.dp)
-                                )
-                                ExposedDropdownMenu(expanded = expandedVoice, onDismissRequest = { expandedVoice = false }) {
-                                    voiceOptions.forEachIndexed { index, selectionOption ->
-                                        DropdownMenuItem(
-                                            text = { Text(selectionOption) },
-                                            onClick = {
-                                                isFemale = (index == 1)
-                                                sharedPref.edit().putBoolean("is_female", isFemale).apply()
-                                                ttsManager.setGender(isFemale)
-                                                expandedVoice = false
-                                            }
-                                        )
-                                    }
-                                }
-                            }
-                        }
                         Divider()
                         Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                             Text(stringResource(R.string.voice_feedback), fontSize = 24.sp, modifier = Modifier.weight(1f))

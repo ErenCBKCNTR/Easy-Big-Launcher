@@ -32,6 +32,73 @@ import android.provider.Telephony
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
+@Composable
+fun CustomQwertyKeyboard(
+    onChar: (String) -> Unit,
+    onBackspace: () -> Unit,
+    onSpace: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val row1 = listOf("Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P")
+    val row2 = listOf("A", "S", "D", "F", "G", "H", "J", "K", "L")
+    val row3 = listOf("Z", "X", "C", "V", "B", "N", "M")
+
+    Column(
+        modifier = modifier.fillMaxWidth().padding(horizontal = 4.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+            row1.forEach { char ->
+                KeyButton(text = char, onClick = { onChar(char) }, modifier = Modifier.weight(1f))
+            }
+        }
+        Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp), horizontalArrangement = Arrangement.SpaceEvenly) {
+            row2.forEach { char ->
+                KeyButton(text = char, onClick = { onChar(char) }, modifier = Modifier.weight(1f))
+            }
+        }
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+            row3.forEach { char ->
+                KeyButton(text = char, onClick = { onChar(char) }, modifier = Modifier.weight(1f))
+            }
+            KeyButton(
+                text = "⌫",
+                onClick = onBackspace,
+                modifier = Modifier.weight(1.5f),
+                containerColor = Color.DarkGray,
+                contentColor = Color.White
+            )
+        }
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+            KeyButton(
+                text = "BOŞLUK",
+                onClick = onSpace,
+                modifier = Modifier.weight(1f),
+                containerColor = Color.LightGray
+            )
+        }
+    }
+}
+
+@Composable
+fun KeyButton(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    containerColor: Color = Color.White,
+    contentColor: Color = Color.Black
+) {
+    Button(
+        onClick = onClick,
+        modifier = modifier.padding(horizontal = 2.dp).height(60.dp),
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
+        colors = ButtonDefaults.buttonColors(containerColor = containerColor, contentColor = contentColor),
+        contentPadding = PaddingValues(0.dp)
+    ) {
+        Text(text, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BigSmsScreen(navController: NavController, viewModel: com.prusoft.easybiglauncher.viewmodel.LauncherViewModel = androidx.lifecycle.viewmodel.compose.viewModel()) {
@@ -73,68 +140,27 @@ fun BigSmsScreen(navController: NavController, viewModel: com.prusoft.easybiglau
     val isSmsTtsEnabled by viewModel.securityRepository.isSmsTtsEnabled.collectAsState(initial = false)
 
     if (selectedMessage != null) {
-        // SMS Detail Full Screen
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = { Text(selectedMessage!!.sender, fontSize = 28.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis) },
-                    navigationIcon = {
-                        IconButton(onClick = { 
-                            selectedMessage = null
-                            replyText = ""
-                        }) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = null, modifier = Modifier.size(40.dp))
-                        }
-                    }
-                )
-            }
-        ) { padding ->
-            Column(modifier = Modifier.padding(padding).fillMaxSize().padding(16.dp)) {
-                Card(
-                    modifier = Modifier.fillMaxWidth().weight(1f),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-                ) {
-                    Column(modifier = Modifier.padding(24.dp).verticalScroll(rememberScrollState())) {
-                        Text(text = selectedMessage!!.text, fontSize = 28.sp, lineHeight = 36.sp)
-                    }
-                }
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                Button(
-                    onClick = { showReplyDialog = true },
-                    modifier = Modifier.fillMaxWidth().height(80.dp),
-                    shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-                ) {
-                    Icon(Icons.Default.Send, contentDescription = null, modifier = Modifier.size(32.dp))
-                    Spacer(Modifier.width(16.dp))
-                    Text("CEVAPLA", fontSize = 28.sp, fontWeight = FontWeight.Bold)
-                }
-            }
-        }
-
         if (showReplyDialog) {
-            @OptIn(ExperimentalMaterial3Api::class)
-            ModalBottomSheet(
-                onDismissRequest = { showReplyDialog = false },
-                containerColor = Color.White,
-                dragHandle = { BottomSheetDefaults.DragHandle() }
-            ) {
-                Column(modifier = Modifier.fillMaxWidth().padding(24.dp).padding(bottom = 32.dp)) {
-                    Text(
-                        text = "Mesaj Gönder",
-                        fontSize = 32.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Black
+            Scaffold(
+                topBar = {
+                    TopAppBar(
+                        title = { Text(stringResource(R.string.reply_message_title), fontSize = 28.sp, fontWeight = FontWeight.Bold) },
+                        navigationIcon = {
+                            IconButton(onClick = { showReplyDialog = false }) {
+                                Icon(Icons.Default.ArrowBack, contentDescription = null, modifier = Modifier.size(40.dp))
+                            }
+                        }
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
+                }
+            ) { padding ->
+                Column(modifier = Modifier.padding(padding).fillMaxSize().padding(16.dp)) {
                     OutlinedTextField(
                         value = replyText,
-                        onValueChange = { replyText = it },
-                        label = { Text("Cevabınız...", color = Color.DarkGray) },
-                        modifier = Modifier.fillMaxWidth().height(200.dp),
-                        textStyle = LocalTextStyle.current.copy(fontSize = 28.sp),
+                        onValueChange = { },
+                        readOnly = true,
+                        label = { Text(stringResource(R.string.reply_message_hint), color = Color.DarkGray) },
+                        modifier = Modifier.fillMaxWidth().weight(1f),
+                        textStyle = LocalTextStyle.current.copy(fontSize = 32.sp),
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = Color(0xFFF0F0F0),
                             unfocusedContainerColor = Color(0xFFF0F0F0),
@@ -144,37 +170,88 @@ fun BigSmsScreen(navController: NavController, viewModel: com.prusoft.easybiglau
                             focusedIndicatorColor = Color.Black
                         )
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Button(
-                        onClick = {
-                            if (replyText.isNotEmpty()) {
-                                try {
-                                    val smsManager = context.getSystemService(android.telephony.SmsManager::class.java)
-                                    smsManager.sendTextMessage(selectedMessage!!.number, null, replyText, null, null)
-                                    selectedMessage = null
-                                    replyText = ""
-                                    showReplyDialog = false
-                                } catch (e: Exception) {
-                                    // Handle exception
-                                }
-                            }
-                        },
-                        modifier = Modifier.fillMaxWidth().height(90.dp),
-                        shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF007AFF)) // Mavi
-                    ) {
-                        Icon(Icons.Default.Send, contentDescription = null, modifier = Modifier.size(36.dp), tint = Color.White)
-                        Spacer(Modifier.width(16.dp))
-                        Text("GÖNDER", fontSize = 32.sp, fontWeight = FontWeight.ExtraBold, color = Color.White)
-                    }
                     
                     Spacer(modifier = Modifier.height(8.dp))
                     
-                    TextButton(
-                        onClick = { showReplyDialog = false },
-                        modifier = Modifier.fillMaxWidth().height(70.dp)
+                    CustomQwertyKeyboard(
+                        onChar = { replyText += it },
+                        onBackspace = { if (replyText.isNotEmpty()) replyText = replyText.dropLast(1) },
+                        onSpace = { replyText += " " }
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        TextButton(
+                            onClick = { showReplyDialog = false },
+                            modifier = Modifier.weight(1f).height(80.dp),
+                            colors = ButtonDefaults.textButtonColors(contentColor = Color.Red)
+                        ) {
+                            Text(stringResource(R.string.reply_cancel_btn), fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                        }
+                        Button(
+                            onClick = {
+                                if (replyText.isNotEmpty()) {
+                                    try {
+                                        val smsManager = context.getSystemService(android.telephony.SmsManager::class.java)
+                                        smsManager.sendTextMessage(selectedMessage!!.number, null, replyText, null, null)
+                                        selectedMessage = null
+                                        replyText = ""
+                                        showReplyDialog = false
+                                    } catch (e: Exception) {
+                                        // Handle exception
+                                    }
+                                }
+                            },
+                            modifier = Modifier.weight(2f).height(80.dp),
+                            shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF007AFF))
+                        ) {
+                            Icon(Icons.Default.Send, contentDescription = null, modifier = Modifier.size(36.dp), tint = Color.White)
+                            Spacer(Modifier.width(16.dp))
+                            Text(stringResource(R.string.reply_send_btn), fontSize = 32.sp, fontWeight = FontWeight.ExtraBold, color = Color.White)
+                        }
+                    }
+                }
+            }
+        } else {
+            // SMS Detail Full Screen
+            Scaffold(
+                topBar = {
+                    TopAppBar(
+                        title = { Text(selectedMessage!!.sender, fontSize = 28.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis) },
+                        navigationIcon = {
+                            IconButton(onClick = { 
+                                selectedMessage = null
+                                replyText = ""
+                            }) {
+                                Icon(Icons.Default.ArrowBack, contentDescription = null, modifier = Modifier.size(40.dp))
+                            }
+                        }
+                    )
+                }
+            ) { padding ->
+                Column(modifier = Modifier.padding(padding).fillMaxSize().padding(16.dp)) {
+                    Card(
+                        modifier = Modifier.fillMaxWidth().weight(1f),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
                     ) {
-                        Text("İPTAL", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.Red)
+                        Column(modifier = Modifier.padding(24.dp).verticalScroll(rememberScrollState())) {
+                            Text(text = selectedMessage!!.text, fontSize = 28.sp, lineHeight = 36.sp)
+                        }
+                    }
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    Button(
+                        onClick = { showReplyDialog = true },
+                        modifier = Modifier.fillMaxWidth().height(80.dp),
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                    ) {
+                        Icon(Icons.Default.Send, contentDescription = null, modifier = Modifier.size(32.dp))
+                        Spacer(Modifier.width(16.dp))
+                        Text("CEVAPLA", fontSize = 28.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }

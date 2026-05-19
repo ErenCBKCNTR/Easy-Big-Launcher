@@ -90,12 +90,9 @@ fun StatusBarWidget(isTtsEnabled: Boolean = false) {
             
             Spacer(modifier = Modifier.width(16.dp))
 
-            Text(
-                text = "${battery.percentage}%",
-                style = MaterialTheme.typography.headlineLarge,
-                color = if (battery.percentage <= 15 && !battery.isCharging) Color.Red else Color.Black,
-                fontWeight = FontWeight.Black,
-                modifier = Modifier.semantics { contentDescription = "Pil yüzde ${battery.percentage}" }.clickable {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.clickable {
                     if (isTtsEnabled) {
                         val msg = context.getString(R.string.battery_level, battery.percentage)
                         if (battery.percentage <= 15 && !battery.isCharging) {
@@ -105,14 +102,21 @@ fun StatusBarWidget(isTtsEnabled: Boolean = false) {
                         }
                     }
                 }
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Icon(
-                imageVector = if (battery.isCharging) Icons.Default.Bolt else Icons.Default.BatteryFull,
-                contentDescription = null,
-                modifier = Modifier.size(32.dp),
-                tint = if (battery.percentage <= 15 && !battery.isCharging) Color.Red else if (battery.isCharging) Color.Green else MaterialTheme.colorScheme.onSurface
-            )
+            ) {
+                Text(
+                    text = "${battery.percentage}%",
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = if (battery.percentage <= 15 && !battery.isCharging) Color.Red else Color.Black,
+                    fontWeight = FontWeight.Black
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Icon(
+                    imageVector = if (battery.isCharging) Icons.Default.Bolt else Icons.Default.BatteryFull,
+                    contentDescription = null,
+                    modifier = Modifier.size(32.dp),
+                    tint = if (battery.percentage <= 15 && !battery.isCharging) Color.Red else if (battery.isCharging) Color.Green else MaterialTheme.colorScheme.onSurface
+                )
+            }
         }
     }
     

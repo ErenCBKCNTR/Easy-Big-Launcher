@@ -152,26 +152,29 @@ fun DialerContent(context: Context) {
         ) {
             // Delete Button
             Button(
-                onClick = {},
+                onClick = {}, // Handled by pointerInput
                 modifier = Modifier
                     .weight(1f)
                     .height(90.dp)
                     .pointerInput(Unit) {
-                        awaitEachGesture {
-                            val down = awaitFirstDown()
-                            if (number.isNotEmpty()) number = number.dropLast(1)
-                            var isUp = false
-                            val job = kotlinx.coroutines.GlobalScope.launch {
-                                delay(500)
-                                while (!isUp && number.isNotEmpty()) {
-                                    number = number.dropLast(1)
-                                    delay(100)
+                        detectTapGestures(
+                            onTap = {
+                                if (number.isNotEmpty()) number = number.dropLast(1)
+                            },
+                            onPress = {
+                                val job = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
+                                    delay(500)
+                                    while (true) { // While loop inside the coroutine checking string isn't required strictly, we can just check before dropLast
+                                        if (number.isNotEmpty()) {
+                                            number = number.dropLast(1)
+                                        }
+                                        delay(100)
+                                    }
                                 }
+                                tryAwaitRelease()
+                                job.cancel()
                             }
-                            waitForUpOrCancellation()
-                            isUp = true
-                            job.cancel()
-                        }
+                        )
                     },
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Gray),
                 shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)

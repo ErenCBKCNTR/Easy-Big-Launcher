@@ -57,7 +57,8 @@ fun FavoritesScreen() {
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             try {
-                items(items = favorites, key = { it.hashCode() }) { fav ->
+                // Not using 'key' parameter to prevent fatal crashes if data is corrupted and returns duplicate hashcodes
+                items(items = favorites) { fav ->
                     Card(
                         modifier = Modifier.fillMaxWidth().combinedClickable(
                             onClick = {

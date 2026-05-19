@@ -161,4 +161,8 @@
     <string name="action_wa_audio">WhatsApp Audio</string>
     <string name="action_wa_video">WhatsApp Video</string>
     <string name="action_choose_tool">Pick a Tool</string>
+    <string name="reply_message_title">Send Message</string>
+    <string name="reply_message_hint">Type your message...</string>
+    <string name="reply_send_btn">SEND</string>
+    <string name="reply_cancel_btn">CANCEL</string>
 </resources>
