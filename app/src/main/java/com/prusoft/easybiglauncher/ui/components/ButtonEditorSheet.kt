@@ -28,7 +28,8 @@ fun ButtonEditorSheet(
     item: LauncherItem,
     onSave: (String, String?, String?) -> Unit,
     onDelete: () -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    canDelete: Boolean = true
 ) {
     var label by remember { mutableStateOf(item.customLabel ?: item.label ?: "") }
     var color by remember { mutableStateOf(item.customColor ?: "#2196F3") }
@@ -40,7 +41,12 @@ fun ButtonEditorSheet(
         }
     }
 
-    ModalBottomSheet(onDismissRequest = onDismiss) {
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState
+    ) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             Text(stringResource(R.string.edit_button), style = MaterialTheme.typography.titleLarge)
             
@@ -61,12 +67,14 @@ fun ButtonEditorSheet(
                 Text(stringResource(R.string.save_btn), fontWeight = FontWeight.Bold, fontSize = 20.sp)
             }
             
-            Button(
-                onClick = onDelete,
-                modifier = Modifier.fillMaxWidth().height(60.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Red, contentColor = Color.White)
-            ) {
-                Text(stringResource(R.string.delete_item_btn), fontWeight = FontWeight.Bold, fontSize = 20.sp)
+            if (canDelete) {
+                Button(
+                    onClick = onDelete,
+                    modifier = Modifier.fillMaxWidth().height(60.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red, contentColor = Color.White)
+                ) {
+                    Text(stringResource(R.string.delete_item_btn), fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                }
             }
             
             Spacer(modifier = Modifier.height(24.dp))

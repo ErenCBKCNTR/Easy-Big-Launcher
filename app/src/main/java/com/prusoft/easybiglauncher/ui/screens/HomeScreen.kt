@@ -296,8 +296,10 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
     }
 
     if (showEditSheet && itemToEdit != null) {
+        val isSystemDefault = itemToEdit!!.packageName == "com.android.dialer" || itemToEdit!!.packageName == "com.google.android.dialer" || itemToEdit!!.packageName == "com.android.messaging" || itemToEdit!!.packageName == "com.google.android.apps.messaging"
         ButtonEditorSheet(
             item = itemToEdit!!,
+            canDelete = !isSystemDefault,
             onSave = { label, color, image ->
                 scope.launch {
                     viewModel.repository.updateItem(itemToEdit!!.copy(customLabel = label, customColor = color, customImageUri = image))
@@ -358,13 +360,47 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
                                     } else if (item.itemType == ItemType.CONTACT) {
                                         val pkg = item.packageName ?: ""
                                         if (pkg.startsWith("whatsapp_audio:") || pkg.startsWith("whatsapp_video:")) {
+                                            val number = pkg.substringAfter(":")
+                                            val isVideo = pkg.startsWith("whatsapp_video")
+                                            val mimeString = if (isVideo) "vnd.android.cursor.item/vnd.com.whatsapp.video.call" else "vnd.android.cursor.item/vnd.com.whatsapp.voip.call"
+                                            
+                                            // Make sure the number is clean for wa.me fallback
+                                            val cleanNumber = number.replace(Regex("[^0-9+]"), "")
+                                            
                                             try {
-                                                val intent = Intent(Intent.ACTION_VIEW)
-                                                intent.type = if (pkg.startsWith("whatsapp_video")) "vnd.android.cursor.item/vnd.com.whatsapp.video.call" else "vnd.android.cursor.item/vnd.com.whatsapp.voip.call"
-                                                context.startActivity(intent)
+                                                var callUri: android.net.Uri? = null
+                                                val resolver = context.contentResolver
+                                                val cursor = resolver.query(
+                                                    android.provider.ContactsContract.Data.CONTENT_URI,
+                                                    arrayOf(android.provider.ContactsContract.Data._ID),
+                                                    "${android.provider.ContactsContract.Data.MIMETYPE} = ? AND ${android.provider.ContactsContract.Data.DATA1} LIKE ?",
+                                                    arrayOf(mimeString, "%${cleanNumber.takeLast(10)}%"),
+                                                    null
+                                                )
+                                                if (cursor != null && cursor.moveToFirst()) {
+                                                    val id = cursor.getLong(0)
+                                                    callUri = android.content.ContentUris.withAppendedId(android.provider.ContactsContract.Data.CONTENT_URI, id)
+                                                    cursor.close()
+                                                }
+                                                
+                                                if (callUri != null) {
+                                                    val intent = Intent(Intent.ACTION_VIEW)
+                                                    intent.setDataAndType(callUri, mimeString)
+                                                    intent.setPackage("com.whatsapp")
+                                                    context.startActivity(intent)
+                                                } else {
+                                                    // Fallback to chat if we can't directly call
+                                                    val chatIntent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://api.whatsapp.com/send?phone=$cleanNumber"))
+                                                    context.startActivity(chatIntent)
+                                                }
                                             } catch (e: Exception) {
-                                                val dialIntent = Intent(Intent.ACTION_DIAL, android.net.Uri.parse("tel:" + pkg.substringAfter(":")))
-                                                context.startActivity(dialIntent)
+                                                // Ultimate fallback if WhatsApp is not installed or error
+                                                try {
+                                                    val chatIntent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://api.whatsapp.com/send?phone=$cleanNumber"))
+                                                    context.startActivity(chatIntent)
+                                                } catch (e2: Exception) {
+                                                    // Do nothing
+                                                }
                                             }
                                         } else if (pkg.startsWith("tool_")) {
                                             when (pkg) {
@@ -384,17 +420,26 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
                                                 }
                                                 "tool_ai" -> {
                                                     try {
-                                                        val intent = Intent(Intent.ACTION_VOICE_COMMAND).apply {
-                                                            setPackage("com.google.android.apps.bard")
-                                                            putExtra("android.intent.extra.START_VOICE_SESSION", true)
-                                                            putExtra("android.intent.extra.ASSIST_INPUT_DEVICE_ID", 0)
-                                                            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                                                        // First try to launch Gemini / Bard app directly
+                                                        val pm = context.packageManager
+                                                        val geminiIntent = pm.getLaunchIntentForPackage("com.google.android.apps.bard")
+                                                        if (geminiIntent != null) {
+                                                            context.startActivity(geminiIntent)
+                                                        } else {
+                                                            // Fallback to Assistant voice command
+                                                            val intent = Intent(Intent.ACTION_VOICE_COMMAND).apply {
+                                                                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                                                            }
+                                                            context.startActivity(intent)
                                                         }
-                                                        context.startActivity(intent)
                                                     } catch (e: Exception) {
                                                         val playStoreIntent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse("market://details?id=com.google.android.apps.bard"))
                                                         playStoreIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                                        context.startActivity(playStoreIntent)
+                                                        try {
+                                                            context.startActivity(playStoreIntent)
+                                                        } catch (e2: Exception) {
+                                                            // Do nothing
+                                                        }
                                                     }
                                                 }
                                             }

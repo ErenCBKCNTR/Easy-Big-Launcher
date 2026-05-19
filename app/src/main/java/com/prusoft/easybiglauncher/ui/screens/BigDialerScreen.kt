@@ -151,8 +151,7 @@ fun DialerContent(context: Context) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Delete Button
-            Button(
-                onClick = {}, // Handled by pointerInput
+            Surface(
                 modifier = Modifier
                     .weight(1f)
                     .height(90.dp)
@@ -164,7 +163,7 @@ fun DialerContent(context: Context) {
                             onPress = {
                                 val job = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
                                     delay(500)
-                                    while (true) { // While loop inside the coroutine checking string isn't required strictly, we can just check before dropLast
+                                    while (true) {
                                         if (number.isNotEmpty()) {
                                             number = number.dropLast(1)
                                         }
@@ -176,10 +175,12 @@ fun DialerContent(context: Context) {
                             }
                         )
                     },
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Gray),
+                color = Color.Gray,
                 shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
             ) {
-                Icon(Icons.Default.Backspace, contentDescription = null, modifier = Modifier.size(40.dp))
+                Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                    Icon(Icons.Default.Backspace, contentDescription = null, modifier = Modifier.size(40.dp), tint = Color.White)
+                }
             }
 
             // Call Button

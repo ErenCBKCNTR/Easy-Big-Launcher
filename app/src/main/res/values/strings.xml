@@ -28,6 +28,11 @@
     <string name="mobile_data_settings">MOBILE DATA SETTINGS</string>
     <string name="onboarding_welcome">Hoşgeldiniz\nWelcome</string>
     <string name="onboarding_start">START</string>
+    <string name="pin_enter_new">Set New Password</string>
+    <string name="pin_reenter">Re-enter Password</string>
+    <string name="pin_enter">Enter Password</string>
+    <string name="pin_error_mismatch">Passwords do not match!</string>
+    <string name="pin_error_incorrect">Incorrect password!</string>
     <string name="add_btn">Add</string>
     <string name="app_placeholder">App</string>
     <string name="go_to_settings_hint">Go to settings and add page</string>
@@ -165,4 +170,10 @@
     <string name="reply_message_hint">Type your message...</string>
     <string name="reply_send_btn">SEND</string>
     <string name="reply_cancel_btn">CANCEL</string>
+    <string name="keyboard_space">SPACE</string>
+    <string name="reply_btn">REPLY</string>
+    <string name="new_message_hint_phone">Phone Number</string>
+    <string name="reset_app_settings">Reset Application Settings</string>
+    <string name="reset_app_confirm">This will erase all settings, pages and records to factory defaults. Are you sure?</string>
+    <string name="yes">YES</string>
 </resources>

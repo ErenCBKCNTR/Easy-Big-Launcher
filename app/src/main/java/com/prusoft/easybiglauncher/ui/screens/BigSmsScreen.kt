@@ -39,6 +39,7 @@ fun CustomQwertyKeyboard(
     onSpace: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val rowNum = listOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "0")
     val row1 = listOf("Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P")
     val row2 = listOf("A", "S", "D", "F", "G", "H", "J", "K", "L")
     val row3 = listOf("Z", "X", "C", "V", "B", "N", "M")
@@ -47,6 +48,11 @@ fun CustomQwertyKeyboard(
         modifier = modifier.fillMaxWidth().padding(horizontal = 4.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+            rowNum.forEach { char ->
+                KeyButton(text = char, onClick = { onChar(char) }, modifier = Modifier.weight(1f))
+            }
+        }
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
             row1.forEach { char ->
                 KeyButton(text = char, onClick = { onChar(char) }, modifier = Modifier.weight(1f))
@@ -61,17 +67,38 @@ fun CustomQwertyKeyboard(
             row3.forEach { char ->
                 KeyButton(text = char, onClick = { onChar(char) }, modifier = Modifier.weight(1f))
             }
-            KeyButton(
-                text = "⌫",
-                onClick = onBackspace,
-                modifier = Modifier.weight(1.5f),
-                containerColor = Color.DarkGray,
-                contentColor = Color.White
-            )
+            Surface(
+                modifier = Modifier
+                    .weight(1.5f)
+                    .padding(horizontal = 2.dp)
+                    .height(80.dp)
+                    .androidx.compose.ui.input.pointer.pointerInput(Unit) {
+                        androidx.compose.foundation.gestures.detectTapGestures(
+                            onTap = { onBackspace() },
+                            onPress = {
+                                val job = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
+                                    kotlinx.coroutines.delay(500)
+                                    while (true) {
+                                        onBackspace()
+                                        kotlinx.coroutines.delay(100)
+                                    }
+                                }
+                                tryAwaitRelease()
+                                job.cancel()
+                            }
+                        )
+                    },
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
+                color = Color.DarkGray
+            ) {
+                Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                    Text("⌫", fontSize = 32.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                }
+            }
         }
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
             KeyButton(
-                text = "BOŞLUK",
+                text = stringResource(R.string.keyboard_space),
                 onClick = onSpace,
                 modifier = Modifier.weight(1f),
                 containerColor = Color.LightGray
@@ -90,12 +117,12 @@ fun KeyButton(
 ) {
     Button(
         onClick = onClick,
-        modifier = modifier.padding(horizontal = 2.dp).height(60.dp),
+        modifier = modifier.padding(horizontal = 2.dp).height(80.dp),
         shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
         colors = ButtonDefaults.buttonColors(containerColor = containerColor, contentColor = contentColor),
         contentPadding = PaddingValues(0.dp)
     ) {
-        Text(text, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+        Text(text, fontSize = 28.sp, fontWeight = FontWeight.Bold)
     }
 }
 
@@ -251,7 +278,7 @@ fun BigSmsScreen(navController: NavController, viewModel: com.prusoft.easybiglau
                     ) {
                         Icon(Icons.Default.Send, contentDescription = null, modifier = Modifier.size(32.dp))
                         Spacer(Modifier.width(16.dp))
-                        Text("CEVAPLA", fontSize = 28.sp, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.reply_btn), fontSize = 28.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }
@@ -322,50 +349,116 @@ fun BigSmsScreen(navController: NavController, viewModel: com.prusoft.easybiglau
         }
 
         if (showNewMessageDialog) {
-            AlertDialog(
-                onDismissRequest = { showNewMessageDialog = false },
-                title = { Text(stringResource(R.string.new_message), fontSize = 24.sp, fontWeight = FontWeight.Bold) },
-                text = {
-                    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                        OutlinedTextField(
-                            value = newMessageNumber,
-                            onValueChange = { newMessageNumber = it },
-                            label = { Text(stringResource(R.string.enter_number)) },
-                            modifier = Modifier.fillMaxWidth(),
-                            textStyle = LocalTextStyle.current.copy(fontSize = 22.sp)
-                        )
-                        OutlinedTextField(
-                            value = newMessageText,
-                            onValueChange = { newMessageText = it },
-                            label = { Text(stringResource(R.string.enter_message)) },
-                            modifier = Modifier.fillMaxWidth().height(150.dp),
-                            textStyle = LocalTextStyle.current.copy(fontSize = 22.sp)
-                        )
-                    }
-                },
-                confirmButton = {
-                    Button(
-                        onClick = {
-                            if (newMessageNumber.isNotEmpty() && newMessageText.isNotEmpty()) {
-                                try {
-                                    val smsManager = context.getSystemService(SmsManager::class.java)
-                                    smsManager.sendTextMessage(newMessageNumber, null, newMessageText, null, null)
-                                    showNewMessageDialog = false
-                                    newMessageNumber = ""
-                                    newMessageText = ""
-                                } catch (e: Exception) {
-                                    // Handle error
+            var isEditingNumber by remember { mutableStateOf(true) }
+            
+            Scaffold(
+                topBar = {
+                    TopAppBar(
+                        title = { Text(stringResource(R.string.new_message), fontSize = 28.sp, fontWeight = FontWeight.Bold) },
+                        navigationIcon = {
+                            IconButton(onClick = { showNewMessageDialog = false }) {
+                                Icon(Icons.Default.ArrowBack, contentDescription = null, modifier = Modifier.size(40.dp))
+                            }
+                        }
+                    )
+                }
+            ) { padding ->
+                Column(modifier = Modifier.padding(padding).fillMaxSize().padding(16.dp)) {
+                    OutlinedTextField(
+                        value = newMessageNumber,
+                        onValueChange = { },
+                        readOnly = true,
+                        label = { Text(stringResource(R.string.new_message_hint_phone), color = Color.DarkGray) },
+                        modifier = Modifier.fillMaxWidth(),
+                        textStyle = LocalTextStyle.current.copy(fontSize = 32.sp),
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = if (isEditingNumber) Color(0xFFE0E0E0) else Color(0xFFF0F0F0),
+                            unfocusedContainerColor = if (isEditingNumber) Color(0xFFE0E0E0) else Color(0xFFF0F0F0)
+                        ),
+                        interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }.also { interactionSource ->
+                            LaunchedEffect(interactionSource) {
+                                interactionSource.interactions.collect {
+                                    if (it is androidx.compose.foundation.interaction.PressInteraction.Release) {
+                                        isEditingNumber = true
+                                    }
                                 }
                             }
+                        }
+                    )
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    OutlinedTextField(
+                        value = newMessageText,
+                        onValueChange = { },
+                        readOnly = true,
+                        label = { Text(stringResource(R.string.reply_message_hint), color = Color.DarkGray) },
+                        modifier = Modifier.fillMaxWidth().weight(1f),
+                        textStyle = LocalTextStyle.current.copy(fontSize = 32.sp),
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = if (!isEditingNumber) Color(0xFFE0E0E0) else Color(0xFFF0F0F0),
+                            unfocusedContainerColor = if (!isEditingNumber) Color(0xFFE0E0E0) else Color(0xFFF0F0F0)
+                        ),
+                        interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }.also { interactionSource ->
+                            LaunchedEffect(interactionSource) {
+                                interactionSource.interactions.collect {
+                                    if (it is androidx.compose.foundation.interaction.PressInteraction.Release) {
+                                        isEditingNumber = false
+                                    }
+                                }
+                            }
+                        }
+                    )
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    CustomQwertyKeyboard(
+                        onChar = { if (isEditingNumber) newMessageNumber += it else newMessageText += it },
+                        onBackspace = { 
+                            if (isEditingNumber) {
+                                if (newMessageNumber.isNotEmpty()) newMessageNumber = newMessageNumber.dropLast(1)
+                            } else {
+                                if (newMessageText.isNotEmpty()) newMessageText = newMessageText.dropLast(1)
+                            }
                         },
-                        modifier = Modifier.height(70.dp).fillMaxWidth()
-                    ) {
-                        Icon(Icons.Default.Send, contentDescription = null)
-                        Spacer(Modifier.width(8.dp))
-                        Text(stringResource(R.string.send), fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                        onSpace = { if (!isEditingNumber) newMessageText += " " }
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        TextButton(
+                            onClick = { showNewMessageDialog = false },
+                            modifier = Modifier.weight(1f).height(80.dp),
+                            colors = ButtonDefaults.textButtonColors(contentColor = Color.Red)
+                        ) {
+                            Text(stringResource(R.string.reply_cancel_btn), fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                        }
+                        Button(
+                            onClick = {
+                                if (newMessageNumber.isNotEmpty() && newMessageText.isNotEmpty()) {
+                                    try {
+                                        val smsManager = context.getSystemService(android.telephony.SmsManager::class.java)
+                                        smsManager.sendTextMessage(newMessageNumber, null, newMessageText, null, null)
+                                        showNewMessageDialog = false
+                                        newMessageNumber = ""
+                                        newMessageText = ""
+                                    } catch (e: Exception) {
+                                        // Handle exception
+                                    }
+                                }
+                            },
+                            modifier = Modifier.weight(2f).height(80.dp),
+                            shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF007AFF))
+                        ) {
+                            Icon(Icons.Default.Send, contentDescription = null, modifier = Modifier.size(36.dp), tint = Color.White)
+                            Spacer(Modifier.width(16.dp))
+                            Text(stringResource(R.string.reply_send_btn), fontSize = 32.sp, fontWeight = FontWeight.ExtraBold, color = Color.White)
+                        }
                     }
                 }
-            )
+            }
         }
     }
 }

@@ -122,6 +122,49 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
                 SettingsMenuButton(stringResource(R.string.settings_category_5)) { currentCategory = 5 }
                 
                 Spacer(modifier = Modifier.weight(1f))
+                
+                var showResetConfirm by remember { mutableStateOf(false) }
+                Button(
+                    onClick = { showResetConfirm = true },
+                    modifier = Modifier.fillMaxWidth().height(80.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red, contentColor = Color.White)
+                ) {
+                    Text(stringResource(R.string.reset_app_settings), fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                }
+
+                if (showResetConfirm) {
+                    AlertDialog(
+                        onDismissRequest = { showResetConfirm = false },
+                        title = { Text(stringResource(R.string.reset_app_settings)) },
+                        text = { Text(stringResource(R.string.reset_app_confirm)) },
+                        confirmButton = {
+                            Button(onClick = {
+                                scope.launch {
+                                    // Reset DB
+                                    viewModel.repository.nukeTable()
+                                    viewModel.repository.insertInitialData(context)
+                                    // Reset preferences
+                                    sharedPref.edit().clear().apply()
+                                    viewModel.securityRepository.setPin(null)
+                                    viewModel.securityRepository.setProtectionEnabled(false)
+                                    viewModel.securityRepository.setTtsEnabled(false)
+                                    viewModel.securityRepository.setSmsTtsEnabled(false)
+                                    // Go back
+                                    showResetConfirm = false
+                                    navController.popBackStack()
+                                    // Restarts activity to apply cleanly
+                                    (context as? android.app.Activity)?.recreate()
+                                }
+                            }, colors = ButtonDefaults.buttonColors(containerColor = Color.Red)) {
+                                Text(stringResource(R.string.yes))
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { showResetConfirm = false }) { Text(stringResource(R.string.cancel)) }
+                        }
+                    )
+                }
             } else {
                 when(currentCategory) {
                     1 -> {
@@ -184,22 +227,6 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
                             Switch(checked = isHomeFavLockEnabled, onCheckedChange = { 
                                 scope.launch { viewModel.securityRepository.setHomeFavLockEnabled(it) }
                             })
-                        }
-                        Divider()
-                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Text(text = stringResource(R.string.battery_optimization_title), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                            Text(text = stringResource(R.string.battery_optimization_desc), style = MaterialTheme.typography.bodyMedium)
-                            Button(
-                                onClick = { BatteryOptimizationManager.requestIgnoreBatteryOptimizations(context) },
-                                modifier = Modifier.fillMaxWidth().height(80.dp),
-                                shape = RoundedCornerShape(16.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = if (isIgnoringBattery) Color(0xFF4CAF50) else Color.Red)
-                            ) {
-                                Text(
-                                    text = if (isIgnoringBattery) stringResource(R.string.battery_protection_active) else stringResource(R.string.battery_protection_inactive),
-                                    fontSize = 20.sp, fontWeight = FontWeight.Bold
-                                )
-                            }
                         }
                     }
                     3 -> {

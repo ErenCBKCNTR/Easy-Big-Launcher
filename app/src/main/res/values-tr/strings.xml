@@ -28,6 +28,11 @@
     <string name="mobile_data_settings">MOBİL VERİ AYARLARI</string>
     <string name="onboarding_welcome">Hoşgeldiniz\nWelcome</string>
     <string name="onboarding_start">BAŞLA</string>
+    <string name="pin_enter_new">Yeni Şifre Belirleyin</string>
+    <string name="pin_reenter">Şifreyi Tekrar Girin</string>
+    <string name="pin_enter">Şifre Girin</string>
+    <string name="pin_error_mismatch">Şifreler eşleşmiyor, tekrar deneyin!</string>
+    <string name="pin_error_incorrect">Hatalı şifre!</string>
     <string name="add_btn">Ekle</string>
     <string name="app_placeholder">Uygulama</string>
     <string name="go_to_settings_hint">Ayarlara git ve sayfa ekle</string>
@@ -164,4 +169,10 @@
     <string name="reply_message_hint">Mesajınızı yazın...</string>
     <string name="reply_send_btn">GÖNDER</string>
     <string name="reply_cancel_btn">İPTAL</string>
+    <string name="keyboard_space">BOŞLUK</string>
+    <string name="reply_btn">CEVAPLA</string>
+    <string name="new_message_hint_phone">Telefon Numarası</string>
+    <string name="reset_app_settings">Uygulamayı Sıfırla (Fabrika Ayarları)</string>
+    <string name="reset_app_confirm">Uygulamadaki tüm ayarlar, sayfalar ve kayıtlar silinip fabrika ayarlarına dönülecek. Onaylıyor musunuz?</string>
+    <string name="yes">EVET</string>
 </resources>

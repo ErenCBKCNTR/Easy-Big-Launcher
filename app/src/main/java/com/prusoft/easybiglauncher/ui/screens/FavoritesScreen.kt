@@ -33,7 +33,7 @@ import androidx.compose.runtime.collectAsState
 @Composable
 fun FavoritesScreen() {
     val context = LocalContext.current
-    val securityRepository = remember { SecurityRepository(context as android.app.Application) }
+    val securityRepository = remember { SecurityRepository(context.applicationContext as android.app.Application) }
     val isHomeFavLockEnabled by securityRepository.isHomeFavLockEnabled.collectAsState(initial = false)
     
     var favorites by remember { mutableStateOf<List<FavoriteContact>>(emptyList()) }

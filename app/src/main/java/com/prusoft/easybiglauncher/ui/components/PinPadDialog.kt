@@ -14,6 +14,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalContext
+import com.prusoft.easybiglauncher.R
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Backspace
@@ -25,6 +28,7 @@ fun PinPadDialog(
     onPinEntered: (String) -> Unit,
     isSettingNewPin: Boolean = false
 ) {
+    val context = LocalContext.current
     var firstEntry by remember { mutableStateOf("") }
     var secondEntry by remember { mutableStateOf("") }
     var isVerifying by remember { mutableStateOf(false) }
@@ -44,8 +48,8 @@ fun PinPadDialog(
             ) {
                 Text(
                     text = if (isSettingNewPin) {
-                        if (isVerifying) "Şifreyi Tekrar Girin" else "Yeni Şifre Belirleyin"
-                    } else "Şifre Girin",
+                        if (isVerifying) stringResource(R.string.pin_reenter) else stringResource(R.string.pin_enter_new)
+                    } else stringResource(R.string.pin_enter),
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
@@ -96,7 +100,7 @@ fun PinPadDialog(
                                                     if (pin == firstEntry) {
                                                         onPinEntered(pin)
                                                     } else {
-                                                        error = "Şifreler eşleşmiyor!"
+                                                        error = context.getString(R.string.pin_error_mismatch)
                                                         pin = ""
                                                         isVerifying = false
                                                         firstEntry = ""
@@ -134,7 +138,7 @@ fun PinPadDialog(
                                             if (pin == firstEntry) {
                                                 onPinEntered(pin)
                                             } else {
-                                                error = "Şifreler eşleşmiyor!"
+                                                error = context.getString(R.string.pin_error_mismatch)
                                                 pin = ""
                                                 isVerifying = false
                                                 firstEntry = ""
