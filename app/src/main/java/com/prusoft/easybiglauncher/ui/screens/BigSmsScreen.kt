@@ -399,7 +399,6 @@ fun BigSmsScreen(navController: NavController, viewModel: com.prusoft.easybiglau
                     }
                 }
             }
-        }
     } else {
         // List Screen
         Scaffold(
