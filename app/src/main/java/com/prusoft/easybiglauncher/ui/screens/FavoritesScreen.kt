@@ -56,11 +56,10 @@ fun FavoritesScreen() {
             modifier = Modifier.fillMaxSize().padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            try {
-                // Not using 'key' parameter to prevent fatal crashes if data is corrupted and returns duplicate hashcodes
-                items(items = favorites) { fav ->
-                    Card(
-                        modifier = Modifier.fillMaxWidth().combinedClickable(
+            // Not using 'key' parameter to prevent fatal crashes if data is corrupted and returns duplicate hashcodes
+            items(items = favorites) { fav ->
+                Card(
+                    modifier = Modifier.fillMaxWidth().combinedClickable(
                             onClick = {
                                 try {
                                     val safeNumber = fav.number ?: ""
@@ -92,11 +91,6 @@ fun FavoritesScreen() {
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(text = fav.number ?: "Unknown", fontSize = 24.sp, color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f))
                     }
-                }
-                }
-            } catch (e: Exception) {
-                item {
-                    Text("Favoriler yüklenirken hata oluştu.", fontSize = 20.sp, color = Color.Red)
                 }
             }
         }
