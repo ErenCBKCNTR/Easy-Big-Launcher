@@ -285,6 +285,23 @@ fun BigSmsScreen(navController: NavController, viewModel: com.prusoft.easybiglau
         }
     } else if (showNewMessageDialog) {
             var isEditingNumber by remember { mutableStateOf(true) }
+            val numberInteractionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+            val textInteractionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+            
+            LaunchedEffect(numberInteractionSource) {
+                numberInteractionSource.interactions.collect {
+                    if (it is androidx.compose.foundation.interaction.PressInteraction.Release) {
+                        isEditingNumber = true
+                    }
+                }
+            }
+            LaunchedEffect(textInteractionSource) {
+                textInteractionSource.interactions.collect {
+                    if (it is androidx.compose.foundation.interaction.PressInteraction.Release) {
+                        isEditingNumber = false
+                    }
+                }
+            }
             
             Scaffold(
                 topBar = {
@@ -310,15 +327,7 @@ fun BigSmsScreen(navController: NavController, viewModel: com.prusoft.easybiglau
                             focusedContainerColor = if (isEditingNumber) Color(0xFFE0E0E0) else Color(0xFFF0F0F0),
                             unfocusedContainerColor = if (isEditingNumber) Color(0xFFE0E0E0) else Color(0xFFF0F0F0)
                         ),
-                        interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }.also { interactionSource ->
-                            LaunchedEffect(interactionSource) {
-                                interactionSource.interactions.collect {
-                                    if (it is androidx.compose.foundation.interaction.PressInteraction.Release) {
-                                        isEditingNumber = true
-                                    }
-                                }
-                            }
-                        }
+                        interactionSource = numberInteractionSource
                     )
                     
                     Spacer(modifier = Modifier.height(16.dp))
@@ -334,15 +343,7 @@ fun BigSmsScreen(navController: NavController, viewModel: com.prusoft.easybiglau
                             focusedContainerColor = if (!isEditingNumber) Color(0xFFE0E0E0) else Color(0xFFF0F0F0),
                             unfocusedContainerColor = if (!isEditingNumber) Color(0xFFE0E0E0) else Color(0xFFF0F0F0)
                         ),
-                        interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }.also { interactionSource ->
-                            LaunchedEffect(interactionSource) {
-                                interactionSource.interactions.collect {
-                                    if (it is androidx.compose.foundation.interaction.PressInteraction.Release) {
-                                        isEditingNumber = false
-                                    }
-                                }
-                            }
-                        }
+                        interactionSource = textInteractionSource
                     )
                     
                     Spacer(modifier = Modifier.height(8.dp))
