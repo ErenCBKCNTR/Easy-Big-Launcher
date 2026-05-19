@@ -154,4 +154,11 @@
     <string name="medicine_time">Medicine time</string>
     <string name="voice_type">Voice Type (Male/Female)</string>
     <string name="battery_level">Your phone battery is at %1$d percent</string>
+    <string name="battery_low_warning">Please plug in your phone shortly.</string>
+    <string name="action_choose">Choose Action</string>
+    <string name="action_choose_desc">What should this shortcut do?</string>
+    <string name="action_phone_call">Phone Call</string>
+    <string name="action_wa_audio">WhatsApp Audio</string>
+    <string name="action_wa_video">WhatsApp Video</string>
+    <string name="action_choose_tool">Pick a Tool</string>
 </resources>

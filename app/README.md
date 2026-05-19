@@ -11,8 +11,13 @@ To resolve this issue for a production release:
 3. Keep the Privacy Policy screen active within the app, as this explicitly informs end-users why these data points are processed locally on the device.
 
 ### Feature Completion
+- **Step 33-34 Updates:**
 - Full strict localizations have been applied to Turkish and English.
 - Address field editing cursor jumps have been solved.
+- All Medical ID fields changed to use `TextFieldValue` to completely solve Android keyboard cursor reset bugs.
+- Medical ID Card redesigned to look like an authentic and distinct identity card (high contrast, separated sections).
+- Deep Link intent added for Gemini Live (`ASSISTANT_START_VOICE_SESSION`).
 - Dialer Haptic feedback implemented.
 - BottomSheet used for SMS.
-- Gemini Live integrations updated to Deep Link directly.
+- Keep Screen On implemented for Medical ID View page.
+- Uninstall Intent corrected to `ACTION_UNINSTALL_PACKAGE`.

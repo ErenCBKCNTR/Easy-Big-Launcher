@@ -77,6 +77,12 @@
     <string name="enter_number">Numara Girin</string>
     <string name="enter_message">Mesaj Yazın</string>
     <string name="no_messages">Mesaj bulunamadı.</string>
+    <string name="ai_assistant">Yapay Zeka Asistanı</string>
+    <string name="ai_not_found">Yapay Zeka uygulaması bulunamadı</string>
+    <string name="magnifier">Büyüteç</string>
+    <string name="panic_siren">Panik Sireni</string>
+    <string name="stop_siren">SİSTEMİ DURDUR</string>
+    <string name="low_battery_sos">Düşük pil uyarısı SMS</string>
     <string name="medical_id_short">Tıbbi Kimlik</string>
     <string name="default_page">Varsayılan Sayfa</string>
     <string name="settings_category_1">1. Dil ve Ses</string>
@@ -147,4 +153,11 @@
     <string name="medicine_time">İlaç vakti</string>
     <string name="voice_type">Ses Tipi (Erkek/Kadın)</string>
     <string name="battery_level">Telefonunuzun pil seviyesi yüzde %1$d</string>
+    <string name="battery_low_warning">Lütfen kısa süre içerisinde telefonunuzu şarja takın.</string>
+    <string name="action_choose">Eylem Seçin</string>
+    <string name="action_choose_desc">Bu kişi için kısayol eylemi ne olsun?</string>
+    <string name="action_phone_call">Telefon ile Arama</string>
+    <string name="action_wa_audio">WhatsApp Sesli</string>
+    <string name="action_wa_video">WhatsApp Görüntülü</string>
+    <string name="action_choose_tool">Araç Seç</string>
 </resources>

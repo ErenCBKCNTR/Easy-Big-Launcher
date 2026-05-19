@@ -1,7 +1,9 @@
 package com.prusoft.easybiglauncher.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -14,6 +16,7 @@ import androidx.compose.runtime.*
 import android.content.Context
 import android.content.ContextWrapper
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -76,34 +79,137 @@ fun MedicalIdScreen(navController: NavController, viewModel: LauncherViewModel =
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(16.dp)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .verticalScroll(rememberScrollState())
         ) {
-            MedicalInfoCard(stringResource(R.string.medical_firstname) + " " + stringResource(R.string.medical_lastname), "$medName $medSurname")
-            MedicalInfoCard(stringResource(R.string.medical_age), medAge)
-            MedicalInfoCard(stringResource(R.string.medical_blood), medBlood, Color.Red)
-            MedicalInfoCard(stringResource(R.string.medical_chronic), medChronic)
-            MedicalInfoCard(stringResource(R.string.medical_address), medAddress)
-            
-            Text(stringResource(R.string.medical_contact_title), fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.Red, modifier = Modifier.padding(top = 16.dp))
-            MedicalInfoCard(stringResource(R.string.medical_contact_name), medContactName)
-            MedicalInfoCard(stringResource(R.string.medical_contact_number), medContactNumber)
-            MedicalInfoCard(stringResource(R.string.medical_contact_relation), medContactRelation)
-        }
-    }
-}
+            Card(
+                modifier = Modifier.fillMaxWidth().padding(bottom = 32.dp),
+                shape = RoundedCornerShape(16.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White)
+            ) {
+                Column {
+                    // Red Header
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color(0xFFE53935))
+                            .padding(16.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.medical_id_short).uppercase(),
+                            color = Color.White,
+                            fontSize = 28.sp,
+                            fontWeight = FontWeight.ExtraBold
+                        )
+                    }
 
-@Composable
-fun MedicalInfoCard(title: String, value: String, color: Color = Color.Unspecified) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = title, fontSize = 18.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Spacer(modifier = Modifier.height(4.dp))
-            val textValue = if (value.isBlank()) stringResource(R.string.not_specified) else value
-            Text(text = textValue, fontSize = 24.sp, fontWeight = FontWeight.Bold, color = if (color != Color.Unspecified) color else MaterialTheme.colorScheme.onSurface)
+                    // Main Content
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        // Top Section: Name
+                        val fullName = "$medName $medSurname".trim()
+                        val nameToShow = fullName.ifEmpty { stringResource(R.string.not_specified) }
+                        
+                        Text(text = stringResource(R.string.medical_firstname) + " " + stringResource(R.string.medical_lastname), fontSize = 16.sp, color = Color.Gray)
+                        Text(text = nameToShow, fontSize = 32.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+                        
+                        Spacer(modifier = Modifier.height(16.dp))
+                        
+                        // Top Section: Age and Blood Type
+                        Row(modifier = Modifier.fillMaxWidth()) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(text = stringResource(R.string.medical_age), fontSize = 16.sp, color = Color.Gray)
+                                Text(
+                                    text = medAge.ifBlank { stringResource(R.string.not_specified) },
+                                    fontSize = 24.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.Black
+                                )
+                            }
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(text = stringResource(R.string.medical_blood), fontSize = 16.sp, color = Color.Gray)
+                                Text(
+                                    text = medBlood.ifBlank { stringResource(R.string.not_specified) },
+                                    fontSize = 24.sp,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = Color(0xFFD32F2F)
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        // Middle Section: Chronic Illnesses & Address
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(Color(0xFFF5F5F5))
+                                .padding(16.dp)
+                        ) {
+                            Column {
+                                Text(text = stringResource(R.string.medical_chronic), fontSize = 16.sp, color = Color.Gray, fontWeight = FontWeight.SemiBold)
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = medChronic.ifBlank { stringResource(R.string.not_specified) },
+                                    fontSize = 20.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = Color.Black
+                                )
+                                
+                                Spacer(modifier = Modifier.height(16.dp))
+                                
+                                Text(text = stringResource(R.string.medical_address), fontSize = 16.sp, color = Color.Gray, fontWeight = FontWeight.SemiBold)
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = medAddress.ifBlank { stringResource(R.string.not_specified) },
+                                    fontSize = 20.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = Color.Black
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        // Bottom Section: Emergency Contact
+                        Text(
+                            text = stringResource(R.string.medical_contact_title),
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFFD32F2F)
+                        )
+                        Divider(modifier = Modifier.padding(vertical = 8.dp), color = Color.LightGray)
+                        
+                        Text(text = stringResource(R.string.medical_contact_name), fontSize = 16.sp, color = Color.Gray)
+                        Text(
+                            text = medContactName.ifBlank { stringResource(R.string.not_specified) },
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Black
+                        )
+                        
+                        Spacer(modifier = Modifier.height(8.dp))
+                        
+                        Text(text = stringResource(R.string.medical_contact_number), fontSize = 16.sp, color = Color.Gray)
+                        Text(
+                            text = medContactNumber.ifBlank { stringResource(R.string.not_specified) },
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Black
+                        )
+                        
+                        Spacer(modifier = Modifier.height(8.dp))
+                        
+                        Text(text = stringResource(R.string.medical_contact_relation), fontSize = 16.sp, color = Color.Gray)
+                        Text(
+                            text = medContactRelation.ifBlank { stringResource(R.string.not_specified) },
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Black
+                        )
+                    }
+                }
+            }
         }
     }
 }

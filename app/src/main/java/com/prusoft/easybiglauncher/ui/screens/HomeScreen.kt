@@ -25,6 +25,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.Mic
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Person
 import com.prusoft.easybiglauncher.utils.EmergencyManager
 import androidx.compose.ui.platform.LocalContext
@@ -129,6 +132,9 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
         // Do nothing to prevent exiting the launcher via back button
     }
 
+    var contactToConfigure by remember { mutableStateOf<Triple<String, String, LauncherItem>?>(null) }
+    var showToolDialog by remember { mutableStateOf(false) }
+
     val contactPicker = rememberLauncherForActivityResult(
         ActivityResultContracts.PickContact()
     ) { uri ->
@@ -154,11 +160,50 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
                 cursor.close()
                 
                 if (slotToAssign != null) {
-                    viewModel.assignContactToItem(slotToAssign!!, name, number)
+                    contactToConfigure = Triple(name, number, slotToAssign!!)
                     slotToAssign = null
                 }
             }
         }
+    }
+
+    if (contactToConfigure != null) {
+        AlertDialog(
+            onDismissRequest = { contactToConfigure = null },
+            title = { Text("Eylem Seçin", fontSize = 24.sp, fontWeight = FontWeight.Bold) },
+            text = { Text("Bu kişi için kısayol eylemi ne olsun?", fontSize = 20.sp) },
+            confirmButton = {
+                Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    val (name, number, slot) = contactToConfigure!!
+                    Button(onClick = { viewModel.assignContactToItem(slot, name, number); contactToConfigure = null }, modifier = Modifier.fillMaxWidth().height(60.dp)) { Text("Telefon ile Arama", fontSize = 20.sp) }
+                    Button(onClick = { viewModel.assignContactToItem(slot, name, "whatsapp_audio:$number"); contactToConfigure = null }, modifier = Modifier.fillMaxWidth().height(60.dp), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF25D366))) { Text("WhatsApp Sesli", fontSize = 20.sp) }
+                    Button(onClick = { viewModel.assignContactToItem(slot, name, "whatsapp_video:$number"); contactToConfigure = null }, modifier = Modifier.fillMaxWidth().height(60.dp), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF128C7E))) { Text("WhatsApp Görüntülü", fontSize = 20.sp) }
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { contactToConfigure = null }) { Text(stringResource(R.string.cancel)) }
+            }
+        )
+    }
+
+    if (showToolDialog && slotToAssign != null) {
+        AlertDialog(
+            onDismissRequest = { showToolDialog = false },
+            title = { Text("Araç Seç", fontSize = 24.sp, fontWeight = FontWeight.Bold) },
+            confirmButton = {
+                Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    val magnifierName = stringResource(R.string.magnifier)
+                    val sirenName = stringResource(R.string.panic_siren)
+                    val aiName = stringResource(R.string.ai_assistant)
+                    Button(onClick = { viewModel.assignContactToItem(slotToAssign!!, magnifierName, "tool_magnifier"); showToolDialog = false; slotToAssign = null }, modifier = Modifier.fillMaxWidth().height(60.dp)) { Text(stringResource(R.string.magnifier), fontSize = 20.sp) }
+                    Button(onClick = { viewModel.assignContactToItem(slotToAssign!!, sirenName, "tool_siren"); showToolDialog = false; slotToAssign = null }, modifier = Modifier.fillMaxWidth().height(60.dp)) { Text(stringResource(R.string.panic_siren), fontSize = 20.sp) }
+                    Button(onClick = { viewModel.assignContactToItem(slotToAssign!!, aiName, "tool_ai"); showToolDialog = false; slotToAssign = null }, modifier = Modifier.fillMaxWidth().height(60.dp)) { Text(stringResource(R.string.ai_assistant), fontSize = 20.sp) }
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showToolDialog = false }) { Text(stringResource(R.string.cancel)) }
+            }
+        )
     }
 
     if (showAddSlotDialog && slotToAssign != null) {
@@ -189,6 +234,17 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
                     ) {
                         Text(stringResource(R.string.add_contact), fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                    }
+                    Button(
+                        onClick = {
+                            showAddSlotDialog = false
+                            showToolDialog = true
+                        },
+                        modifier = Modifier.fillMaxWidth().height(80.dp),
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray)
+                    ) {
+                        Text("Araç Seç", color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.Bold)
                     }
                     TextButton(onClick = { showAddSlotDialog = false }, modifier = Modifier.align(Alignment.CenterHorizontally)) {
                         Text(stringResource(R.string.cancel), fontSize = 20.sp)
@@ -283,7 +339,45 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
                                              showAddSlotDialog = true
                                          }
                                     } else if (item.itemType == ItemType.CONTACT) {
-                                        navController.navigate("dialer")
+                                        val pkg = item.packageName ?: ""
+                                        if (pkg.startsWith("whatsapp_audio:") || pkg.startsWith("whatsapp_video:")) {
+                                            try {
+                                                val intent = Intent(Intent.ACTION_VIEW)
+                                                intent.type = if (pkg.startsWith("whatsapp_video")) "vnd.android.cursor.item/vnd.com.whatsapp.video.call" else "vnd.android.cursor.item/vnd.com.whatsapp.voip.call"
+                                                context.startActivity(intent)
+                                            } catch (e: Exception) {
+                                                val dialIntent = Intent(Intent.ACTION_DIAL, android.net.Uri.parse("tel:" + pkg.substringAfter(":")))
+                                                context.startActivity(dialIntent)
+                                            }
+                                        } else if (pkg.startsWith("tool_")) {
+                                            when (pkg) {
+                                                "tool_magnifier" -> navController.navigate("magnifier")
+                                                "tool_siren" -> navController.navigate("siren")
+                                                "tool_ai" -> {
+                                                    try {
+                                                        val intent = Intent(Intent.ACTION_VOICE_COMMAND).apply {
+                                                            setPackage("com.google.android.apps.bard")
+                                                            putExtra("android.intent.extra.START_VOICE_SESSION", true)
+                                                            putExtra("android.intent.extra.ASSIST_INPUT_DEVICE_ID", 0)
+                                                            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                                                        }
+                                                        context.startActivity(intent)
+                                                    } catch (e: Exception) {
+                                                        val playStoreIntent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse("market://details?id=com.google.android.apps.bard"))
+                                                        playStoreIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                                        context.startActivity(playStoreIntent)
+                                                    }
+                                                }
+                                            }
+                                        } else {
+                                            try {
+                                                val intent = Intent(Intent.ACTION_CALL).apply { data = android.net.Uri.parse("tel:$pkg") }
+                                                context.startActivity(intent)
+                                            } catch (e: Exception) {
+                                                val intent = Intent(Intent.ACTION_DIAL).apply { data = android.net.Uri.parse("tel:$pkg") }
+                                                context.startActivity(intent)
+                                            }
+                                        }
                                     } else {
                                         item.packageName?.let { pkg ->
                                             when {
@@ -403,24 +497,40 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
 fun GridItem(item: LauncherItem, isTtsEnabled: Boolean, badgeCount: Int = 0, onClick: () -> Unit, onLongClick: () -> Unit) {
     val isPhone = item.packageName == "com.android.dialer" || item.packageName == "com.google.android.dialer"
     val isSms = item.packageName == "com.android.messaging" || item.packageName == "com.google.android.apps.messaging"
+    val isTool = item.packageName?.startsWith("tool_") == true
+    val isWhatsApp = item.packageName?.startsWith("whatsapp_") == true
     
+    val toolIcon = when(item.packageName) {
+        "tool_magnifier" -> Icons.Default.Search
+        "tool_siren" -> Icons.Default.Warning
+        "tool_ai" -> Icons.Default.Mic
+        else -> Icons.Default.Build
+    }
+    
+    val waColor = if (item.packageName?.contains("video") == true) Color(0xFF128C7E) else Color(0xFF25D366)
+
     BigButton(
         text = when {
             item.itemType == ItemType.EMPTY -> stringResource(R.string.add_btn)
             isPhone -> item.customLabel ?: stringResource(R.string.btn_phone)
             isSms -> item.customLabel ?: stringResource(R.string.btn_messages)
+            isTool -> item.customLabel ?: item.label ?: ""
             else -> item.customLabel ?: item.label ?: stringResource(R.string.app_placeholder)
         },
         icon = when {
             item.itemType == ItemType.EMPTY -> Icons.Default.Add
             isPhone -> Icons.Default.Phone
             isSms -> Icons.Default.Mail
+            isTool -> toolIcon
+            isWhatsApp -> Icons.Default.Person
             else -> Icons.Default.Apps
         },
         backgroundColor = when {
             item.itemType == ItemType.EMPTY -> MaterialTheme.colorScheme.surfaceVariant
             isPhone -> Color.Green
             isSms -> Color.Blue
+            isTool -> Color.DarkGray
+            isWhatsApp -> waColor
             else -> MaterialTheme.colorScheme.primaryContainer
         },
         contentColor = if (item.itemType == ItemType.EMPTY) MaterialTheme.colorScheme.onSurfaceVariant else Color.White,
@@ -428,8 +538,8 @@ fun GridItem(item: LauncherItem, isTtsEnabled: Boolean, badgeCount: Int = 0, onC
         customColor = item.customColor,
         customImageUri = item.customImageUri,
         isTtsEnabled = isTtsEnabled,
-        appIconPackageName = if (item.itemType == ItemType.APP && !isPhone && !isSms) item.packageName else null,
-        isContact = item.itemType == ItemType.CONTACT,
+        appIconPackageName = if (item.itemType == ItemType.APP && !isPhone && !isSms && !isTool) item.packageName else null,
+        isContact = item.itemType == ItemType.CONTACT && !isTool && !isWhatsApp,
         onClick = onClick,
         onLongClick = onLongClick
     )

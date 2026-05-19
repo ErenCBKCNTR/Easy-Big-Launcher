@@ -53,7 +53,7 @@ class TTSManager private constructor(context: Context) : TextToSpeech.OnInitList
             tts?.setVoice(selectedVoice)
         } else {
             tts?.setPitch(if (isFemale) 1.2f else 0.8f)
-            tts?.setSpeechRate(if (isFemale) 1.2f else 0.8f)
+            tts?.setSpeechRate(1.0f)
         }
     }
 

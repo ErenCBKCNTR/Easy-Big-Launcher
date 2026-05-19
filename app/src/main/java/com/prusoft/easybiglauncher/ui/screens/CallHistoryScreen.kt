@@ -135,56 +135,35 @@ fun CallHistoryScreen() {
     }
 
     if (favoriteContactToAdd != null) {
-        AlertDialog(
-            onDismissRequest = { favoriteContactToAdd = null },
-            title = { Text(stringResource(R.string.add_to_favorites), fontSize = 24.sp, fontWeight = FontWeight.Bold) },
-            text = { Text(stringResource(R.string.add_to_favorites_desc, favoriteContactToAdd!!.name ?: favoriteContactToAdd!!.number), fontSize = 20.sp) },
-            confirmButton = {
-                Button(onClick = {
-                    favoriteContactToAdd?.let {
-                        FavoritesUtils.addFavorite(context, it.name ?: it.number, it.number)
-                    }
-                    favoriteContactToAdd = null
-                }) {
-                    Text(stringResource(R.string.yes), fontSize = 20.sp)
+        com.prusoft.easybiglauncher.ui.components.BigConfirmDialog(
+            title = stringResource(R.string.add_to_favorites),
+            message = stringResource(R.string.add_to_favorites_desc, favoriteContactToAdd!!.name ?: favoriteContactToAdd!!.number),
+            onConfirm = {
+                favoriteContactToAdd?.let {
+                    FavoritesUtils.addFavorite(context, it.name ?: it.number, it.number)
                 }
+                favoriteContactToAdd = null
             },
-            dismissButton = {
-                TextButton(onClick = { favoriteContactToAdd = null }) {
-                    Text(stringResource(R.string.no), fontSize = 20.sp)
-                }
-            }
+            onCancel = { favoriteContactToAdd = null }
         )
     }
 
     if (showClearHistoryDialog) {
-        AlertDialog(
-            onDismissRequest = { showClearHistoryDialog = false },
-            title = { Text(stringResource(R.string.clear_history_title), fontSize = 24.sp, fontWeight = FontWeight.Bold) },
-            text = { Text(stringResource(R.string.clear_history_confirm), fontSize = 20.sp) },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        try {
-                            if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_CALL_LOG) == PackageManager.PERMISSION_GRANTED) {
-                                context.contentResolver.delete(CallLog.Calls.CONTENT_URI, null, null)
-                                callLogs = emptyList()
-                            }
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                        }
-                        showClearHistoryDialog = false
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
-                ) {
-                    Text(stringResource(R.string.yes), fontSize = 20.sp)
+        com.prusoft.easybiglauncher.ui.components.BigConfirmDialog(
+            title = stringResource(R.string.clear_history_title),
+            message = stringResource(R.string.clear_history_confirm),
+            onConfirm = {
+                try {
+                    if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_CALL_LOG) == PackageManager.PERMISSION_GRANTED) {
+                        context.contentResolver.delete(CallLog.Calls.CONTENT_URI, null, null)
+                        callLogs = emptyList()
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
                 }
+                showClearHistoryDialog = false
             },
-            dismissButton = {
-                TextButton(onClick = { showClearHistoryDialog = false }) {
-                    Text(stringResource(R.string.no), fontSize = 20.sp)
-                }
-            }
+            onCancel = { showClearHistoryDialog = false }
         )
     }
 }

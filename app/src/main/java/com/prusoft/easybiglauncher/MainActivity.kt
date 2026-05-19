@@ -18,11 +18,16 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import android.content.BroadcastReceiver
 import android.content.IntentFilter
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
+import java.util.concurrent.TimeUnit
 import com.prusoft.easybiglauncher.utils.BatteryMonitor
 import android.os.BatteryManager
 import com.prusoft.easybiglauncher.ui.theme.AccessibilityLauncherTheme
 import com.prusoft.easybiglauncher.navigation.AppNavigation
 import com.prusoft.easybiglauncher.utils.TTSManager
+import com.prusoft.easybiglauncher.utils.BatteryWorker
 import android.content.ComponentCallbacks2
 import coil.imageLoader
 
@@ -35,6 +40,10 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        val workRequest = PeriodicWorkRequestBuilder<BatteryWorker>(15, TimeUnit.MINUTES).build()
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork("BatteryWorker", ExistingPeriodicWorkPolicy.KEEP, workRequest)
+        
         registerReceiver(batteryReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
         WindowCompat.setDecorFitsSystemWindows(window, false)
         WindowInsetsControllerCompat(window, window.decorView).let { controller ->

@@ -23,6 +23,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -152,10 +157,21 @@ fun DialerContent(context: Context) {
                     .weight(1f)
                     .height(90.dp)
                     .pointerInput(Unit) {
-                        detectTapGestures(
-                            onTap = { if (number.isNotEmpty()) number = number.dropLast(1) },
-                            onLongPress = { number = "" }
-                        )
+                        awaitEachGesture {
+                            val down = awaitFirstDown()
+                            if (number.isNotEmpty()) number = number.dropLast(1)
+                            var isUp = false
+                            val job = kotlinx.coroutines.GlobalScope.launch {
+                                delay(500)
+                                while (!isUp && number.isNotEmpty()) {
+                                    number = number.dropLast(1)
+                                    delay(100)
+                                }
+                            }
+                            waitForUpOrCancellation()
+                            isUp = true
+                            job.cancel()
+                        }
                     },
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Gray),
                 shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)

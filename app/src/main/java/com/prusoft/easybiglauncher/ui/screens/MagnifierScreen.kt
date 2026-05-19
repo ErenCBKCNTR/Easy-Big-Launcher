@@ -64,10 +64,10 @@ fun MagnifierScreen(navController: NavController) {
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Büyüteç") },
+                title = { Text(stringResource(R.string.magnifier)) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Geri")
+                        Icon(Icons.Default.ArrowBack, contentDescription = null)
                     }
                 }
             )

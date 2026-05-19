@@ -56,22 +56,28 @@ fun FavoritesScreen() {
             modifier = Modifier.fillMaxSize().padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            items(items = favorites, key = { it.number + it.name.hashCode() }) { fav ->
-                Card(
-                    modifier = Modifier.fillMaxWidth().combinedClickable(
-                        onClick = {
-                            val intent = Intent(Intent.ACTION_CALL).apply {
-                                data = Uri.parse("tel:${fav.number}")
-                            }
-                            try {
-                                context.startActivity(intent)
-                            } catch (e: Exception) {
-                                val dialIntent = Intent(Intent.ACTION_DIAL).apply {
-                                    data = Uri.parse("tel:${fav.number}")
+            try {
+                items(items = favorites, key = { it.hashCode() }) { fav ->
+                    Card(
+                        modifier = Modifier.fillMaxWidth().combinedClickable(
+                            onClick = {
+                                try {
+                                    val safeNumber = fav.number ?: ""
+                                    val intent = Intent(Intent.ACTION_CALL).apply {
+                                        data = Uri.parse("tel:$safeNumber")
+                                    }
+                                    try {
+                                        context.startActivity(intent)
+                                    } catch (e: Exception) {
+                                        val dialIntent = Intent(Intent.ACTION_DIAL).apply {
+                                            data = Uri.parse("tel:$safeNumber")
+                                        }
+                                        context.startActivity(dialIntent)
+                                    }
+                                } catch (e: Exception) {
+                                    e.printStackTrace()
                                 }
-                                context.startActivity(dialIntent)
-                            }
-                        },
+                            },
                         onLongClick = {
                             if (!isHomeFavLockEnabled) {
                                 favoriteToDelete = fav
@@ -81,36 +87,32 @@ fun FavoritesScreen() {
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
                 ) {
                     Column(modifier = Modifier.padding(24.dp)) {
-                        Text(text = fav.name, fontSize = 32.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                        Text(text = fav.name ?: "Unknown", fontSize = 32.sp, fontWeight = FontWeight.ExtraBold, color = MaterialTheme.colorScheme.onPrimaryContainer)
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text(text = fav.number, fontSize = 24.sp, color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f))
+                        Text(text = fav.number ?: "Unknown", fontSize = 24.sp, color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f))
                     }
+                }
+                }
+            } catch (e: Exception) {
+                item {
+                    Text("Favoriler yüklenirken hata oluştu.", fontSize = 20.sp, color = Color.Red)
                 }
             }
         }
     }
     
     if (favoriteToDelete != null) {
-        AlertDialog(
-            onDismissRequest = { favoriteToDelete = null },
-            title = { Text(stringResource(R.string.delete_favorite_title), fontSize = 24.sp, fontWeight = FontWeight.Bold) },
-            text = { Text(stringResource(R.string.delete_favorite_desc, favoriteToDelete!!.name), fontSize = 20.sp) },
-            confirmButton = {
-                Button(onClick = {
-                    favoriteToDelete?.let {
-                        FavoritesUtils.removeFavorite(context, it.number)
-                        favorites = FavoritesUtils.getFavorites(context)
-                    }
-                    favoriteToDelete = null
-                }, colors = ButtonDefaults.buttonColors(containerColor = Color.Red)) {
-                    Text(stringResource(R.string.delete_item_btn), fontSize = 20.sp)
+        com.prusoft.easybiglauncher.ui.components.BigConfirmDialog(
+            title = stringResource(R.string.delete_favorite_title),
+            message = stringResource(R.string.delete_favorite_desc, favoriteToDelete!!.name ?: "Unknown"),
+            onConfirm = {
+                favoriteToDelete?.let {
+                    FavoritesUtils.removeFavorite(context, it.number ?: "")
+                    favorites = FavoritesUtils.getFavorites(context).distinctBy { f -> f.number }
                 }
+                favoriteToDelete = null
             },
-            dismissButton = {
-                TextButton(onClick = { favoriteToDelete = null }) {
-                    Text(stringResource(R.string.cancel), fontSize = 20.sp)
-                }
-            }
+            onCancel = { favoriteToDelete = null }
         )
     }
 }

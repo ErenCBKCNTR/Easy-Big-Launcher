@@ -117,25 +117,16 @@ fun BigContactsScreen() {
     }
 
     if (favoriteContactToAdd != null) {
-        AlertDialog(
-            onDismissRequest = { favoriteContactToAdd = null },
-            title = { Text(stringResource(R.string.add_to_favorites), fontSize = 24.sp, fontWeight = FontWeight.Bold) },
-            text = { Text(stringResource(R.string.add_to_favorites_desc, favoriteContactToAdd!!.name), fontSize = 20.sp) },
-            confirmButton = {
-                Button(onClick = {
-                    favoriteContactToAdd?.let {
-                        FavoritesUtils.addFavorite(context, it.name, it.number)
-                    }
-                    favoriteContactToAdd = null
-                }) {
-                    Text(stringResource(R.string.yes), fontSize = 20.sp)
+        com.prusoft.easybiglauncher.ui.components.BigConfirmDialog(
+            title = stringResource(R.string.add_to_favorites),
+            message = stringResource(R.string.add_to_favorites_desc, favoriteContactToAdd!!.name),
+            onConfirm = {
+                favoriteContactToAdd?.let {
+                    FavoritesUtils.addFavorite(context, it.name, it.number)
                 }
+                favoriteContactToAdd = null
             },
-            dismissButton = {
-                TextButton(onClick = { favoriteContactToAdd = null }) {
-                    Text(stringResource(R.string.no), fontSize = 20.sp)
-                }
-            }
+            onCancel = { favoriteContactToAdd = null }
         )
     }
 }
