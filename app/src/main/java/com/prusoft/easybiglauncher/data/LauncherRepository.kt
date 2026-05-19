@@ -31,10 +31,10 @@ class LauncherRepository(private val dao: LauncherDao) {
 
     suspend fun insertInitialData() {
         val pageId = dao.insertPage(LauncherPage(pageOrder = 0, rowCount = 3, columnCount = 2)).toInt()
-        dao.insertItem(LauncherItem(pageId = pageId, slotIndex = 0, itemType = ItemType.APP, packageName = "com.android.dialer", label = "Telefon"))
-        dao.insertItem(LauncherItem(pageId = pageId, slotIndex = 1, itemType = ItemType.APP, packageName = "com.android.messaging", label = "Mesajlar"))
+        dao.insertItem(LauncherItem(pageId = pageId, slotIndex = 0, itemType = ItemType.APP, packageName = "com.android.dialer", label = "Telefon", iconUri = null))
+        dao.insertItem(LauncherItem(pageId = pageId, slotIndex = 1, itemType = ItemType.APP, packageName = "com.android.messaging", label = "Mesajlar", iconUri = null))
         for (i in 2 until 6) {
-            dao.insertItem(LauncherItem(pageId = pageId, slotIndex = i, itemType = ItemType.EMPTY))
+            dao.insertItem(LauncherItem(pageId = pageId, slotIndex = i, itemType = ItemType.EMPTY, packageName = null, label = null, iconUri = null))
         }
     }
 }
