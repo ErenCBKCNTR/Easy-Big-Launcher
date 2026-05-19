@@ -204,7 +204,7 @@ fun DialerButton(text: String, onClick: () -> Unit) {
     val haptic = LocalHapticFeedback.current
     Button(
         onClick = {
-            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
             onClick()
         },
         modifier = Modifier.height(100.dp),

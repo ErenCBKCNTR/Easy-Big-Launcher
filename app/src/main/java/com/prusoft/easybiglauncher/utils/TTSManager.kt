@@ -52,7 +52,8 @@ class TTSManager private constructor(context: Context) : TextToSpeech.OnInitList
         if (selectedVoice != null) {
             tts?.setVoice(selectedVoice)
         } else {
-            tts?.setPitch(if (isFemale) 1.2f else 0.7f)
+            tts?.setPitch(if (isFemale) 1.2f else 0.8f)
+            tts?.setSpeechRate(if (isFemale) 1.2f else 0.8f)
         }
     }
 

@@ -191,6 +191,8 @@ fun ToolsScreen(navController: NavController, viewModel: LauncherViewModel = vie
                             val geminiVoiceIntent = Intent(Intent.ACTION_VOICE_COMMAND).apply {
                                 setPackage("com.google.android.apps.bard")
                                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                                putExtra("android.intent.extra.ASSISTANT_START_VOICE_SESSION", true)
+                                putExtra("EXTRA_ASSISTANT_START_LIVE_CHAT", true)
                             }
                             if (geminiVoiceIntent.resolveActivity(context.packageManager) != null) {
                                 context.startActivity(geminiVoiceIntent)

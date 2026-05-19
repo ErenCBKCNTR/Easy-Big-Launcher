@@ -63,7 +63,7 @@ fun RemindersScreen(navController: NavController, viewModel: LauncherViewModel =
         Column(modifier = Modifier.padding(padding).fillMaxSize().padding(16.dp)) {
             if (reminders.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("Henüz hatırlatıcı eklenmemiş.", fontSize = 24.sp, fontWeight = FontWeight.Medium)
+                    Text(stringResource(R.string.no_reminders_yet), fontSize = 24.sp, fontWeight = FontWeight.Medium)
                 }
             } else {
                 LazyColumn(verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -166,6 +166,7 @@ private fun Modifier.scale(scale: Float): Modifier = this // Helper if needed
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddReminderDialog(onDismiss: () -> Unit, onConfirm: (String, Long) -> Unit) {
+    val context = LocalContext.current
     var title by remember { mutableStateOf("") }
     var hour by remember { mutableStateOf("") }
     var minute by remember { mutableStateOf("") }
@@ -216,7 +217,8 @@ fun AddReminderDialog(onDismiss: () -> Unit, onConfirm: (String, Long) -> Unit) 
                             add(Calendar.DAY_OF_YEAR, 1)
                         }
                     }
-                    onConfirm(title.ifEmpty { "İlaç Vakti" }, calendar.timeInMillis)
+                    val defaultTitle = context.getString(R.string.medicine_time)
+                    onConfirm(title.ifEmpty { defaultTitle }, calendar.timeInMillis)
                 },
                 modifier = Modifier.height(70.dp).fillMaxWidth()
             ) {

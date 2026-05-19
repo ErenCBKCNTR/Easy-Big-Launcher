@@ -49,7 +49,7 @@ fun FavoritesScreen() {
 
     if (favorites.isEmpty()) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("HENÜZ FAVORİ KİŞİ EKLENMEDİ", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = Color.Gray)
+            Text(stringResource(R.string.no_favorites_yet), fontSize = 28.sp, fontWeight = FontWeight.Bold, color = Color.Gray, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
         }
     } else {
         LazyColumn(

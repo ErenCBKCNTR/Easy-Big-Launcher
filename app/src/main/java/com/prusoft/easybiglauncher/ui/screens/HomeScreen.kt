@@ -405,7 +405,12 @@ fun GridItem(item: LauncherItem, isTtsEnabled: Boolean, badgeCount: Int = 0, onC
     val isSms = item.packageName == "com.android.messaging" || item.packageName == "com.google.android.apps.messaging"
     
     BigButton(
-        text = if (item.itemType == ItemType.EMPTY) stringResource(R.string.add_btn) else (item.customLabel ?: item.label ?: stringResource(R.string.app_placeholder)),
+        text = when {
+            item.itemType == ItemType.EMPTY -> stringResource(R.string.add_btn)
+            isPhone -> item.customLabel ?: stringResource(R.string.btn_phone)
+            isSms -> item.customLabel ?: stringResource(R.string.btn_messages)
+            else -> item.customLabel ?: item.label ?: stringResource(R.string.app_placeholder)
+        },
         icon = when {
             item.itemType == ItemType.EMPTY -> Icons.Default.Add
             isPhone -> Icons.Default.Phone

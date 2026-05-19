@@ -77,12 +77,12 @@
     <string name="send">SEND</string>
     <string name="enter_number">Enter Number</string>
     <string name="enter_message">Enter Message</string>
-    <string name="ai_assistant">Yapay Zeka ile Konuş</string>
-    <string name="ai_not_found">Yapay Zeka uygulaması bulunamadı</string>
-    <string name="magnifier">Büyüteç</string>
-    <string name="panic_siren">Panik Sireni</string>
-    <string name="stop_siren">SİRENİ SUSTUR</string>
-    <string name="low_battery_sos">Düşük Pil Uyarısı SMS\'i</string>
+    <string name="ai_assistant">Talk to AI</string>
+    <string name="ai_not_found">AI app not found</string>
+    <string name="magnifier">Magnifier</string>
+    <string name="panic_siren">Panic Siren</string>
+    <string name="stop_siren">STOP SIREN</string>
+    <string name="low_battery_sos">Low battery alert SMS</string>
     <string name="no_messages">No messages found.</string>
     <string name="medical_id_short">Medical ID</string>
     <string name="default_page">Default Page</string>
@@ -146,4 +146,12 @@
     <string name="clear_history_title">Clear History</string>
     <string name="clear_history_confirm">Are you sure you want to delete all call history?</string>
     <string name="history_empty">Call history is empty.</string>
+    <string name="enter_new_password">Enter your new password</string>
+    <string name="positive">Positive</string>
+    <string name="negative">Negative</string>
+    <string name="get_current_location">Get Current Location</string>
+    <string name="no_reminders_yet">No reminders added yet</string>
+    <string name="medicine_time">Medicine time</string>
+    <string name="voice_type">Voice Type (Male/Female)</string>
+    <string name="battery_level">Your phone battery is at %1$d percent</string>
 </resources>

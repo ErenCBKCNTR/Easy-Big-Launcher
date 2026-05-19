@@ -127,7 +127,7 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
                     onClick = { 
                         try {
                             val intent = Intent(Intent.ACTION_DELETE).apply {
-                                data = Uri.parse("package:${context.packageName}")
+                                data = Uri.fromParts("package", context.packageName, null)
                                 flags = Intent.FLAG_ACTIVITY_NEW_TASK
                             }
                             context.startActivity(intent)
@@ -153,7 +153,7 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
                         Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                             var isFemale by remember { mutableStateOf(sharedPref.getBoolean("is_female", true)) }
                             val ttsManager = remember { com.prusoft.easybiglauncher.utils.TTSManager.getInstance(context) }
-                            Text("Ses Tipi (Erkek/Kadın)", fontSize = 24.sp, modifier = Modifier.weight(1f))
+                            Text(stringResource(R.string.voice_type), fontSize = 24.sp, modifier = Modifier.weight(1f))
                             Switch(checked = isFemale, onCheckedChange = { 
                                 isFemale = it
                                 sharedPref.edit().putBoolean("is_female", it).apply()
@@ -325,11 +325,13 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
                         var localName by remember(medName) { mutableStateOf(medName) }
                         var localSurname by remember(medSurname) { mutableStateOf(medSurname) }
                         var localAge by remember(medAge) { mutableStateOf(medAge) }
-                        var localAddress by remember(medAddress) { mutableStateOf(medAddress) }
+                        var localAddressTextField by remember(medAddress) { mutableStateOf(androidx.compose.ui.text.input.TextFieldValue(medAddress)) }
                         var localChronic by remember(medChronic) { mutableStateOf(medChronic) }
-                        val bloodParts = if (medBlood.contains(" ")) medBlood.split(" ") else listOf("A", "Pozitif (+)")
-                        var localBloodType by remember(medBlood) { mutableStateOf(bloodParts.getOrElse(0) { "A" }) }
-                        var localBloodRh by remember(medBlood) { mutableStateOf(bloodParts.getOrElse(1) { "Pozitif (+)" }) }
+                        val firstSpaceIndex = medBlood.indexOf(" ")
+                        val initialBloodType = if (firstSpaceIndex != -1) medBlood.substring(0, firstSpaceIndex) else "A"
+                        val initialBloodRh = if (firstSpaceIndex != -1) medBlood.substring(firstSpaceIndex + 1) else "${stringResource(R.string.positive)} (+)"
+                        var localBloodType by remember(medBlood) { mutableStateOf(initialBloodType) }
+                        var localBloodRh by remember(medBlood) { mutableStateOf(initialBloodRh) }
                         var localContactName by remember(medContactName) { mutableStateOf(medContactName) }
                         var localContactNumber by remember(medContactNumber) { mutableStateOf(medContactNumber) }
                         var localContactRelation by remember(medContactRelation) { mutableStateOf(if(medContactRelation.isEmpty()) context.getString(R.string.other) else medContactRelation) }
@@ -353,14 +355,14 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
                             ExposedDropdownMenuBox(expanded = expandedRh, onExpandedChange = { expandedRh = !expandedRh }, modifier = Modifier.weight(1f)) {
                                 TextField(value = localBloodRh, onValueChange = {}, readOnly = true, label = { Text(stringResource(R.string.medical_rh)) }, trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedRh) }, modifier = Modifier.menuAnchor())
                                 ExposedDropdownMenu(expanded = expandedRh, onDismissRequest = { expandedRh = false }) {
-                                    listOf("Pozitif (+)", "Negatif (-)").forEach { rh ->
+                                    listOf("${stringResource(R.string.positive)} (+)", "${stringResource(R.string.negative)} (-)").forEach { rh ->
                                         DropdownMenuItem(text = { Text(rh) }, onClick = { localBloodRh = rh; expandedRh = false })
                                     }
                                 }
                             }
                         }
                         TextField(value = localChronic, onValueChange = { localChronic = it }, label = { Text(stringResource(R.string.medical_chronic)) }, modifier = Modifier.fillMaxWidth())
-                        TextField(value = localAddress, onValueChange = { localAddress = it }, label = { Text(stringResource(R.string.medical_address)) }, modifier = Modifier.fillMaxWidth())
+                        TextField(value = localAddressTextField, onValueChange = { localAddressTextField = it }, label = { Text(stringResource(R.string.medical_address)) }, modifier = Modifier.fillMaxWidth())
                         
                         val locationPermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
                             if (isGranted) {
@@ -373,7 +375,7 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
                                                 val addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
                                                 if (addresses != null && addresses.isNotEmpty()) {
                                                     val address = addresses[0]
-                                                    localAddress = address.getAddressLine(0) ?: ""
+                                                    localAddressTextField = androidx.compose.ui.text.input.TextFieldValue(address.getAddressLine(0) ?: "")
                                                 }
                                             } catch (e: Exception) {
                                                 e.printStackTrace()
@@ -398,7 +400,7 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
                                                     val addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
                                                     if (addresses != null && addresses.isNotEmpty()) {
                                                         val address = addresses[0]
-                                                        localAddress = address.getAddressLine(0) ?: ""
+                                                        localAddressTextField = androidx.compose.ui.text.input.TextFieldValue(address.getAddressLine(0) ?: "")
                                                     }
                                                 } catch (e: Exception) {
                                                     e.printStackTrace()
@@ -418,7 +420,7 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
                         ) {
                             Icon(Icons.Default.LocationOn, contentDescription = null, modifier = Modifier.size(32.dp))
                             Spacer(Modifier.width(16.dp))
-                            Text("Mevcut Konumu Al", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.get_current_location), fontSize = 24.sp, fontWeight = FontWeight.Bold)
                         }
 
                         Spacer(modifier = Modifier.height(16.dp))
@@ -436,7 +438,7 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
                             }
                         }
                         Button(onClick = {
-                            scope.launch { viewModel.securityRepository.setMedicalInfo(localName, localSurname, localAge, localAddress, "$localBloodType $localBloodRh", localChronic, localContactName, localContactNumber, localContactRelation) }
+                            scope.launch { viewModel.securityRepository.setMedicalInfo(localName, localSurname, localAge, localAddressTextField.text, "$localBloodType $localBloodRh", localChronic, localContactName, localContactNumber, localContactRelation) }
                             navController.popBackStack()
                         }, modifier = Modifier.fillMaxWidth().height(80.dp).padding(top = 16.dp), shape = RoundedCornerShape(16.dp)) {
                             Text(stringResource(R.string.medical_save), fontSize = 24.sp, fontWeight = FontWeight.Bold)

@@ -139,4 +139,12 @@
     <string name="clear_history_title">Geçmişi Temizle</string>
     <string name="clear_history_confirm">Tüm çağrı geçmişini silmek istediğinize emin misiniz?</string>
     <string name="history_empty">Çağrı geçmişi boş.</string>
+    <string name="enter_new_password">Yeni şifrenizi girin</string>
+    <string name="positive">Pozitif</string>
+    <string name="negative">Negatif</string>
+    <string name="get_current_location">Mevcut Konumu Al</string>
+    <string name="no_reminders_yet">Henüz bir hatırlatıcı eklenmemiş</string>
+    <string name="medicine_time">İlaç vakti</string>
+    <string name="voice_type">Ses Tipi (Erkek/Kadın)</string>
+    <string name="battery_level">Telefonunuzun pil seviyesi yüzde %1$d</string>
 </resources>
