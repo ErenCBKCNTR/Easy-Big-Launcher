@@ -130,21 +130,35 @@ fun DialerContent(context: Context) {
         }
 
         // Dial Pad
-        val keys = listOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "*", "0", "#")
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(3),
+        val keys = listOf(
+            listOf("1", "2", "3"),
+            listOf("4", "5", "6"),
+            listOf("7", "8", "9"),
+            listOf("*", "0", "#")
+        )
+        
+        Column(
             modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            items(keys) { key ->
-                DialerButton(key) {
-                    if (number.length < 15) number += key
+            for (row in keys) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    for (key in row) {
+                        Box(modifier = Modifier.weight(1f)) {
+                            DialerButton(key) {
+                                if (number.length < 15) number += key
+                            }
+                        }
+                    }
                 }
             }
         }
 
         // Bottom Actions
+        val currentNumber by rememberUpdatedState(number)
         Row(
             modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -158,14 +172,14 @@ fun DialerContent(context: Context) {
                     .pointerInput(Unit) {
                         detectTapGestures(
                             onTap = {
-                                if (number.isNotEmpty()) number = number.dropLast(1)
+                                if (currentNumber.isNotEmpty()) number = currentNumber.dropLast(1)
                             },
                             onPress = {
                                 val job = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
                                     delay(500)
                                     while (true) {
-                                        if (number.isNotEmpty()) {
-                                            number = number.dropLast(1)
+                                        if (currentNumber.isNotEmpty()) {
+                                            number = currentNumber.dropLast(1)
                                         }
                                         delay(100)
                                     }
@@ -227,7 +241,7 @@ fun DialerButton(text: String, onClick: () -> Unit) {
             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
             onClick()
         },
-        modifier = Modifier.height(100.dp),
+        modifier = Modifier.fillMaxWidth().height(100.dp),
         shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer,

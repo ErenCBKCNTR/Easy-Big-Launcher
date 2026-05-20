@@ -259,7 +259,7 @@ fun OnboardingScreen(navController: NavController, viewModel: LauncherViewModel 
                 }
             }
             
-            if (pagerState.currentPage < 4) {
+            if (pagerState.currentPage in 1..3) {
                 TextButton(
                     onClick = { skipDialogVisible = true },
                     modifier = Modifier.fillMaxWidth().padding(16.dp)

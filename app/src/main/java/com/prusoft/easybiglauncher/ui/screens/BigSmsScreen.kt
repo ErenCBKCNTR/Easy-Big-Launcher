@@ -44,6 +44,7 @@ fun CustomQwertyKeyboard(
     onSpace: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val currentOnBackspace by rememberUpdatedState(onBackspace)
     val rowNum = listOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "0")
     val row1 = listOf("Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P")
     val row2 = listOf("A", "S", "D", "F", "G", "H", "J", "K", "L")
@@ -79,12 +80,12 @@ fun CustomQwertyKeyboard(
                     .height(80.dp)
                     .pointerInput(Unit) {
                         detectTapGestures(
-                            onTap = { onBackspace() },
+                            onTap = { currentOnBackspace() },
                             onPress = {
                                 val job = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
                                     kotlinx.coroutines.delay(500)
                                     while (true) {
-                                        onBackspace()
+                                        currentOnBackspace()
                                         kotlinx.coroutines.delay(100)
                                     }
                                 }
@@ -137,6 +138,7 @@ fun CustomNumpad(
     onBackspace: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val currentOnBackspace by rememberUpdatedState(onBackspace)
     val rows = listOf(
         listOf("1", "2", "3"),
         listOf("4", "5", "6"),
@@ -161,12 +163,12 @@ fun CustomNumpad(
                     .height(70.dp)
                     .pointerInput(Unit) {
                         detectTapGestures(
-                            onTap = { onBackspace() },
+                            onTap = { currentOnBackspace() },
                             onPress = {
                                 val job = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
                                     kotlinx.coroutines.delay(500)
                                     while (true) {
-                                        onBackspace()
+                                        currentOnBackspace()
                                         kotlinx.coroutines.delay(100)
                                     }
                                 }

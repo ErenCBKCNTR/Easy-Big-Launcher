@@ -232,6 +232,9 @@ fun ToolButton(
     val context = LocalContext.current
     val ttsManager = remember { TTSManager.getInstance(context) }
 
+    val currentOnClick by rememberUpdatedState(onClick)
+    val currentText by rememberUpdatedState(text)
+
     Surface(
         modifier = Modifier
             .fillMaxWidth()
@@ -240,14 +243,14 @@ fun ToolButton(
                 detectTapGestures(
                     onTap = {
                         if (isTtsEnabled) {
-                            ttsManager.speak(text)
+                            ttsManager.speak(currentText)
                         } else {
-                            onClick()
+                            currentOnClick()
                         }
                     },
                     onDoubleTap = {
                         if (isTtsEnabled) {
-                            onClick()
+                            currentOnClick()
                         }
                     }
                 )

@@ -185,11 +185,12 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
                     Button(onClick = { viewModel.assignContactToItem(slot, name, number); contactToConfigure = null }, modifier = Modifier.fillMaxWidth().height(60.dp)) { Text(stringResource(R.string.action_phone_call), fontSize = 20.sp) }
                     Button(onClick = { viewModel.assignContactToItem(slot, name, "whatsapp_audio:$number"); contactToConfigure = null }, modifier = Modifier.fillMaxWidth().height(60.dp), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF25D366))) { Text(stringResource(R.string.action_wa_audio), fontSize = 20.sp) }
                     Button(onClick = { viewModel.assignContactToItem(slot, name, "whatsapp_video:$number"); contactToConfigure = null }, modifier = Modifier.fillMaxWidth().height(60.dp), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF128C7E))) { Text(stringResource(R.string.action_wa_video), fontSize = 20.sp) }
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
+                    TextButton(onClick = { contactToConfigure = null }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.cancel), fontSize = 18.sp, color = MaterialTheme.colorScheme.error) }
                 }
             },
-            dismissButton = {
-                TextButton(onClick = { contactToConfigure = null }) { Text(stringResource(R.string.cancel)) }
-            }
+            dismissButton = {}
         )
     }
 
@@ -420,12 +421,17 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
                                                 }
                                                 "tool_ai" -> {
                                                     try {
-                                                        val intent = Intent(Intent.ACTION_VOICE_COMMAND).apply {
-                                                            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                                                        val pm = context.packageManager
+                                                        val chatGptIntent = pm.getLaunchIntentForPackage("com.openai.chatgpt")
+                                                        if (chatGptIntent != null) {
+                                                            context.startActivity(chatGptIntent)
+                                                        } else {
+                                                            val webIntent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://chatgpt.com"))
+                                                            webIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                                            context.startActivity(webIntent)
                                                         }
-                                                        context.startActivity(intent)
                                                     } catch (e: Exception) {
-                                                        val webIntent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://gemini.google.com"))
+                                                        val webIntent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://chatgpt.com"))
                                                         webIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                                                         context.startActivity(webIntent)
                                                     }
@@ -503,7 +509,7 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
                             onClick = {
                                 val sosContact = sharedPref.getString("sos_number", "")
                                 if (sosContact.isNullOrEmpty()) {
-                                    navController.navigate("settings") // Should point to Emergency category, handled later
+                                    android.widget.Toast.makeText(context, context.getString(R.string.sos_not_configured_warning), android.widget.Toast.LENGTH_LONG).show()
                                 } else {
                                     EmergencyManager.triggerSos(context)
                                 }

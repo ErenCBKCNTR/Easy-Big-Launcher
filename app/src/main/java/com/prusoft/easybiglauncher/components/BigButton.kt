@@ -52,27 +52,31 @@ fun BigButton(
     
     val finalIcon = if (isContact) Icons.Default.Person else icon
     
+    val currentOnClick by rememberUpdatedState(onClick)
+    val currentOnLongClick by rememberUpdatedState(onLongClick)
+    val currentText by rememberUpdatedState(text)
+    
     Box(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(140.dp)
-                .pointerInput(isTtsEnabled, text) {
+                .pointerInput(isTtsEnabled) {
                     detectTapGestures(
                         onTap = {
                             if (isTtsEnabled) {
-                                ttsManager.speak(text)
+                                ttsManager.speak(currentText)
                             } else {
-                                onClick()
+                                currentOnClick()
                             }
                         },
                         onDoubleTap = {
                             if (isTtsEnabled) {
-                                onClick()
+                                currentOnClick()
                             }
                         },
                         onLongPress = {
-                            onLongClick?.invoke()
+                            currentOnLongClick?.invoke()
                         }
                     )
                 },
