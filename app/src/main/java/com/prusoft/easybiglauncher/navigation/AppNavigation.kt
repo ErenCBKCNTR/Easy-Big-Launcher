@@ -31,7 +31,14 @@ fun AppNavigation(viewModel: LauncherViewModel = viewModel()) {
     val isOnboardingCompleted by viewModel.securityRepository.isOnboardingCompleted.collectAsState(initial = false)
     val startDestination = if (isOnboardingCompleted) "home" else "onboarding"
 
-    NavHost(navController = navController, startDestination = startDestination) {
+    NavHost(
+        navController = navController, 
+        startDestination = startDestination,
+        enterTransition = { androidx.compose.animation.EnterTransition.None },
+        exitTransition = { androidx.compose.animation.ExitTransition.None },
+        popEnterTransition = { androidx.compose.animation.EnterTransition.None },
+        popExitTransition = { androidx.compose.animation.ExitTransition.None }
+    ) {
         composable("onboarding") { OnboardingScreen(navController) }
         composable("home") { HomeScreen(navController, viewModel) }
         composable("settings") { SettingsWrapper(navController, viewModel) }

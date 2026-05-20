@@ -209,9 +209,15 @@ fun ToolsScreen(navController: NavController, viewModel: LauncherViewModel = vie
                         contentColor = Color.White,
                         isTtsEnabled = isTtsEnabled,
                         onClick = {
-                            val intent = Intent(Settings.ACTION_DATA_ROAMING_SETTINGS)
+                            val intent = Intent(Settings.ACTION_NETWORK_OPERATOR_SETTINGS)
                             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                            context.startActivity(intent)
+                            try {
+                                context.startActivity(intent)
+                            } catch (e: Exception) {
+                                val fallback = Intent(Settings.ACTION_WIRELESS_SETTINGS)
+                                fallback.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                context.startActivity(fallback)
+                            }
                         }
                     )
                 }

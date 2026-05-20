@@ -105,6 +105,18 @@ fun TabButton(text: String, isSelected: Boolean, modifier: Modifier = Modifier, 
 fun DialerContent(context: Context) {
     var number by remember { mutableStateOf("") }
     
+    var contacts by remember { mutableStateOf<List<ContactInfo>>(emptyList()) }
+    LaunchedEffect(Unit) {
+        contacts = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+            fetchContacts(context.contentResolver)
+        }
+    }
+
+    val matchedContact = remember(number, contacts) {
+        if (number.isEmpty()) null
+        else contacts.find { it.number.replace(Regex("[^0-9+]"), "").contains(number) }
+    }
+    
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -119,13 +131,26 @@ fun DialerContent(context: Context) {
                 .height(110.dp),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
         ) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Column(
+                modifier = Modifier.fillMaxSize(), 
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
                 Text(
                     text = number,
                     fontSize = 48.sp,
                     fontWeight = FontWeight.ExtraBold,
                     maxLines = 1
                 )
+                if (matchedContact != null) {
+                    Text(
+                        text = matchedContact.name,
+                        fontSize = 20.sp,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Medium,
+                        maxLines = 1
+                    )
+                }
             }
         }
 

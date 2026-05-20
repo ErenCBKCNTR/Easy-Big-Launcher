@@ -106,9 +106,10 @@ fun BigButton(
                     if (appIcon != null) {
                         AndroidView(
                             factory = { ctx ->
-                                android.widget.ImageView(ctx).apply {
-                                    setImageDrawable(appIcon)
-                                }
+                                android.widget.ImageView(ctx)
+                            },
+                            update = { view ->
+                                view.setImageDrawable(appIcon)
                             },
                             modifier = Modifier.size(64.dp)
                         )

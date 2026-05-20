@@ -187,4 +187,19 @@
     <string name="next">İleri</string>
     <string name="setup_complete">Kurulum Tamamlandı</string>
     <string name="choose_language">Dil Seçin / Choose Language</string>
+    <string name="permission_sos">SOS / Acil Durum İzni</string>
+    <string name="permission_contacts">Rehber &amp; Arama İzni</string>
+    <string name="permission_dnd">Ses Kontrolü / İzinsiz Girmeyin</string>
+
+    <string name="add_to_favorites">Favorilere Ekle</string>
+    <string name="add_to_favorites_desc">%1$s adlı kişiyi favorilere eklemek istiyor musunuz?</string>
+    <string name="search_contacts_hint">Rehberde ara...</string>
+    <string name="filter_normal">Normal</string>
+    <string name="filter_bw">S/B</string>
+    <string name="filter_invert">Ters</string>
+    <string name="filter_yellow">Sarı</string>
+    <string name="filter_blue">Mavi</string>
+    <string name="filter_red">Kırmızı</string>
+    <string name="freeze">DONDUR</string>
+    <string name="unfreeze">DEVAM</string>
 </resources>

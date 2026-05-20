@@ -93,13 +93,11 @@ fun StatusBarWidget(isTtsEnabled: Boolean = false) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.clickable {
-                    if (isTtsEnabled) {
-                        val msg = context.getString(R.string.battery_level, battery.percentage)
-                        if (battery.percentage <= 15 && !battery.isCharging) {
-                            ttsManager.speak(msg + ". " + context.getString(R.string.battery_low_warning))
-                        } else {
-                            ttsManager.speak(msg)
-                        }
+                    val msg = context.getString(R.string.battery_level, battery.percentage)
+                    if (battery.percentage <= 15 && !battery.isCharging) {
+                        ttsManager.speak(msg + ". " + context.getString(R.string.battery_low_warning))
+                    } else {
+                        ttsManager.speak(msg)
                     }
                 }
             ) {

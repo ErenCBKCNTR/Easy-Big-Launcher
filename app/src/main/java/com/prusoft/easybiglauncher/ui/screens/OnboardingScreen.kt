@@ -67,17 +67,17 @@ fun OnboardingScreen(navController: NavController, viewModel: LauncherViewModel 
     var showSosDisclosure by remember { mutableStateOf(false) }
     val sosPermissionsLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
-    ) { _ -> scope.launch { pagerState.animateScrollToPage(2) } }
+    ) { _ -> scope.launch { pagerState.scrollToPage(2) } }
 
     var showContactsDisclosure by remember { mutableStateOf(false) }
     val contactsPermissionsLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
-    ) { _ -> scope.launch { pagerState.animateScrollToPage(3) } }
+    ) { _ -> scope.launch { pagerState.scrollToPage(3) } }
     
     var showSmsDisclosure by remember { mutableStateOf(false) }
     val smsPermissionsLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
-    ) { _ -> scope.launch { pagerState.animateScrollToPage(4) } }
+    ) { _ -> scope.launch { pagerState.scrollToPage(4) } }
 
     var skipDialogVisible by remember { mutableStateOf(false) }
     if (skipDialogVisible) {
@@ -160,6 +160,11 @@ fun OnboardingScreen(navController: NavController, viewModel: LauncherViewModel 
                     when (page) {
                         0 -> {
                             Text(
+                                text = stringResource(R.string.app_name),
+                                style = MaterialTheme.typography.displayMedium.copy(color = Color.White, textAlign = TextAlign.Center),
+                                modifier = Modifier.padding(bottom = 32.dp)
+                            )
+                            Text(
                                 text = stringResource(R.string.choose_language),
                                 style = MaterialTheme.typography.displaySmall.copy(color = Color.White, textAlign = TextAlign.Center)
                             )
@@ -179,12 +184,12 @@ fun OnboardingScreen(navController: NavController, viewModel: LauncherViewModel 
                                 scope.launch { viewModel.securityRepository.setLanguage("en") }
                             }
                             Spacer(modifier = Modifier.height(30.dp))
-                            Button(onClick = { scope.launch { pagerState.animateScrollToPage(1) } }) {
+                            Button(onClick = { scope.launch { pagerState.scrollToPage(1) } }) {
                                 Text(stringResource(R.string.next), fontSize = 24.sp)
                             }
                         }
                         1 -> {
-                            Text("SOS / Acil Durum İzni", fontSize = 28.sp, color = Color.White, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
+                            Text(stringResource(R.string.permission_sos), fontSize = 28.sp, color = Color.White, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
                             Spacer(modifier = Modifier.height(20.dp))
                             Text(stringResource(R.string.disclosure_sos_desc), fontSize = 18.sp, color = Color.LightGray, textAlign = TextAlign.Center)
                             Spacer(modifier = Modifier.height(40.dp))
@@ -192,12 +197,12 @@ fun OnboardingScreen(navController: NavController, viewModel: LauncherViewModel 
                                 Text(stringResource(R.string.grant_permission), fontSize = 20.sp)
                             }
                             Spacer(modifier = Modifier.height(20.dp))
-                            Button(onClick = { scope.launch { pagerState.animateScrollToPage(2) } }, colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray)) {
+                            Button(onClick = { scope.launch { pagerState.scrollToPage(2) } }, colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray)) {
                                 Text(stringResource(R.string.next), fontSize = 18.sp)
                             }
                         }
                         2 -> {
-                            Text("Rehber & Arama İzni", fontSize = 28.sp, color = Color.White, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
+                            Text(stringResource(R.string.permission_contacts), fontSize = 28.sp, color = Color.White, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
                             Spacer(modifier = Modifier.height(20.dp))
                             Text(stringResource(R.string.disclosure_contacts_desc), fontSize = 18.sp, color = Color.LightGray, textAlign = TextAlign.Center)
                             Spacer(modifier = Modifier.height(40.dp))
@@ -205,7 +210,7 @@ fun OnboardingScreen(navController: NavController, viewModel: LauncherViewModel 
                                 Text(stringResource(R.string.grant_permission), fontSize = 20.sp)
                             }
                             Spacer(modifier = Modifier.height(20.dp))
-                            Button(onClick = { scope.launch { pagerState.animateScrollToPage(3) } }, colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray)) {
+                            Button(onClick = { scope.launch { pagerState.scrollToPage(3) } }, colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray)) {
                                 Text(stringResource(R.string.next), fontSize = 18.sp)
                             }
                         }
@@ -218,7 +223,7 @@ fun OnboardingScreen(navController: NavController, viewModel: LauncherViewModel 
                                 Text(stringResource(R.string.grant_permission), fontSize = 20.sp)
                             }
                             Spacer(modifier = Modifier.height(20.dp))
-                            Button(onClick = { scope.launch { pagerState.animateScrollToPage(4) } }, colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray)) {
+                            Button(onClick = { scope.launch { pagerState.scrollToPage(4) } }, colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray)) {
                                 Text(stringResource(R.string.next), fontSize = 18.sp)
                             }
                         }
@@ -240,7 +245,7 @@ fun OnboardingScreen(navController: NavController, viewModel: LauncherViewModel 
                                 },
                                 modifier = Modifier.fillMaxWidth().height(60.dp),
                                 colors = ButtonDefaults.buttonColors(containerColor = if (hasDndPermission) Color(0xFF4CAF50) else Color.DarkGray)
-                            ) { Text("SES KONTROL / DND PERM", fontSize = 16.sp) }
+                            ) { Text(stringResource(R.string.permission_dnd), fontSize = 16.sp) }
                             Spacer(modifier = Modifier.height(40.dp))
                             Button(
                                 onClick = {

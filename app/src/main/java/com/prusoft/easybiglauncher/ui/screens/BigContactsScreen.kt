@@ -136,7 +136,7 @@ fun ContactRow(contact: ContactInfo, onClick: () -> Unit, onLongClick: () -> Uni
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .pointerInput(Unit) {
+            .pointerInput(contact) {
                 detectTapGestures(
                     onLongPress = { onLongClick() },
                     onTap = { onClick() }
@@ -198,7 +198,7 @@ fun ContactRow(contact: ContactInfo, onClick: () -> Unit, onLongClick: () -> Uni
     }
 }
 
-private fun fetchContacts(contentResolver: ContentResolver): List<ContactInfo> {
+fun fetchContacts(contentResolver: ContentResolver): List<ContactInfo> {
     val contactList = mutableListOf<ContactInfo>()
     val cursor = contentResolver.query(
         ContactsContract.CommonDataKinds.Phone.CONTENT_URI,

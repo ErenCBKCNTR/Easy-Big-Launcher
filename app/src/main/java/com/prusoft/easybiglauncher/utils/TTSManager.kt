@@ -27,6 +27,13 @@ class TTSManager private constructor(context: Context) : TextToSpeech.OnInitList
         if (status == TextToSpeech.SUCCESS) {
             isInitialized = true
             setGender(sharedPrefs.getBoolean("is_female", true))
+            
+            // Set language to current context locale
+            val currentLocale = Locale.getDefault()
+            val result = tts?.setLanguage(currentLocale)
+            if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                Log.e("TTSManager", "Language $currentLocale not supported or missing data")
+            }
         } else {
             Log.e("TTSManager", "Initialization failed")
         }

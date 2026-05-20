@@ -198,9 +198,9 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
         AlertDialog(
             onDismissRequest = { showToolDialog = false },
             title = { Text(stringResource(R.string.action_choose_tool), fontSize = 24.sp, fontWeight = FontWeight.Bold) },
-            confirmButton = {
+            text = {
                 val scrollState = rememberScrollState()
-                Column(modifier = Modifier.fillMaxWidth().height(300.dp).verticalScroll(scrollState), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Column(modifier = Modifier.fillMaxWidth().height(400.dp).verticalScroll(scrollState), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     val magnifierName = stringResource(R.string.magnifier)
                     val sirenName = stringResource(R.string.panic_siren)
                     val aiName = stringResource(R.string.ai_assistant)
@@ -209,17 +209,27 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
                     val btName = stringResource(R.string.bluetooth_settings)
                     val remindersName = stringResource(R.string.reminders_title)
                     
-                    Button(onClick = { viewModel.assignContactToItem(slotToAssign!!, magnifierName, "tool_magnifier"); showToolDialog = false; slotToAssign = null }, modifier = Modifier.fillMaxWidth().height(60.dp)) { Text(magnifierName, fontSize = 20.sp) }
-                    Button(onClick = { viewModel.assignContactToItem(slotToAssign!!, sirenName, "tool_siren"); showToolDialog = false; slotToAssign = null }, modifier = Modifier.fillMaxWidth().height(60.dp)) { Text(sirenName, fontSize = 20.sp) }
-                    Button(onClick = { viewModel.assignContactToItem(slotToAssign!!, aiName, "tool_ai"); showToolDialog = false; slotToAssign = null }, modifier = Modifier.fillMaxWidth().height(60.dp)) { Text(aiName, fontSize = 20.sp) }
-                    Button(onClick = { viewModel.assignContactToItem(slotToAssign!!, flashlightName, "tool_flashlight"); showToolDialog = false; slotToAssign = null }, modifier = Modifier.fillMaxWidth().height(60.dp)) { Text(flashlightName, fontSize = 20.sp) }
-                    Button(onClick = { viewModel.assignContactToItem(slotToAssign!!, wifiName, "tool_wifi"); showToolDialog = false; slotToAssign = null }, modifier = Modifier.fillMaxWidth().height(60.dp)) { Text(wifiName, fontSize = 20.sp) }
-                    Button(onClick = { viewModel.assignContactToItem(slotToAssign!!, btName, "tool_bluetooth"); showToolDialog = false; slotToAssign = null }, modifier = Modifier.fillMaxWidth().height(60.dp)) { Text(btName, fontSize = 20.sp) }
-                    Button(onClick = { viewModel.assignContactToItem(slotToAssign!!, remindersName, "tool_reminders"); showToolDialog = false; slotToAssign = null }, modifier = Modifier.fillMaxWidth().height(60.dp)) { Text(remindersName, fontSize = 20.sp) }
+                    val createBtn: @Composable (String, String) -> Unit = { name, code ->
+                        Button(
+                            onClick = { viewModel.assignContactToItem(slotToAssign!!, name, code); showToolDialog = false; slotToAssign = null }, 
+                            modifier = Modifier.fillMaxWidth().height(80.dp),
+                            shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer, contentColor = MaterialTheme.colorScheme.onPrimaryContainer)
+                        ) { Text(name, fontSize = 22.sp, fontWeight = FontWeight.Bold) }
+                    }
+                    
+                    createBtn(magnifierName, "tool_magnifier")
+                    createBtn(sirenName, "tool_siren")
+                    createBtn(aiName, "tool_ai")
+                    createBtn(flashlightName, "tool_flashlight")
+                    createBtn(wifiName, "tool_wifi")
+                    createBtn(btName, "tool_bluetooth")
+                    createBtn(remindersName, "tool_reminders")
                 }
             },
+            confirmButton = {},
             dismissButton = {
-                TextButton(onClick = { showToolDialog = false }) { Text(stringResource(R.string.cancel)) }
+                TextButton(onClick = { showToolDialog = false }) { Text(stringResource(R.string.cancel), fontSize = 20.sp, color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold) }
             }
         )
     }
@@ -421,19 +431,26 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
                                                 }
                                                 "tool_ai" -> {
                                                     try {
-                                                        val pm = context.packageManager
-                                                        val chatGptIntent = pm.getLaunchIntentForPackage("com.openai.chatgpt")
-                                                        if (chatGptIntent != null) {
-                                                            context.startActivity(chatGptIntent)
-                                                        } else {
+                                                        val intent = Intent(Intent.ACTION_MAIN)
+                                                        intent.setClassName("com.openai.chatgpt", "com.openai.voice.webrtc.VoiceChatActivity")
+                                                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                                        context.startActivity(intent)
+                                                    } catch (e: Exception) {
+                                                        try {
+                                                            val pm = context.packageManager
+                                                            val chatGptIntent = pm.getLaunchIntentForPackage("com.openai.chatgpt")
+                                                            if (chatGptIntent != null) {
+                                                                context.startActivity(chatGptIntent)
+                                                            } else {
+                                                                val webIntent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://chatgpt.com"))
+                                                                webIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                                                context.startActivity(webIntent)
+                                                            }
+                                                        } catch (e2: Exception) {
                                                             val webIntent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://chatgpt.com"))
                                                             webIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                                                             context.startActivity(webIntent)
                                                         }
-                                                    } catch (e: Exception) {
-                                                        val webIntent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://chatgpt.com"))
-                                                        webIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                                                        context.startActivity(webIntent)
                                                     }
                                                 }
                                             }

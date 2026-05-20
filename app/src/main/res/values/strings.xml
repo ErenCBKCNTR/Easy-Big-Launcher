@@ -189,4 +189,19 @@
     <string name="setup_complete">Setup Complete</string>
     <string name="choose_language">Choose Language / Dil Seçin</string>
     <string name="sos_not_configured_warning">Emergency information not entered. Please fill it from the settings menu.</string>
+    <string name="permission_sos">SOS / Emergency Permission</string>
+    <string name="permission_contacts">Contacts &amp; Call Permission</string>
+    <string name="permission_dnd">Sound Control / Do Not Disturb</string>
+
+    <string name="add_to_favorites">Add to Favorites</string>
+    <string name="add_to_favorites_desc">Do you want to add %1$s to favorites?</string>
+    <string name="search_contacts_hint">Search contacts...</string>
+    <string name="filter_normal">Normal</string>
+    <string name="filter_bw">B/W</string>
+    <string name="filter_invert">Invert</string>
+    <string name="filter_yellow">Yellow</string>
+    <string name="filter_blue">Blue</string>
+    <string name="filter_red">Red</string>
+    <string name="freeze">FREEZE</string>
+    <string name="unfreeze">UNFREEZE</string>
 </resources>

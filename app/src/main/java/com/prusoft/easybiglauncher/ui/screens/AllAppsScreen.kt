@@ -28,9 +28,21 @@ import com.prusoft.easybiglauncher.viewmodel.LauncherViewModel
 @Composable
 fun AllAppsScreen(navController: NavController, viewModel: LauncherViewModel = viewModel()) {
     val context = LocalContext.current
-    val apps = remember { AppManager.getInstalledApps(context) }
+    var apps by remember { mutableStateOf<List<com.prusoft.easybiglauncher.utils.AppInfo>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(true) }
+    
+    LaunchedEffect(Unit) {
+        kotlinx.coroutines.Dispatchers.IO.invoke {
+            val loadedApps = AppManager.getInstalledApps(context)
+            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                apps = loadedApps
+                isLoading = false
+            }
+        }
+    }
+    
     var searchQuery by remember { mutableStateOf("") }
-    val filteredApps = remember(searchQuery) {
+    val filteredApps = remember(searchQuery, apps) {
         if (searchQuery.isEmpty()) apps
         else apps.filter { it.name.toString().contains(searchQuery, ignoreCase = true) }
     }
@@ -71,35 +83,42 @@ fun AllAppsScreen(navController: NavController, viewModel: LauncherViewModel = v
             }
         }
     ) { padding ->
-        LazyColumn(modifier = Modifier.padding(padding)) {
-            items(filteredApps) { app ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                        .clickable { 
-                            if (pendingItem != null) {
-                                viewModel.assignAppToItem(pendingItem!!, app.packageName, app.name.toString())
-                                viewModel.setPendingAssignmentItem(null)
-                                navController.popBackStack()
-                            } else {
-                                AppManager.launchApp(context, app.packageName) 
-                            }
-                        },
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    AndroidView(
-                        factory = { ctx ->
-                            ImageView(ctx).apply {
-                                setImageDrawable(app.icon)
-                            }
-                        },
-                        modifier = Modifier.size(80.dp)
-                    )
-                    Spacer(modifier = Modifier.width(24.dp))
-                    Text(text = app.name.toString(), fontSize = 24.sp, fontWeight = FontWeight.Bold)
+        if (isLoading) {
+            Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(modifier = Modifier.size(64.dp), color = Color.White)
+            }
+        } else {
+            LazyColumn(modifier = Modifier.padding(padding)) {
+                items(filteredApps) { app ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                            .clickable { 
+                                if (pendingItem != null) {
+                                    viewModel.assignAppToItem(pendingItem!!, app.packageName, app.name.toString())
+                                    viewModel.setPendingAssignmentItem(null)
+                                    navController.popBackStack()
+                                } else {
+                                    AppManager.launchApp(context, app.packageName) 
+                                }
+                            },
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        AndroidView(
+                            factory = { ctx ->
+                                ImageView(ctx)
+                            },
+                            update = { view ->
+                                view.setImageDrawable(app.icon)
+                            },
+                            modifier = Modifier.size(80.dp)
+                        )
+                        Spacer(modifier = Modifier.width(24.dp))
+                        Text(text = app.name.toString(), fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                    }
+                    Divider(thickness = 2.dp)
                 }
-                Divider(thickness = 2.dp)
             }
         }
     }
