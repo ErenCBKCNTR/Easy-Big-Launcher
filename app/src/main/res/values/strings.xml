@@ -193,9 +193,6 @@
     <string name="permission_contacts">Contacts &amp; Call Permission</string>
     <string name="permission_dnd">Sound Control / Do Not Disturb</string>
 
-    <string name="add_to_favorites">Add to Favorites</string>
-    <string name="add_to_favorites_desc">Do you want to add %1$s to favorites?</string>
-    <string name="search_contacts_hint">Search contacts...</string>
     <string name="filter_normal">Normal</string>
     <string name="filter_bw">B/W</string>
     <string name="filter_invert">Invert</string>

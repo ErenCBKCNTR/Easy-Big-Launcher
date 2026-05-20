@@ -191,8 +191,6 @@
     <string name="permission_contacts">Rehber &amp; Arama İzni</string>
     <string name="permission_dnd">Ses Kontrolü / İzinsiz Girmeyin</string>
 
-    <string name="add_to_favorites">Favorilere Ekle</string>
-    <string name="add_to_favorites_desc">%1$s adlı kişiyi favorilere eklemek istiyor musunuz?</string>
     <string name="search_contacts_hint">Rehberde ara...</string>
     <string name="filter_normal">Normal</string>
     <string name="filter_bw">S/B</string>
