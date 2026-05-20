@@ -40,18 +40,50 @@ object NotificationTracker {
     }
 
     private fun updateMissedCalls(context: Context) {
-        val projection = arrayOf(CallLog.Calls.NUMBER)
-        val selection = "${CallLog.Calls.TYPE} = ?"
-        val selectionArgs = arrayOf(CallLog.Calls.MISSED_TYPE.toString())
-        val cursor = context.contentResolver.query(CallLog.Calls.CONTENT_URI, projection, selection, selectionArgs, null)
-        _missedCalls.value = cursor?.count ?: 0
-        cursor?.close()
+        try {
+            val projection = arrayOf(CallLog.Calls.NUMBER)
+            val selection = "${CallLog.Calls.TYPE} = ? AND ${CallLog.Calls.NEW} = 1"
+            val selectionArgs = arrayOf(CallLog.Calls.MISSED_TYPE.toString())
+            val cursor = context.contentResolver.query(CallLog.Calls.CONTENT_URI, projection, selection, selectionArgs, null)
+            _missedCalls.value = cursor?.count ?: 0
+            cursor?.close()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
     
     private fun updateUnreadSms(context: Context) {
-        val selection = "${Telephony.Sms.READ} = 0"
-        val cursor = context.contentResolver.query(Telephony.Sms.CONTENT_URI, null, selection, null, null)
-        _unreadSmsCount.value = cursor?.count ?: 0
-        cursor?.close()
+        try {
+            val selection = "${Telephony.Sms.READ} = 0"
+            val cursor = context.contentResolver.query(Telephony.Sms.CONTENT_URI, null, selection, null, null)
+            _unreadSmsCount.value = cursor?.count ?: 0
+            cursor?.close()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    fun resetMissedCalls(context: Context) {
+        try {
+            val values = android.content.ContentValues()
+            values.put(CallLog.Calls.NEW, 0)
+            context.contentResolver.update(CallLog.Calls.CONTENT_URI, values, "${CallLog.Calls.NEW} = 1 AND ${CallLog.Calls.TYPE} = ?", arrayOf(CallLog.Calls.MISSED_TYPE.toString()))
+            _missedCalls.value = 0
+        } catch (e: Exception) {
+            e.printStackTrace()
+            _missedCalls.value = 0
+        }
+    }
+    
+    fun resetUnreadSms(context: Context) {
+        try {
+            val values = android.content.ContentValues()
+            values.put(Telephony.Sms.READ, 1)
+            context.contentResolver.update(Telephony.Sms.CONTENT_URI, values, "${Telephony.Sms.READ} = 0", null)
+            _unreadSmsCount.value = 0
+        } catch (e: Exception) {
+            e.printStackTrace()
+            _unreadSmsCount.value = 0
+        }
     }
 }

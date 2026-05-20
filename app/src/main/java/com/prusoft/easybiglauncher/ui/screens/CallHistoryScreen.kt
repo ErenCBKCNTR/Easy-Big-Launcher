@@ -55,6 +55,19 @@ fun CallHistoryScreen() {
     var favoriteContactToAdd by remember { mutableStateOf<CallLogInfo?>(null) }
     var showClearHistoryDialog by remember { mutableStateOf(false) }
 
+    val writePermissionLauncher = rememberLauncherForActivityResult(
+        contract = androidx.activity.result.contract.ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            try {
+                context.contentResolver.delete(CallLog.Calls.CONTENT_URI, null, null)
+                callLogs = emptyList()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = androidx.activity.result.contract.ActivityResultContracts.RequestPermission()
     ) { isGranted ->
@@ -157,6 +170,8 @@ fun CallHistoryScreen() {
                     if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_CALL_LOG) == PackageManager.PERMISSION_GRANTED) {
                         context.contentResolver.delete(CallLog.Calls.CONTENT_URI, null, null)
                         callLogs = emptyList()
+                    } else {
+                        writePermissionLauncher.launch(Manifest.permission.WRITE_CALL_LOG)
                     }
                 } catch (e: Exception) {
                     e.printStackTrace()

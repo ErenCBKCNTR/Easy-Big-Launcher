@@ -137,4 +137,14 @@ class SecurityRepository(private val context: Context) {
             preferences[MED_CONTACT_RELATION_KEY] = contactRelation
         }
     }
+
+    suspend fun clearAllExceptLanguageAndOnboarding() {
+        context.dataStore.edit { preferences ->
+            val lang = preferences[LANGUAGE_KEY]
+            val onboarding = preferences[ONBOARDING_COMPLETED_KEY]
+            preferences.clear()
+            if (lang != null) preferences[LANGUAGE_KEY] = lang
+            if (onboarding != null) preferences[ONBOARDING_COMPLETED_KEY] = onboarding
+        }
+    }
 }

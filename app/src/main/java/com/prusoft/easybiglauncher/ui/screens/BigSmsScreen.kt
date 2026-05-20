@@ -10,6 +10,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.filled.Contacts
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -127,6 +128,61 @@ fun KeyButton(
         contentPadding = PaddingValues(0.dp)
     ) {
         Text(text, fontSize = 28.sp, fontWeight = FontWeight.Bold)
+    }
+}
+
+@Composable
+fun CustomNumpad(
+    onChar: (String) -> Unit,
+    onBackspace: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val rows = listOf(
+        listOf("1", "2", "3"),
+        listOf("4", "5", "6"),
+        listOf("7", "8", "9"),
+        listOf("*", "0", "#")
+    )
+    Column(
+        modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        rows.forEach { row ->
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                row.forEach { char ->
+                    KeyButton(text = char, onClick = { onChar(char) }, modifier = Modifier.weight(1f).height(70.dp))
+                }
+            }
+        }
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(70.dp)
+                    .pointerInput(Unit) {
+                        detectTapGestures(
+                            onTap = { onBackspace() },
+                            onPress = {
+                                val job = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
+                                    kotlinx.coroutines.delay(500)
+                                    while (true) {
+                                        onBackspace()
+                                        kotlinx.coroutines.delay(100)
+                                    }
+                                }
+                                tryAwaitRelease()
+                                job.cancel()
+                            }
+                        )
+                    },
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
+                color = Color.DarkGray
+            ) {
+                Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                    Text("⌫", fontSize = 32.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                }
+            }
+        }
     }
 }
 
@@ -292,6 +348,44 @@ fun BigSmsScreen(navController: NavController, viewModel: com.prusoft.easybiglau
             val numberInteractionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
             val textInteractionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
             
+            val pickContactLauncher = rememberLauncherForActivityResult(
+                contract = androidx.activity.result.contract.ActivityResultContracts.PickContact()
+            ) { uri ->
+                if (uri != null) {
+                    try {
+                        val cursor = context.contentResolver.query(uri, arrayOf(android.provider.ContactsContract.Contacts._ID, android.provider.ContactsContract.Contacts.HAS_PHONE_NUMBER), null, null, null)
+                        if (cursor != null && cursor.moveToFirst()) {
+                            val idIndex = cursor.getColumnIndex(android.provider.ContactsContract.Contacts._ID)
+                            val hasPhoneIndex = cursor.getColumnIndex(android.provider.ContactsContract.Contacts.HAS_PHONE_NUMBER)
+                            if (idIndex != -1 && hasPhoneIndex != -1) {
+                                val id = cursor.getString(idIndex)
+                                val hasPhone = cursor.getInt(hasPhoneIndex) > 0
+                                if (hasPhone) {
+                                    val phones = context.contentResolver.query(
+                                        android.provider.ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                                        null,
+                                        android.provider.ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?",
+                                        arrayOf(id),
+                                        null
+                                    )
+                                    if (phones != null && phones.moveToFirst()) {
+                                        val numberIndex = phones.getColumnIndex(android.provider.ContactsContract.CommonDataKinds.Phone.NUMBER)
+                                        if (numberIndex != -1) {
+                                            newMessageNumber = phones.getString(numberIndex)
+                                            isEditingNumber = false
+                                        }
+                                        phones.close()
+                                    }
+                                }
+                            }
+                            cursor.close()
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+            }
+
             LaunchedEffect(numberInteractionSource) {
                 numberInteractionSource.interactions.collect {
                     if (it is androidx.compose.foundation.interaction.PressInteraction.Release) {
@@ -320,19 +414,28 @@ fun BigSmsScreen(navController: NavController, viewModel: com.prusoft.easybiglau
                 }
             ) { padding ->
                 Column(modifier = Modifier.padding(padding).fillMaxSize().padding(16.dp)) {
-                    OutlinedTextField(
-                        value = newMessageNumber,
-                        onValueChange = { },
-                        readOnly = true,
-                        label = { Text(stringResource(R.string.new_message_hint_phone), color = Color.DarkGray) },
-                        modifier = Modifier.fillMaxWidth(),
-                        textStyle = LocalTextStyle.current.copy(fontSize = 32.sp),
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = if (isEditingNumber) Color(0xFFE0E0E0) else Color(0xFFF0F0F0),
-                            unfocusedContainerColor = if (isEditingNumber) Color(0xFFE0E0E0) else Color(0xFFF0F0F0)
-                        ),
-                        interactionSource = numberInteractionSource
-                    )
+                    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                        OutlinedTextField(
+                            value = newMessageNumber,
+                            onValueChange = { },
+                            readOnly = true,
+                            label = { Text(stringResource(R.string.new_message_hint_phone), color = Color.DarkGray) },
+                            modifier = Modifier.weight(1f),
+                            textStyle = LocalTextStyle.current.copy(fontSize = 32.sp),
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = if (isEditingNumber) Color(0xFFE0E0E0) else Color(0xFFF0F0F0),
+                                unfocusedContainerColor = if (isEditingNumber) Color(0xFFE0E0E0) else Color(0xFFF0F0F0)
+                            ),
+                            interactionSource = numberInteractionSource
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        IconButton(
+                            onClick = { pickContactLauncher.launch(null) },
+                            modifier = Modifier.size(60.dp)
+                        ) {
+                            Icon(Icons.Default.Contacts, contentDescription = "Pick Contact", modifier = Modifier.size(40.dp), tint = MaterialTheme.colorScheme.primary)
+                        }
+                    }
                     
                     Spacer(modifier = Modifier.height(16.dp))
                     
@@ -352,17 +455,18 @@ fun BigSmsScreen(navController: NavController, viewModel: com.prusoft.easybiglau
                     
                     Spacer(modifier = Modifier.height(8.dp))
                     
-                    CustomQwertyKeyboard(
-                        onChar = { if (isEditingNumber) newMessageNumber += it else newMessageText += it },
-                        onBackspace = { 
-                            if (isEditingNumber) {
-                                if (newMessageNumber.isNotEmpty()) newMessageNumber = newMessageNumber.dropLast(1)
-                            } else {
-                                if (newMessageText.isNotEmpty()) newMessageText = newMessageText.dropLast(1)
-                            }
-                        },
-                        onSpace = { if (!isEditingNumber) newMessageText += " " }
-                    )
+                    if (isEditingNumber) {
+                        CustomNumpad(
+                            onChar = { newMessageNumber += it },
+                            onBackspace = { if (newMessageNumber.isNotEmpty()) newMessageNumber = newMessageNumber.dropLast(1) }
+                        )
+                    } else {
+                        CustomQwertyKeyboard(
+                            onChar = { newMessageText += it },
+                            onBackspace = { if (newMessageText.isNotEmpty()) newMessageText = newMessageText.dropLast(1) },
+                            onSpace = { newMessageText += " " }
+                        )
+                    }
 
                     Spacer(modifier = Modifier.height(16.dp))
                     

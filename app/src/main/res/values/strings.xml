@@ -175,4 +175,17 @@
     <string name="new_message_hint_phone">Phone Number</string>
     <string name="reset_app_settings">Reset Application Settings</string>
     <string name="reset_app_confirm">This will erase all settings, pages and records to factory defaults. Are you sure?</string>
+    <string name="onboarding_welcome_text">Welcome to our application. It is completely free!</string>
+    <string name="skip_setup">Skip Setup</string>
+    <string name="skip_setup_desc">You need to grant the necessary permissions while using the application. Otherwise, the application may not work correctly.</string>
+    <string name="contact_us">Contact Us</string>
+    <string name="other_tools">Other Tools</string>
+    <string name="show_other_tools">Show Other Tools in Tools Menu</string>
+    <string name="permission_sms">SMS Permission</string>
+    <string name="permission_sms_desc">SMS permission is required to view and send text messages directly from the Launcher.</string>
+    <string name="grant_permission">Grant Permission</string>
+    <string name="permission_granted">Permission Granted!</string>
+    <string name="next">Next</string>
+    <string name="setup_complete">Setup Complete</string>
+    <string name="choose_language">Choose Language / Dil Seçin</string>
 </resources>

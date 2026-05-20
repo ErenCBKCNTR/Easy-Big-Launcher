@@ -124,6 +124,20 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
                 Spacer(modifier = Modifier.weight(1f))
                 
                 var showResetConfirm by remember { mutableStateOf(false) }
+
+                Button(
+                    onClick = {
+                        val i = Intent(Intent.ACTION_SENDTO)
+                        i.data = Uri.parse("mailto:prusoft16@gmail.com")
+                        context.startActivity(Intent.createChooser(i, "Send Email"))
+                    },
+                    modifier = Modifier.fillMaxWidth().height(80.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary, contentColor = Color.White)
+                ) {
+                    Text(stringResource(R.string.contact_us), fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                }
+
                 Button(
                     onClick = { showResetConfirm = true },
                     modifier = Modifier.fillMaxWidth().height(80.dp),
@@ -146,10 +160,7 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
                                     viewModel.repository.insertInitialData()
                                     // Reset preferences
                                     sharedPref.edit().clear().apply()
-                                    viewModel.securityRepository.setPin(null)
-                                    viewModel.securityRepository.setProtectionEnabled(false)
-                                    viewModel.securityRepository.setTtsEnabled(false)
-                                    viewModel.securityRepository.setSmsTtsEnabled(false)
+                                    viewModel.securityRepository.clearAllExceptLanguageAndOnboarding()
                                     // Go back
                                     showResetConfirm = false
                                     navController.popBackStack()
@@ -304,6 +315,18 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
                         }, modifier = Modifier.fillMaxWidth().height(80.dp), shape = RoundedCornerShape(16.dp)) {
                             Text(if (isDefault) "${stringResource(R.string.set_default)} (${stringResource(R.string.active_status)})" else stringResource(R.string.set_default), fontSize = 20.sp)
                         }
+                        
+                        Divider()
+                        
+                        var showOtherTools by remember { mutableStateOf(sharedPref.getBoolean("show_other_tools", true)) }
+                        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                            Text(stringResource(R.string.show_other_tools), fontSize = 20.sp, modifier = Modifier.weight(1f))
+                            Switch(checked = showOtherTools, onCheckedChange = { 
+                                showOtherTools = it
+                                sharedPref.edit().putBoolean("show_other_tools", it).apply()
+                            })
+                        }
+                        
                         Divider()
                         Text(text = stringResource(R.string.add_page), style = MaterialTheme.typography.titleLarge)
                         Button(onClick = { viewModel.addPage(3, 2) }, modifier = Modifier.fillMaxWidth().height(80.dp), shape = RoundedCornerShape(16.dp)) { Text(stringResource(R.string.add_page_3x2), fontSize = 22.sp) }

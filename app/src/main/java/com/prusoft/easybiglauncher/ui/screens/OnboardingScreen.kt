@@ -37,14 +37,15 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.compose.ui.platform.LocalLifecycleOwner
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun OnboardingScreen(navController: NavController, viewModel: LauncherViewModel = viewModel()) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val scope = rememberCoroutineScope()
-    var showSosDisclosure by remember { mutableStateOf(false) }
-    var showContactsDisclosure by remember { mutableStateOf(false) }
     
+    val pagerState = rememberPagerState(pageCount = { 5 })
+
     var isIgnoringBattery by remember { mutableStateOf(BatteryOptimizationManager.isIgnoringBatteryOptimizations(context)) }
     var hasDndPermission by remember { 
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -63,13 +64,41 @@ fun OnboardingScreen(navController: NavController, viewModel: LauncherViewModel 
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
+    var showSosDisclosure by remember { mutableStateOf(false) }
     val sosPermissionsLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
-    ) { _ -> }
+    ) { _ -> scope.launch { pagerState.animateScrollToPage(2) } }
 
+    var showContactsDisclosure by remember { mutableStateOf(false) }
     val contactsPermissionsLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
-    ) { _ -> }
+    ) { _ -> scope.launch { pagerState.animateScrollToPage(3) } }
+    
+    var showSmsDisclosure by remember { mutableStateOf(false) }
+    val smsPermissionsLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { _ -> scope.launch { pagerState.animateScrollToPage(4) } }
+
+    var skipDialogVisible by remember { mutableStateOf(false) }
+    if (skipDialogVisible) {
+        AlertDialog(
+            onDismissRequest = { skipDialogVisible = false },
+            title = { Text(stringResource(R.string.skip_setup)) },
+            text = { Text(stringResource(R.string.skip_setup_desc)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    skipDialogVisible = false
+                    scope.launch {
+                        viewModel.securityRepository.setOnboardingCompleted(true)
+                        navController.navigate("home") { popUpTo("onboarding") { inclusive = true } }
+                    }
+                }) { Text(stringResource(R.string.yes)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { skipDialogVisible = false }) { Text(stringResource(R.string.no)) }
+            }
+        )
+    }
 
     if (showSosDisclosure) {
         PermissionDisclosureDialog(
@@ -96,120 +125,148 @@ fun OnboardingScreen(navController: NavController, viewModel: LauncherViewModel 
                 contactsPermissionsLauncher.launch(
                     arrayOf(
                         Manifest.permission.READ_CONTACTS,
-                        Manifest.permission.CALL_PHONE
+                        Manifest.permission.CALL_PHONE,
+                        Manifest.permission.READ_CALL_LOG
                     )
                 )
             },
             onDecline = { showContactsDisclosure = false }
         )
     }
-    
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = Color.Black
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Spacer(modifier = Modifier.height(20.dp))
-            Text(
-                text = stringResource(R.string.onboarding_welcome),
-                style = MaterialTheme.typography.displayLarge.copy(
-                    fontSize = 44.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                    textAlign = TextAlign.Center
-                )
-            )
 
-            Spacer(modifier = Modifier.weight(1f))
+    if (showSmsDisclosure) {
+        PermissionDisclosureDialog(
+            description = stringResource(R.string.permission_sms_desc),
+            onAccept = {
+                showSmsDisclosure = false
+                smsPermissionsLauncher.launch(arrayOf(Manifest.permission.READ_SMS))
+            },
+            onDecline = { showSmsDisclosure = false }
+        )
+    }
 
-            Column(
-                modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                LanguageButton(
-                    text = "TÜRKÇE",
-                    onClick = {
-                        AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("tr"))
-                        scope.launch { viewModel.securityRepository.setLanguage("tr") }
-                    }
-                )
-                LanguageButton(
-                    text = "ENGLISH",
-                    onClick = {
-                        AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("en"))
-                        scope.launch { viewModel.securityRepository.setLanguage("en") }
-                    }
-                )
-
-                Button(
-                    onClick = { showSosDisclosure = true },
-                    modifier = Modifier.fillMaxWidth().height(70.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray)
+    Surface(modifier = Modifier.fillMaxSize(), color = Color.Black) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.weight(1f),
+                userScrollEnabled = false
+            ) { page ->
+                Column(
+                    modifier = Modifier.fillMaxSize().padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
                 ) {
-                    Text("SOS İZİNLERİ / SOS PERMS", fontSize = 18.sp, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
-                }
-
-                Button(
-                    onClick = { showContactsDisclosure = true },
-                    modifier = Modifier.fillMaxWidth().height(70.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray)
-                ) {
-                    Text("REHBER İZİNLERİ / CONTACT PERMS", fontSize = 18.sp, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
-                }
-
-                Button(
-                    onClick = { 
-                        BatteryOptimizationManager.requestIgnoreBatteryOptimizations(context)
-                    },
-                    modifier = Modifier.fillMaxWidth().height(70.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = if (isIgnoringBattery) Color(0xFF4CAF50) else Color(0xFFB71C1C)
-                    )
-                ) {
-                    Text("PİL MUAFİYETİ / BATTERY EXEMPT", fontSize = 18.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
-                }
-
-                Button(
-                    onClick = { 
-                        try {
-                            val intent = android.content.Intent(android.provider.Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS)
-                            context.startActivity(intent)
-                        } catch (e: Exception) {
-                            e.printStackTrace()
+                    when (page) {
+                        0 -> {
+                            Text(
+                                text = stringResource(R.string.choose_language),
+                                style = MaterialTheme.typography.displaySmall.copy(color = Color.White, textAlign = TextAlign.Center)
+                            )
+                            Spacer(modifier = Modifier.height(20.dp))
+                            Text(
+                                text = stringResource(R.string.onboarding_welcome_text),
+                                style = MaterialTheme.typography.bodyLarge.copy(color = Color.LightGray, textAlign = TextAlign.Center)
+                            )
+                            Spacer(modifier = Modifier.height(40.dp))
+                            LanguageButton(text = "🇹🇷 TÜRKÇE") {
+                                AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("tr"))
+                                scope.launch { viewModel.securityRepository.setLanguage("tr") }
+                            }
+                            Spacer(modifier = Modifier.height(16.dp))
+                            LanguageButton(text = "🇬🇧 ENGLISH") {
+                                AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("en"))
+                                scope.launch { viewModel.securityRepository.setLanguage("en") }
+                            }
+                            Spacer(modifier = Modifier.height(30.dp))
+                            Button(onClick = { scope.launch { pagerState.animateScrollToPage(1) } }) {
+                                Text(stringResource(R.string.next), fontSize = 24.sp)
+                            }
                         }
-                    },
-                    modifier = Modifier.fillMaxWidth().height(70.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = if (hasDndPermission) Color(0xFF4CAF50) else Color.DarkGray
-                    )
-                ) {
-                    Text("SES KONTROL / DND PERM", fontSize = 18.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                        1 -> {
+                            Text("SOS / Acil Durum İzni", fontSize = 28.sp, color = Color.White, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
+                            Spacer(modifier = Modifier.height(20.dp))
+                            Text(stringResource(R.string.disclosure_sos_desc), fontSize = 18.sp, color = Color.LightGray, textAlign = TextAlign.Center)
+                            Spacer(modifier = Modifier.height(40.dp))
+                            Button(onClick = { showSosDisclosure = true }, modifier = Modifier.fillMaxWidth().height(60.dp)) {
+                                Text(stringResource(R.string.grant_permission), fontSize = 20.sp)
+                            }
+                            Spacer(modifier = Modifier.height(20.dp))
+                            Button(onClick = { scope.launch { pagerState.animateScrollToPage(2) } }, colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray)) {
+                                Text(stringResource(R.string.next), fontSize = 18.sp)
+                            }
+                        }
+                        2 -> {
+                            Text("Rehber & Arama İzni", fontSize = 28.sp, color = Color.White, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
+                            Spacer(modifier = Modifier.height(20.dp))
+                            Text(stringResource(R.string.disclosure_contacts_desc), fontSize = 18.sp, color = Color.LightGray, textAlign = TextAlign.Center)
+                            Spacer(modifier = Modifier.height(40.dp))
+                            Button(onClick = { showContactsDisclosure = true }, modifier = Modifier.fillMaxWidth().height(60.dp)) {
+                                Text(stringResource(R.string.grant_permission), fontSize = 20.sp)
+                            }
+                            Spacer(modifier = Modifier.height(20.dp))
+                            Button(onClick = { scope.launch { pagerState.animateScrollToPage(3) } }, colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray)) {
+                                Text(stringResource(R.string.next), fontSize = 18.sp)
+                            }
+                        }
+                        3 -> {
+                            Text(stringResource(R.string.permission_sms), fontSize = 28.sp, color = Color.White, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
+                            Spacer(modifier = Modifier.height(20.dp))
+                            Text(stringResource(R.string.permission_sms_desc), fontSize = 18.sp, color = Color.LightGray, textAlign = TextAlign.Center)
+                            Spacer(modifier = Modifier.height(40.dp))
+                            Button(onClick = { showSmsDisclosure = true }, modifier = Modifier.fillMaxWidth().height(60.dp)) {
+                                Text(stringResource(R.string.grant_permission), fontSize = 20.sp)
+                            }
+                            Spacer(modifier = Modifier.height(20.dp))
+                            Button(onClick = { scope.launch { pagerState.animateScrollToPage(4) } }, colors = ButtonDefaults.buttonColors(containerColor = Color.DarkGray)) {
+                                Text(stringResource(R.string.next), fontSize = 18.sp)
+                            }
+                        }
+                        4 -> {
+                            Text(stringResource(R.string.setup_complete), fontSize = 32.sp, color = Color.White, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
+                            Spacer(modifier = Modifier.height(20.dp))
+                            Button(
+                                onClick = { BatteryOptimizationManager.requestIgnoreBatteryOptimizations(context) },
+                                modifier = Modifier.fillMaxWidth().height(60.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = if (isIgnoringBattery) Color(0xFF4CAF50) else Color.DarkGray)
+                            ) { Text(stringResource(R.string.battery_optimization_title), fontSize = 16.sp) }
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Button(
+                                onClick = { 
+                                    try {
+                                        val intent = android.content.Intent(android.provider.Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS)
+                                        context.startActivity(intent)
+                                    } catch (e: Exception) { e.printStackTrace() }
+                                },
+                                modifier = Modifier.fillMaxWidth().height(60.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = if (hasDndPermission) Color(0xFF4CAF50) else Color.DarkGray)
+                            ) { Text("SES KONTROL / DND PERM", fontSize = 16.sp) }
+                            Spacer(modifier = Modifier.height(40.dp))
+                            Button(
+                                onClick = {
+                                    scope.launch {
+                                        viewModel.securityRepository.setOnboardingCompleted(true)
+                                        navController.navigate("home") { popUpTo("onboarding") { inclusive = true } }
+                                    }
+                                },
+                                modifier = Modifier.fillMaxWidth().height(80.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                            ) {
+                                Text(stringResource(R.string.onboarding_start), fontSize = 28.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
                 }
             }
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            Button(
-                onClick = {
-                    scope.launch {
-                        viewModel.securityRepository.setOnboardingCompleted(true)
-                        navController.navigate("home") { popUpTo("onboarding") { inclusive = true } }
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(90.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
-            ) {
-                Text(stringResource(R.string.onboarding_start), fontSize = 28.sp, fontWeight = FontWeight.Bold)
+            
+            if (pagerState.currentPage < 4) {
+                TextButton(
+                    onClick = { skipDialogVisible = true },
+                    modifier = Modifier.fillMaxWidth().padding(16.dp)
+                ) {
+                    Text(stringResource(R.string.skip_setup), color = Color.Gray, fontSize = 18.sp)
+                }
             }
-            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
@@ -218,19 +275,10 @@ fun OnboardingScreen(navController: NavController, viewModel: LauncherViewModel 
 fun LanguageButton(text: String, onClick: () -> Unit) {
     Button(
         onClick = onClick,
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(100.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = Color.White,
-            contentColor = Color.Black
-        ),
+        modifier = Modifier.fillMaxWidth().height(80.dp),
+        colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Color.Black),
         shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
     ) {
-        Text(
-            text = text,
-            fontSize = 32.sp,
-            fontWeight = FontWeight.ExtraBold
-        )
+        Text(text = text, fontSize = 28.sp, fontWeight = FontWeight.ExtraBold)
     }
 }

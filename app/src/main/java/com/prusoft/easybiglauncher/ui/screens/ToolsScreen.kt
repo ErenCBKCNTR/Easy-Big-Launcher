@@ -41,6 +41,9 @@ fun ToolsScreen(navController: NavController, viewModel: LauncherViewModel = vie
     val isTtsEnabled by viewModel.securityRepository.isTtsEnabled.collectAsState(initial = false)
     val ttsManager = remember { TTSManager.getInstance(context) }
 
+    val sharedPref = remember { context.getSharedPreferences("sos_prefs", Context.MODE_PRIVATE) }
+    val showOtherTools = sharedPref.getBoolean("show_other_tools", true)
+
     LaunchedEffect(Unit) {
         ToolManager.updateState(context)
     }
@@ -93,52 +96,6 @@ fun ToolsScreen(navController: NavController, viewModel: LauncherViewModel = vie
                     isTtsEnabled = isTtsEnabled,
                     onClick = { 
                         ToolManager.cycleSoundMode(context)
-                        // Note: actual state update might be slightly delayed, but for TTS we speak the action
-                    }
-                )
-            }
-            item {
-                val wifiSettingsText = stringResource(R.string.wifi_settings)
-                ToolButton(
-                    text = wifiSettingsText,
-                    icon = Icons.Default.Wifi,
-                    color = Color(0xFF2196F3),
-                    contentColor = Color.White,
-                    isTtsEnabled = isTtsEnabled,
-                    onClick = {
-                        val intent = Intent(Settings.ACTION_WIFI_SETTINGS)
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        context.startActivity(intent)
-                    }
-                )
-            }
-            item {
-                val bluetoothSettingsText = stringResource(R.string.bluetooth_settings)
-                ToolButton(
-                    text = bluetoothSettingsText,
-                    icon = Icons.Default.Bluetooth,
-                    color = Color(0xFF3F51B5),
-                    contentColor = Color.White,
-                    isTtsEnabled = isTtsEnabled,
-                    onClick = {
-                        val intent = Intent(Settings.ACTION_BLUETOOTH_SETTINGS)
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        context.startActivity(intent)
-                    }
-                )
-            }
-            item {
-                val mobileDataSettingsText = stringResource(R.string.mobile_data_settings)
-                ToolButton(
-                    text = mobileDataSettingsText,
-                    icon = Icons.Default.CellTower,
-                    color = Color(0xFFFF9800),
-                    contentColor = Color.White,
-                    isTtsEnabled = isTtsEnabled,
-                    onClick = {
-                        val intent = Intent(Settings.ACTION_DATA_ROAMING_SETTINGS)
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        context.startActivity(intent)
                     }
                 )
             }
@@ -179,7 +136,6 @@ fun ToolsScreen(navController: NavController, viewModel: LauncherViewModel = vie
                 )
             }
             item {
-                val aiAnn = stringResource(R.string.ai_assistant)
                 ToolButton(
                     text = stringResource(R.string.ai_assistant),
                     icon = Icons.Default.SmartToy,
@@ -189,19 +145,76 @@ fun ToolsScreen(navController: NavController, viewModel: LauncherViewModel = vie
                     onClick = {
                         try {
                             val intent = Intent(Intent.ACTION_VOICE_COMMAND).apply {
-                                setPackage("com.google.android.apps.bard")
-                                putExtra("android.intent.extra.START_VOICE_SESSION", true)
-                                putExtra("android.intent.extra.ASSIST_INPUT_DEVICE_ID", 0)
                                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
                             }
                             context.startActivity(intent)
                         } catch (e: Exception) {
-                            val playStoreIntent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse("market://details?id=com.google.android.apps.bard"))
-                            playStoreIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                            context.startActivity(playStoreIntent)
+                            val webIntent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://gemini.google.com"))
+                            webIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                            context.startActivity(webIntent)
                         }
                     }
                 )
+            }
+            
+            if (showOtherTools) {
+                item {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = stringResource(R.string.other_tools),
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+                item {
+                    val wifiSettingsText = stringResource(R.string.wifi_settings)
+                    ToolButton(
+                        text = wifiSettingsText,
+                        icon = Icons.Default.Wifi,
+                        color = Color(0xFF2196F3),
+                        contentColor = Color.White,
+                        isTtsEnabled = isTtsEnabled,
+                        onClick = {
+                            val intent = Intent(Settings.ACTION_WIFI_SETTINGS)
+                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            context.startActivity(intent)
+                        }
+                    )
+                }
+                item {
+                    val bluetoothSettingsText = stringResource(R.string.bluetooth_settings)
+                    ToolButton(
+                        text = bluetoothSettingsText,
+                        icon = Icons.Default.Bluetooth,
+                        color = Color(0xFF3F51B5),
+                        contentColor = Color.White,
+                        isTtsEnabled = isTtsEnabled,
+                        onClick = {
+                            val intent = Intent(Settings.ACTION_BLUETOOTH_SETTINGS)
+                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            context.startActivity(intent)
+                        }
+                    )
+                }
+                item {
+                    val mobileDataSettingsText = stringResource(R.string.mobile_data_settings)
+                    ToolButton(
+                        text = mobileDataSettingsText,
+                        icon = Icons.Default.CellTower,
+                        color = Color(0xFFFF9800),
+                        contentColor = Color.White,
+                        isTtsEnabled = isTtsEnabled,
+                        onClick = {
+                            val intent = Intent(Settings.ACTION_DATA_ROAMING_SETTINGS)
+                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            context.startActivity(intent)
+                        }
+                    )
+                }
             }
         }
     }

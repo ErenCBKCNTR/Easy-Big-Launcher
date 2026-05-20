@@ -174,4 +174,17 @@
     <string name="new_message_hint_phone">Telefon Numarası</string>
     <string name="reset_app_settings">Uygulamayı Sıfırla (Fabrika Ayarları)</string>
     <string name="reset_app_confirm">Uygulamadaki tüm ayarlar, sayfalar ve kayıtlar silinip fabrika ayarlarına dönülecek. Onaylıyor musunuz?</string>
+    <string name="onboarding_welcome_text">Uygulamamıza hoşgeldiniz. Uygulamamız tamamen ücretsizdir!</string>
+    <string name="skip_setup">Kurulumu Atla</string>
+    <string name="skip_setup_desc">Gerekli izinleri uygulamayı kullanırken uygulama içerisinde vermeniz gerekmektedir. Aksi takdirde uygulama düzgün çalışmayabilir.</string>
+    <string name="contact_us">İletişime Geç</string>
+    <string name="other_tools">Diğer Araçlar</string>
+    <string name="show_other_tools">Araçlar menüsünde Diğer Araçları göster</string>
+    <string name="permission_sms">SMS İzni</string>
+    <string name="permission_sms_desc">Launcher üzerinden doğrudan kısa mesajları görüntülemek ve göndermek için SMS izni gereklidir.</string>
+    <string name="grant_permission">İzin Ver</string>
+    <string name="permission_granted">İzin Verildi!</string>
+    <string name="next">İleri</string>
+    <string name="setup_complete">Kurulum Tamamlandı</string>
+    <string name="choose_language">Dil Seçin / Choose Language</string>
 </resources>
