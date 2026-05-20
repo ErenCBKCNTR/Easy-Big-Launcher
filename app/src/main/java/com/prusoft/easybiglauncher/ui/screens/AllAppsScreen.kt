@@ -32,13 +32,11 @@ fun AllAppsScreen(navController: NavController, viewModel: LauncherViewModel = v
     var isLoading by remember { mutableStateOf(true) }
     
     LaunchedEffect(Unit) {
-        kotlinx.coroutines.Dispatchers.IO.invoke {
-            val loadedApps = AppManager.getInstalledApps(context)
-            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
-                apps = loadedApps
-                isLoading = false
-            }
+        val loadedApps = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+            AppManager.getInstalledApps(context)
         }
+        apps = loadedApps
+        isLoading = false
     }
     
     var searchQuery by remember { mutableStateOf("") }
