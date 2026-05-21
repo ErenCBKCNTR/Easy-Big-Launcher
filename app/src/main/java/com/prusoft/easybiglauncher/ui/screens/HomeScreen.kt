@@ -217,30 +217,30 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
             onDismissRequest = { showToolDialog = false },
             title = { Text(stringResource(R.string.action_choose_tool), fontSize = 24.sp, fontWeight = FontWeight.Bold) },
             text = {
+                val magnifierName = stringResource(R.string.magnifier)
+                val sirenName = stringResource(R.string.panic_siren)
+                val aiName = stringResource(R.string.ai_assistant)
+                val flashlightName = stringResource(R.string.flashlight_on)
+                val wifiName = stringResource(R.string.wifi_settings)
+                val btName = stringResource(R.string.bluetooth_settings)
+                val remindersName = stringResource(R.string.reminders_title)
+                
+                val tools = listOf(
+                    Triple(magnifierName, "tool_magnifier", Icons.Default.Search),
+                    Triple(sirenName, "tool_siren", Icons.Default.Warning),
+                    Triple(aiName, "tool_ai", Icons.Default.Mic),
+                    Triple(flashlightName, "tool_flashlight", Icons.Default.FlashlightOn),
+                    Triple(wifiName, "tool_wifi", Icons.Default.Wifi),
+                    Triple(btName, "tool_bluetooth", Icons.Default.Bluetooth),
+                    Triple(remindersName, "tool_reminders", Icons.Default.DateRange)
+                )
+
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2),
                     modifier = Modifier.fillMaxWidth().heightIn(max = 500.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    val magnifierName = stringResource(R.string.magnifier)
-                    val sirenName = stringResource(R.string.panic_siren)
-                    val aiName = stringResource(R.string.ai_assistant)
-                    val flashlightName = stringResource(R.string.flashlight_on)
-                    val wifiName = stringResource(R.string.wifi_settings)
-                    val btName = stringResource(R.string.bluetooth_settings)
-                    val remindersName = stringResource(R.string.reminders_title)
-                    
-                    val tools = listOf(
-                        Triple(magnifierName, "tool_magnifier", Icons.Default.Search),
-                        Triple(sirenName, "tool_siren", Icons.Default.Warning),
-                        Triple(aiName, "tool_ai", Icons.Default.Mic),
-                        Triple(flashlightName, "tool_flashlight", Icons.Default.FlashlightOn),
-                        Triple(wifiName, "tool_wifi", Icons.Default.Wifi),
-                        Triple(btName, "tool_bluetooth", Icons.Default.Bluetooth),
-                        Triple(remindersName, "tool_reminders", Icons.Default.DateRange)
-                    )
-                    
                     items(tools.size) { index ->
                         val tool = tools[index]
                         Card(
@@ -392,6 +392,7 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
                             ) {
                                 GridItem(item, 
                                     isTtsEnabled = isTtsEnabled,
+                                    isHomeFavLockEnabled = isHomeFavLockEnabled,
                                 badgeCount = when {
                                     item.packageName == "com.android.dialer" || item.packageName == "com.google.android.dialer" -> missedCalls
                                     item.packageName == "com.android.messaging" || item.packageName == "com.google.android.apps.messaging" -> unreadSms
@@ -619,7 +620,7 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
 }
 
 @Composable
-fun GridItem(item: LauncherItem, isTtsEnabled: Boolean, badgeCount: Int = 0, onClick: () -> Unit, onLongClick: () -> Unit) {
+fun GridItem(item: LauncherItem, isTtsEnabled: Boolean, isHomeFavLockEnabled: Boolean, badgeCount: Int = 0, onClick: () -> Unit, onLongClick: () -> Unit) {
     val isPhone = item.packageName == "com.android.dialer" || item.packageName == "com.google.android.dialer"
     val isSms = item.packageName == "com.android.messaging" || item.packageName == "com.google.android.apps.messaging"
     val isTool = item.packageName?.startsWith("tool_") == true
@@ -659,7 +660,6 @@ fun GridItem(item: LauncherItem, isTtsEnabled: Boolean, badgeCount: Int = 0, onC
             else -> item.customLabel ?: item.label ?: stringResource(R.string.app_placeholder)
         },
         icon = when {
-            item.itemType == ItemType.EMPTY && isHomeFavLockEnabled -> null
             item.itemType == ItemType.EMPTY -> Icons.Default.Add
             isPhone -> Icons.Default.Phone
             isSms -> Icons.Default.Mail
@@ -676,7 +676,7 @@ fun GridItem(item: LauncherItem, isTtsEnabled: Boolean, badgeCount: Int = 0, onC
             isWhatsApp -> waColor
             else -> MaterialTheme.colorScheme.primaryContainer
         },
-        contentColor = if (item.itemType == ItemType.EMPTY) MaterialTheme.colorScheme.onSurfaceVariant else Color.White,
+        contentColor = if (item.itemType == ItemType.EMPTY && isHomeFavLockEnabled) Color.Transparent else if (item.itemType == ItemType.EMPTY) MaterialTheme.colorScheme.onSurfaceVariant else Color.White,
         badgeCount = badgeCount,
         customColor = item.customColor,
         customImageUri = item.customImageUri,

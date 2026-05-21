@@ -309,9 +309,22 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
                             Text(stringResource(R.string.manage_pages), fontSize = 24.sp, fontWeight = FontWeight.Bold)
                         }
                         Button(onClick = { 
-                            val intent = LauncherUtils.getRoleRequestIntent(context)
-                            if (intent != null) launcher.launch(intent)
-                            else LauncherUtils.requestSetDefaultLauncher(context)
+                            if (isDefault) {
+                                try {
+                                    val intent = android.content.Intent(android.provider.Settings.ACTION_HOME_SETTINGS)
+                                    intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                                    context.startActivity(intent)
+                                } catch (e: Exception) {
+                                    // Fallback if the standard intent isn't supported on specific OEMs
+                                    val intent = android.content.Intent(android.provider.Settings.ACTION_SETTINGS)
+                                    intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                                    context.startActivity(intent)
+                                }
+                            } else {
+                                val intent = LauncherUtils.getRoleRequestIntent(context)
+                                if (intent != null) launcher.launch(intent)
+                                else LauncherUtils.requestSetDefaultLauncher(context)
+                            }
                         }, modifier = Modifier.fillMaxWidth().height(80.dp), shape = RoundedCornerShape(16.dp)) {
                             Text(if (isDefault) "${stringResource(R.string.set_default)} (${stringResource(R.string.active_status)})" else stringResource(R.string.set_default), fontSize = 20.sp)
                         }

@@ -11,6 +11,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.foundation.clickable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -100,7 +104,7 @@ fun ManagePagesScreen(navController: NavController, viewModel: LauncherViewModel
             }
 
             item {
-                var showAddPageMenu by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+                var showAddPageMenu by remember { mutableStateOf(false) }
 
                 Button(
                     onClick = { showAddPageMenu = true },
@@ -114,7 +118,7 @@ fun ManagePagesScreen(navController: NavController, viewModel: LauncherViewModel
                 }
 
                 if (showAddPageMenu) {
-                    var selectedLayout by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(Pair(3, 2)) }
+                    var selectedLayout by remember { mutableStateOf(Pair(3, 2)) }
 
                     AlertDialog(
                         onDismissRequest = { showAddPageMenu = false },
@@ -125,7 +129,7 @@ fun ManagePagesScreen(navController: NavController, viewModel: LauncherViewModel
                                 layouts.forEach { (layout, name) ->
                                     Row(
                                         verticalAlignment = Alignment.CenterVertically,
-                                        modifier = Modifier.fillMaxWidth().androidx.compose.foundation.clickable { selectedLayout = layout }.padding(12.dp)
+                                        modifier = Modifier.fillMaxWidth().clickable { selectedLayout = layout }.padding(12.dp)
                                     ) {
                                         RadioButton(
                                             selected = selectedLayout == layout,

@@ -144,14 +144,27 @@ fun ToolsScreen(navController: NavController, viewModel: LauncherViewModel = vie
                     isTtsEnabled = isTtsEnabled,
                     onClick = {
                         try {
-                            val intent = Intent(Intent.ACTION_VOICE_COMMAND).apply {
-                                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                            val intent = Intent().apply {
+                                setClassName("com.openai.chatgpt", "com.openai.voice.webrtc.VoiceChatActivity")
+                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
                             }
                             context.startActivity(intent)
                         } catch (e: Exception) {
-                            val webIntent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://gemini.google.com"))
-                            webIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                            context.startActivity(webIntent)
+                            try {
+                                val pm = context.packageManager
+                                val chatGptIntent = pm.getLaunchIntentForPackage("com.openai.chatgpt")
+                                if (chatGptIntent != null) {
+                                    context.startActivity(chatGptIntent)
+                                } else {
+                                    val webIntent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://chatgpt.com"))
+                                    webIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                    context.startActivity(webIntent)
+                                }
+                            } catch (e2: Exception) {
+                                val webIntent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://chatgpt.com"))
+                                webIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                                context.startActivity(webIntent)
+                            }
                         }
                     }
                 )
