@@ -104,10 +104,8 @@ fun ManagePagesScreen(navController: NavController, viewModel: LauncherViewModel
             }
 
             item {
-                var showAddPageMenu by remember { mutableStateOf(false) }
-
                 Button(
-                    onClick = { showAddPageMenu = true },
+                    onClick = { viewModel.addPage(3, 2) }, // Automatically add 2 x 3 grid (3 rows, 2 columns)
                     modifier = Modifier.fillMaxWidth().height(80.dp).padding(top = 16.dp),
                     shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
@@ -115,49 +113,6 @@ fun ManagePagesScreen(navController: NavController, viewModel: LauncherViewModel
                     Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(32.dp))
                     Spacer(Modifier.width(8.dp))
                     Text(stringResource(R.string.add_page), fontSize = 24.sp, fontWeight = FontWeight.Bold)
-                }
-
-                if (showAddPageMenu) {
-                    var selectedLayout by remember { mutableStateOf(Pair(3, 2)) }
-
-                    AlertDialog(
-                        onDismissRequest = { showAddPageMenu = false },
-                        title = { Text(stringResource(R.string.page_layout_title)) },
-                        text = {
-                            Column {
-                                val layouts = listOf(Pair(2, 3) to "2 x 3", Pair(3, 3) to "3 x 3", Pair(3, 4) to "3 x 4", Pair(3, 2) to "3 x 2")
-                                layouts.forEach { (layout, name) ->
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        modifier = Modifier.fillMaxWidth().clickable { selectedLayout = layout }.padding(12.dp)
-                                    ) {
-                                        RadioButton(
-                                            selected = selectedLayout == layout,
-                                            onClick = { selectedLayout = layout }
-                                        )
-                                        Spacer(modifier = Modifier.width(16.dp))
-                                        Text(name, fontSize = 20.sp)
-                                    }
-                                }
-                            }
-                        },
-                        confirmButton = {
-                            Button(
-                                onClick = {
-                                    viewModel.addPage(selectedLayout.first, selectedLayout.second)
-                                    showAddPageMenu = false
-                                },
-                                modifier = Modifier.height(60.dp)
-                            ) {
-                                Text(stringResource(R.string.create_page_btn), fontSize = 20.sp)
-                            }
-                        },
-                        dismissButton = {
-                            TextButton(onClick = { showAddPageMenu = false }) {
-                                Text(stringResource(R.string.cancel), fontSize = 20.sp)
-                            }
-                        }
-                    )
                 }
             }
         }

@@ -261,18 +261,21 @@ fun DialerContent(context: Context) {
 @Composable
 fun DialerButton(text: String, onClick: () -> Unit) {
     val haptic = LocalHapticFeedback.current
-    Button(
-        onClick = {
-            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-            onClick()
-        },
-        modifier = Modifier.fillMaxWidth().height(100.dp),
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(100.dp)
+            .androidx.compose.foundation.clickable {
+                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                onClick()
+            },
         shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-        )
+        color = MaterialTheme.colorScheme.primaryContainer,
+        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        shadowElevation = 2.dp
     ) {
-        Text(text = text, fontSize = 36.sp, fontWeight = FontWeight.Bold)
+        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+            Text(text = text, fontSize = 36.sp, fontWeight = FontWeight.Bold)
+        }
     }
 }

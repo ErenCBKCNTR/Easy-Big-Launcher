@@ -135,40 +135,6 @@ fun ToolsScreen(navController: NavController, viewModel: LauncherViewModel = vie
                     }
                 )
             }
-            item {
-                ToolButton(
-                    text = stringResource(R.string.ai_assistant),
-                    icon = Icons.Default.SmartToy,
-                    color = Color(0xFF673AB7), // Deep Purple
-                    contentColor = Color.White,
-                    isTtsEnabled = isTtsEnabled,
-                    onClick = {
-                        try {
-                            val intent = Intent().apply {
-                                setClassName("com.openai.chatgpt", "com.openai.voice.webrtc.VoiceChatActivity")
-                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                            }
-                            context.startActivity(intent)
-                        } catch (e: Exception) {
-                            try {
-                                val pm = context.packageManager
-                                val chatGptIntent = pm.getLaunchIntentForPackage("com.openai.chatgpt")
-                                if (chatGptIntent != null) {
-                                    context.startActivity(chatGptIntent)
-                                } else {
-                                    val webIntent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://chatgpt.com"))
-                                    webIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                                    context.startActivity(webIntent)
-                                }
-                            } catch (e2: Exception) {
-                                val webIntent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://chatgpt.com"))
-                                webIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                                context.startActivity(webIntent)
-                            }
-                        }
-                    }
-                )
-            }
             
             if (showOtherTools) {
                 item {
@@ -239,6 +205,7 @@ fun ToolsScreen(navController: NavController, viewModel: LauncherViewModel = vie
     }
 }
 
+@androidx.compose.foundation.ExperimentalFoundationApi
 @Composable
 fun ToolButton(
     text: String,
@@ -258,22 +225,18 @@ fun ToolButton(
         modifier = Modifier
             .fillMaxWidth()
             .height(140.dp)
-            .pointerInput(isTtsEnabled) {
-                detectTapGestures(
-                    onTap = {
-                        if (isTtsEnabled) {
-                            ttsManager.speak(currentText)
-                        } else {
-                            currentOnClick()
-                        }
-                    },
-                    onDoubleTap = {
-                        if (isTtsEnabled) {
-                            currentOnClick()
-                        }
+            .androidx.compose.foundation.combinedClickable(
+                onClick = {
+                    if (isTtsEnabled) {
+                        ttsManager.speak(currentText)
+                    } else {
+                        currentOnClick()
                     }
-                )
-            },
+                },
+                onDoubleClick = if (isTtsEnabled) {
+                    { currentOnClick() }
+                } else null
+            ),
         color = color,
         contentColor = contentColor,
         shape = androidx.compose.foundation.shape.RoundedCornerShape(24.dp),

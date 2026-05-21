@@ -27,6 +27,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.input.pointer.pointerInput
 
+@androidx.compose.foundation.ExperimentalFoundationApi
 @Composable
 fun BigButton(
     text: String,
@@ -62,31 +63,29 @@ fun BigButton(
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(140.dp)
-                .pointerInput(isTtsEnabled) {
-                    detectTapGestures(
-                        onTap = {
+                .height(140.dp),
+            shape = RoundedCornerShape(24.dp),
+            color = finalBackgroundColor,
+            contentColor = contentColor
+        ) {
+            Box(
+                contentAlignment = Alignment.Center, 
+                modifier = Modifier
+                    .fillMaxSize()
+                    .androidx.compose.foundation.combinedClickable(
+                        onClick = {
                             if (isTtsEnabled) {
                                 ttsManager.speak(currentText)
                             } else {
                                 currentOnClick()
                             }
                         },
-                        onDoubleTap = {
-                            if (isTtsEnabled) {
-                                currentOnClick()
-                            }
-                        },
-                        onLongPress = {
-                            currentOnLongClick?.invoke()
-                        }
+                        onDoubleClick = if (isTtsEnabled) {
+                            { currentOnClick() }
+                        } else null,
+                        onLongClick = currentOnLongClick
                     )
-                },
-            shape = RoundedCornerShape(24.dp),
-            color = finalBackgroundColor,
-            contentColor = contentColor
-        ) {
-            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+            ) {
                 if (customImageUri != null) {
                     AsyncImage(
                         model = customImageUri,

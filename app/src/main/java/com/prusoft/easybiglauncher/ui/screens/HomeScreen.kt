@@ -219,7 +219,6 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
             text = {
                 val magnifierName = stringResource(R.string.magnifier)
                 val sirenName = stringResource(R.string.panic_siren)
-                val aiName = stringResource(R.string.ai_assistant)
                 val flashlightName = stringResource(R.string.flashlight_on)
                 val wifiName = stringResource(R.string.wifi_settings)
                 val btName = stringResource(R.string.bluetooth_settings)
@@ -228,7 +227,6 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
                 val tools = listOf(
                     Triple(magnifierName, "tool_magnifier", Icons.Default.Search),
                     Triple(sirenName, "tool_siren", Icons.Default.Warning),
-                    Triple(aiName, "tool_ai", Icons.Default.Mic),
                     Triple(flashlightName, "tool_flashlight", Icons.Default.FlashlightOn),
                     Triple(wifiName, "tool_wifi", Icons.Default.Wifi),
                     Triple(btName, "tool_bluetooth", Icons.Default.Bluetooth),
@@ -466,32 +464,6 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
                                                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                                                     context.startActivity(intent)
                                                 }
-                                                "tool_ai" -> {
-                                                    try {
-                                                        // Fallback to OpenAI ChatGPT's direct voice activity 
-                                                        val intent = Intent().apply {
-                                                            setClassName("com.openai.chatgpt", "com.openai.voice.webrtc.VoiceChatActivity")
-                                                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                                                        }
-                                                        context.startActivity(intent)
-                                                    } catch (e: Exception) {
-                                                        try {
-                                                            val pm = context.packageManager
-                                                            val chatGptIntent = pm.getLaunchIntentForPackage("com.openai.chatgpt")
-                                                            if (chatGptIntent != null) {
-                                                                context.startActivity(chatGptIntent)
-                                                            } else {
-                                                                val webIntent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://chatgpt.com"))
-                                                                webIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                                                                context.startActivity(webIntent)
-                                                            }
-                                                        } catch (e2: Exception) {
-                                                            val webIntent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://chatgpt.com"))
-                                                            webIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                                                            context.startActivity(webIntent)
-                                                        }
-                                                    }
-                                                }
                                             }
                                         } else {
                                             try {
@@ -633,7 +605,6 @@ fun GridItem(item: LauncherItem, isTtsEnabled: Boolean, isHomeFavLockEnabled: Bo
         "tool_flashlight" -> Icons.Default.FlashlightOn
         "tool_wifi" -> Icons.Default.Wifi
         "tool_bluetooth" -> Icons.Default.Bluetooth
-        "tool_ai" -> Icons.Default.Mic
         else -> Icons.Default.Build
     }
     
@@ -646,7 +617,6 @@ fun GridItem(item: LauncherItem, isTtsEnabled: Boolean, isHomeFavLockEnabled: Bo
         "tool_flashlight" -> stringResource(R.string.flashlight_on)
         "tool_wifi" -> stringResource(R.string.wifi_settings)
         "tool_bluetooth" -> stringResource(R.string.bluetooth_settings)
-        "tool_ai" -> stringResource(R.string.ai_assistant)
         else -> item.label ?: ""
     }
 

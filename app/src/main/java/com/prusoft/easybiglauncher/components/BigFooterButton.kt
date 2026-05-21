@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.prusoft.easybiglauncher.utils.TTSManager
 
+@androidx.compose.foundation.ExperimentalFoundationApi
 @Composable
 fun BigFooterButton(
     text: String,
@@ -28,26 +29,23 @@ fun BigFooterButton(
 ) {
     val context = LocalContext.current
     val ttsManager = remember { TTSManager.getInstance(context) }
+    val currentOnClick by rememberUpdatedState(onClick)
 
     Surface(
         modifier = modifier
             .fillMaxHeight()
-            .pointerInput(isTtsEnabled) {
-                detectTapGestures(
-                    onTap = {
-                        if (isTtsEnabled) {
-                            ttsManager.speak(text)
-                        } else {
-                            onClick()
-                        }
-                    },
-                    onDoubleTap = {
-                        if (isTtsEnabled) {
-                            onClick()
-                        }
+            .androidx.compose.foundation.combinedClickable(
+                onClick = {
+                    if (isTtsEnabled) {
+                        ttsManager.speak(text)
+                    } else {
+                        currentOnClick()
                     }
-                )
-            },
+                },
+                onDoubleClick = if (isTtsEnabled) {
+                    { currentOnClick() }
+                } else null
+            ),
         color = containerColor,
         contentColor = contentColor,
         shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)

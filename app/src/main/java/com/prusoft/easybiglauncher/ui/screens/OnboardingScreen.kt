@@ -45,6 +45,7 @@ fun OnboardingScreen(navController: NavController, viewModel: LauncherViewModel 
     val scope = rememberCoroutineScope()
     
     val pagerState = rememberPagerState(pageCount = { 5 })
+    var showRestartDialog by remember { mutableStateOf(false) }
 
     var isIgnoringBattery by remember { mutableStateOf(BatteryOptimizationManager.isIgnoringBatteryOptimizations(context)) }
     var hasDndPermission by remember { 
@@ -251,7 +252,7 @@ fun OnboardingScreen(navController: NavController, viewModel: LauncherViewModel 
                                 onClick = {
                                     scope.launch {
                                         viewModel.securityRepository.setOnboardingCompleted(true)
-                                        navController.navigate("home") { popUpTo("onboarding") { inclusive = true } }
+                                        showRestartDialog = true
                                     }
                                 },
                                 modifier = Modifier.fillMaxWidth().height(80.dp),
@@ -271,6 +272,44 @@ fun OnboardingScreen(navController: NavController, viewModel: LauncherViewModel 
                 ) {
                     Text(stringResource(R.string.skip_setup), color = Color.Gray, fontSize = 18.sp)
                 }
+            }
+
+            if (showRestartDialog) {
+                AlertDialog(
+                    onDismissRequest = { },
+                    title = { Text(stringResource(R.string.setup_complete)) },
+                    text = { Text(stringResource(R.string.restart_app_warning), fontSize = 18.sp) },
+                    confirmButton = {
+                        Button(
+                            onClick = {
+                                try {
+                                    val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
+                                    val componentName = intent?.component
+                                    val mainIntent = android.content.Intent.makeRestartActivityTask(componentName)
+                                    context.startActivity(mainIntent)
+                                    Runtime.getRuntime().exit(0)
+                                } catch (e: Exception) {
+                                    val activity = context as? android.app.Activity
+                                    activity?.finishAndRemoveTask()
+                                    kotlin.system.exitProcess(0)
+                                }
+                            }
+                        ) {
+                            Text(stringResource(R.string.restart_app_btn))
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(
+                            onClick = {
+                                val activity = context as? android.app.Activity
+                                activity?.finishAndRemoveTask()
+                                kotlin.system.exitProcess(0)
+                            }
+                        ) {
+                            Text(stringResource(R.string.ok)) // Re-using current OK string, or just hardcode "Tamam" based on context but usually ok is defined
+                        }
+                    }
+                )
             }
         }
     }

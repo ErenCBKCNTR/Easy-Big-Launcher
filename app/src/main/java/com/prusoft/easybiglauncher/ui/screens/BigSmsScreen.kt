@@ -37,6 +37,9 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
 
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
+
 @Composable
 fun CustomQwertyKeyboard(
     onChar: (String) -> Unit,
@@ -69,6 +72,7 @@ fun CustomQwertyKeyboard(
                 KeyButton(text = char, onClick = { onChar(char) }, modifier = Modifier.weight(1f))
             }
         }
+        val haptic = LocalHapticFeedback.current
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
             row3.forEach { char ->
                 KeyButton(text = char, onClick = { onChar(char) }, modifier = Modifier.weight(1f))
@@ -80,11 +84,16 @@ fun CustomQwertyKeyboard(
                     .height(80.dp)
                     .pointerInput(Unit) {
                         detectTapGestures(
-                            onTap = { currentOnBackspace() },
+                            onTap = { 
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                currentOnBackspace() 
+                            },
                             onPress = {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                 val job = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
                                     kotlinx.coroutines.delay(500)
                                     while (true) {
+                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                         currentOnBackspace()
                                         kotlinx.coroutines.delay(100)
                                     }
@@ -121,14 +130,23 @@ fun KeyButton(
     containerColor: Color = Color.White,
     contentColor: Color = Color.Black
 ) {
-    Button(
-        onClick = onClick,
-        modifier = modifier.padding(horizontal = 2.dp).height(80.dp),
+    val haptic = LocalHapticFeedback.current
+    Surface(
+        modifier = modifier
+            .padding(horizontal = 2.dp)
+            .height(80.dp)
+            .androidx.compose.foundation.clickable {
+                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                onClick()
+            },
         shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = containerColor, contentColor = contentColor),
-        contentPadding = PaddingValues(0.dp)
+        color = containerColor,
+        contentColor = contentColor,
+        shadowElevation = 2.dp
     ) {
-        Text(text, fontSize = 28.sp, fontWeight = FontWeight.Bold)
+        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+            Text(text, fontSize = 28.sp, fontWeight = FontWeight.Bold)
+        }
     }
 }
 
@@ -156,6 +174,7 @@ fun CustomNumpad(
                 }
             }
         }
+        val haptic = LocalHapticFeedback.current
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
             Surface(
                 modifier = Modifier
@@ -163,11 +182,16 @@ fun CustomNumpad(
                     .height(70.dp)
                     .pointerInput(Unit) {
                         detectTapGestures(
-                            onTap = { currentOnBackspace() },
+                            onTap = { 
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                currentOnBackspace() 
+                            },
                             onPress = {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                 val job = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
                                     kotlinx.coroutines.delay(500)
                                     while (true) {
+                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                         currentOnBackspace()
                                         kotlinx.coroutines.delay(100)
                                     }

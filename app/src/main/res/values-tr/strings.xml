@@ -191,6 +191,9 @@
     <string name="choose_language">Dil Seçin</string>
     <string name="permission_sos">SOS / Acil Durum İzni</string>
     <string name="permission_contacts">Rehber &amp; Arama İzni</string>
+    <string name="ok">Tamam</string>
+    <string name="restart_app_warning">Uygulamanın düzgün çalışabilmesi için lütfen yeniden başlatın.</string>
+    <string name="restart_app_btn">Yeniden Başlat</string>
     <string name="permission_dnd">Ses Kontrolü / İzinsiz Girmeyin</string>
 
     <string name="search_contacts_hint">Rehberde ara...</string>
