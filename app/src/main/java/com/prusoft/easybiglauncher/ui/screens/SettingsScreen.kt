@@ -326,10 +326,6 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
                                 sharedPref.edit().putBoolean("show_other_tools", it).apply()
                             })
                         }
-                        
-                        Divider()
-                        Text(text = stringResource(R.string.add_page), style = MaterialTheme.typography.titleLarge)
-                        Button(onClick = { viewModel.addPage(3, 2) }, modifier = Modifier.fillMaxWidth().height(80.dp), shape = RoundedCornerShape(16.dp)) { Text(stringResource(R.string.add_page_3x2), fontSize = 22.sp) }
                     }
                     5 -> {
                         val medName by viewModel.securityRepository.medName.collectAsState(initial = "")

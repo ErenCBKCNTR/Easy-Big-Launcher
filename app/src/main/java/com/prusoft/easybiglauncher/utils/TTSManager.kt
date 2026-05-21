@@ -41,7 +41,12 @@ class TTSManager private constructor(context: Context) : TextToSpeech.OnInitList
 
     fun setLanguage(locale: Locale) {
         if (isInitialized) {
-            val result = tts?.setLanguage(locale)
+            val fullLocale = when (locale.language) {
+                "en" -> Locale.US
+                "tr" -> Locale("tr", "TR")
+                else -> locale
+            }
+            val result = tts?.setLanguage(fullLocale)
             if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
                 Log.e("TTSManager", "Language not supported or missing data")
             }

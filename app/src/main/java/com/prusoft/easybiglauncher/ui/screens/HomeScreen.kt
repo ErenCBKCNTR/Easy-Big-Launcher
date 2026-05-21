@@ -141,6 +141,7 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
 
     var contactToConfigure by remember { mutableStateOf<Triple<String, String, LauncherItem>?>(null) }
     var showToolDialog by remember { mutableStateOf(false) }
+    var showSosWarningDialog by remember { mutableStateOf(false) }
 
     val contactPicker = rememberLauncherForActivityResult(
         ActivityResultContracts.PickContact()
@@ -194,13 +195,34 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
         )
     }
 
+    if (showSosWarningDialog) {
+        AlertDialog(
+            onDismissRequest = { showSosWarningDialog = false },
+            title = { Text(stringResource(R.string.dialog_warning), fontSize = 28.sp, fontWeight = FontWeight.Bold, color = Color.Red) },
+            text = { Text(stringResource(R.string.sos_not_configured_warning), fontSize = 24.sp) },
+            confirmButton = {
+                Button(
+                    onClick = { showSosWarningDialog = false },
+                    modifier = Modifier.fillMaxWidth().height(80.dp),
+                    shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp)
+                ) {
+                    Text(stringResource(R.string.close_btn), fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+        )
+    }
+
     if (showToolDialog && slotToAssign != null) {
         AlertDialog(
             onDismissRequest = { showToolDialog = false },
             title = { Text(stringResource(R.string.action_choose_tool), fontSize = 24.sp, fontWeight = FontWeight.Bold) },
             text = {
-                val scrollState = rememberScrollState()
-                Column(modifier = Modifier.fillMaxWidth().height(400.dp).verticalScroll(scrollState), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    modifier = Modifier.fillMaxWidth().heightIn(max = 500.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
                     val magnifierName = stringResource(R.string.magnifier)
                     val sirenName = stringResource(R.string.panic_siren)
                     val aiName = stringResource(R.string.ai_assistant)
@@ -209,22 +231,36 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
                     val btName = stringResource(R.string.bluetooth_settings)
                     val remindersName = stringResource(R.string.reminders_title)
                     
-                    val createBtn: @Composable (String, String) -> Unit = { name, code ->
-                        Button(
-                            onClick = { viewModel.assignContactToItem(slotToAssign!!, name, code); showToolDialog = false; slotToAssign = null }, 
-                            modifier = Modifier.fillMaxWidth().height(80.dp),
-                            shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer, contentColor = MaterialTheme.colorScheme.onPrimaryContainer)
-                        ) { Text(name, fontSize = 22.sp, fontWeight = FontWeight.Bold) }
-                    }
+                    val tools = listOf(
+                        Triple(magnifierName, "tool_magnifier", Icons.Default.Search),
+                        Triple(sirenName, "tool_siren", Icons.Default.Warning),
+                        Triple(aiName, "tool_ai", Icons.Default.Mic),
+                        Triple(flashlightName, "tool_flashlight", Icons.Default.FlashlightOn),
+                        Triple(wifiName, "tool_wifi", Icons.Default.Wifi),
+                        Triple(btName, "tool_bluetooth", Icons.Default.Bluetooth),
+                        Triple(remindersName, "tool_reminders", Icons.Default.DateRange)
+                    )
                     
-                    createBtn(magnifierName, "tool_magnifier")
-                    createBtn(sirenName, "tool_siren")
-                    createBtn(aiName, "tool_ai")
-                    createBtn(flashlightName, "tool_flashlight")
-                    createBtn(wifiName, "tool_wifi")
-                    createBtn(btName, "tool_bluetooth")
-                    createBtn(remindersName, "tool_reminders")
+                    items(tools.size) { index ->
+                        val tool = tools[index]
+                        Card(
+                            onClick = { viewModel.assignContactToItem(slotToAssign!!, tool.first, tool.second); showToolDialog = false; slotToAssign = null },
+                            modifier = Modifier.aspectRatio(1f),
+                            shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer, contentColor = MaterialTheme.colorScheme.onPrimaryContainer)
+                        ) {
+                            Column(
+                                modifier = Modifier.fillMaxSize().padding(8.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                Icon(tool.third, contentDescription = null, modifier = Modifier.size(48.dp))
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(tool.first, fontSize = 16.sp, fontWeight = FontWeight.Bold, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                            }
+                        }
+                    }
                 }
             },
             confirmButton = {},
@@ -364,7 +400,7 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
                                 onClick = {
                                     if (isProtectionEnabled && showPinDialogForNav) return@GridItem
                                     if (item.itemType == ItemType.EMPTY) {
-                                         if (!isProtectionEnabled) {
+                                         if (!isProtectionEnabled && !isHomeFavLockEnabled) {
                                              slotToAssign = item
                                              showAddSlotDialog = true
                                          }
@@ -431,9 +467,11 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
                                                 }
                                                 "tool_ai" -> {
                                                     try {
-                                                        val intent = Intent(Intent.ACTION_MAIN)
-                                                        intent.setClassName("com.openai.chatgpt", "com.openai.voice.webrtc.VoiceChatActivity")
-                                                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                                        // Fallback to OpenAI ChatGPT's direct voice activity 
+                                                        val intent = Intent().apply {
+                                                            setClassName("com.openai.chatgpt", "com.openai.voice.webrtc.VoiceChatActivity")
+                                                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                                                        }
                                                         context.startActivity(intent)
                                                     } catch (e: Exception) {
                                                         try {
@@ -526,7 +564,7 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
                             onClick = {
                                 val sosContact = sharedPref.getString("sos_number", "")
                                 if (sosContact.isNullOrEmpty()) {
-                                    android.widget.Toast.makeText(context, context.getString(R.string.sos_not_configured_warning), android.widget.Toast.LENGTH_LONG).show()
+                                    showSosWarningDialog = true
                                 } else {
                                     EmergencyManager.triggerSos(context)
                                 }
@@ -613,6 +651,7 @@ fun GridItem(item: LauncherItem, isTtsEnabled: Boolean, badgeCount: Int = 0, onC
 
     BigButton(
         text = when {
+            item.itemType == ItemType.EMPTY && isHomeFavLockEnabled -> ""
             item.itemType == ItemType.EMPTY -> stringResource(R.string.add_btn)
             isPhone -> item.customLabel ?: stringResource(R.string.btn_phone)
             isSms -> item.customLabel ?: stringResource(R.string.btn_messages)
@@ -620,6 +659,7 @@ fun GridItem(item: LauncherItem, isTtsEnabled: Boolean, badgeCount: Int = 0, onC
             else -> item.customLabel ?: item.label ?: stringResource(R.string.app_placeholder)
         },
         icon = when {
+            item.itemType == ItemType.EMPTY && isHomeFavLockEnabled -> null
             item.itemType == ItemType.EMPTY -> Icons.Default.Add
             isPhone -> Icons.Default.Phone
             isSms -> Icons.Default.Mail
@@ -628,6 +668,7 @@ fun GridItem(item: LauncherItem, isTtsEnabled: Boolean, badgeCount: Int = 0, onC
             else -> Icons.Default.Apps
         },
         backgroundColor = when {
+            item.itemType == ItemType.EMPTY && isHomeFavLockEnabled -> Color.Transparent
             item.itemType == ItemType.EMPTY -> MaterialTheme.colorScheme.surfaceVariant
             isPhone -> Color(0xFF388E3C)
             isSms -> Color.Blue

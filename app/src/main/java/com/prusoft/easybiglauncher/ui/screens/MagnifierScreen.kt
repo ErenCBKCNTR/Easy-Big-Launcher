@@ -190,20 +190,6 @@ fun MagnifierScreen(navController: NavController) {
                     .padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                if (frozenBitmap != null) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
-                        horizontalArrangement = Arrangement.SpaceEvenly
-                    ) {
-                        Button(onClick = { selectedFilter = 0 }, colors = ButtonDefaults.buttonColors(containerColor = if (selectedFilter == 0) MaterialTheme.colorScheme.primary else Color.Gray)) { Text("Normal") }
-                        Button(onClick = { selectedFilter = 1 }, colors = ButtonDefaults.buttonColors(containerColor = if (selectedFilter == 1) MaterialTheme.colorScheme.primary else Color.Gray)) { Text("SB") }
-                        Button(onClick = { selectedFilter = 2 }, colors = ButtonDefaults.buttonColors(containerColor = if (selectedFilter == 2) MaterialTheme.colorScheme.primary else Color.Gray)) { Text("Ters") }
-                        Button(onClick = { selectedFilter = 3 }, colors = ButtonDefaults.buttonColors(containerColor = if (selectedFilter == 3) Color.Yellow else Color.Gray)) { Text("Sarı", color = Color.Black) }
-                        Button(onClick = { selectedFilter = 4 }, colors = ButtonDefaults.buttonColors(containerColor = if (selectedFilter == 4) Color.Blue else Color.Gray)) { Text("Mavi") }
-                        Button(onClick = { selectedFilter = 5 }, colors = ButtonDefaults.buttonColors(containerColor = if (selectedFilter == 5) Color.Red else Color.Gray)) { Text("Kırmızı") }
-                    }
-                }
-
                 Slider(
                     value = zoom,
                     onValueChange = { zoom = it },
@@ -260,6 +246,37 @@ fun MagnifierScreen(navController: NavController) {
                             modifier = Modifier.size(40.dp),
                             tint = if (frozenBitmap != null) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
                         )
+                    }
+
+                    if (frozenBitmap != null) {
+                        val filterName = when (selectedFilter) {
+                            0 -> stringResource(R.string.filter_normal)
+                            1 -> stringResource(R.string.filter_bw)
+                            2 -> stringResource(R.string.filter_invert)
+                            3 -> stringResource(R.string.filter_yellow)
+                            4 -> stringResource(R.string.filter_blue)
+                            5 -> stringResource(R.string.filter_red)
+                            else -> ""
+                        }
+                        Button(
+                            onClick = { selectedFilter = (selectedFilter + 1) % 6 },
+                            modifier = Modifier.size(80.dp),
+                            shape = androidx.compose.foundation.shape.CircleShape,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                            )
+                        ) {
+                            Text(
+                                text = filterName,
+                                fontSize = 12.sp,
+                                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                            )
+                        }
+                    } else {
+                        // Invisible placeholder to keep center alignment
+                        Spacer(modifier = Modifier.size(80.dp))
                     }
                 }
                 Spacer(modifier = Modifier.height(24.dp))

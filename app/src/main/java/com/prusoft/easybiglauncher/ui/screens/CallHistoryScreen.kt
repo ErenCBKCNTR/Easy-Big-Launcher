@@ -46,12 +46,13 @@ data class CallLogInfo(
 )
 
 @Composable
-fun CallHistoryScreen() {
+fun CallHistoryScreen(viewModel: com.prusoft.easybiglauncher.viewmodel.LauncherViewModel = androidx.lifecycle.viewmodel.compose.viewModel()) {
     val context = LocalContext.current
     var callLogs by remember { mutableStateOf<List<CallLogInfo>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var hasPermission by remember { mutableStateOf(ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CALL_LOG) == PackageManager.PERMISSION_GRANTED) }
 
+    val isHomeFavLockEnabled by viewModel.securityRepository.isHomeFavLockEnabled.collectAsState(initial = false)
     var favoriteContactToAdd by remember { mutableStateOf<CallLogInfo?>(null) }
     var showClearHistoryDialog by remember { mutableStateOf(false) }
 
@@ -134,7 +135,9 @@ fun CallHistoryScreen() {
                                 }
                             }, 
                             onLongClick = {
-                                favoriteContactToAdd = log
+                                if (!isHomeFavLockEnabled) {
+                                    favoriteContactToAdd = log
+                                }
                             }
                         )
                     }

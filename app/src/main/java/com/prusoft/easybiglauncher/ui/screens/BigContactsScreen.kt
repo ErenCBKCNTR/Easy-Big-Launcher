@@ -43,12 +43,13 @@ data class ContactInfo(
 )
 
 @Composable
-fun BigContactsScreen() {
+fun BigContactsScreen(viewModel: com.prusoft.easybiglauncher.viewmodel.LauncherViewModel = androidx.lifecycle.viewmodel.compose.viewModel()) {
     val context = LocalContext.current
     var contacts by remember { mutableStateOf<List<ContactInfo>>(emptyList()) }
     var searchQuery by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(true) }
 
+    val isHomeFavLockEnabled by viewModel.securityRepository.isHomeFavLockEnabled.collectAsState(initial = false)
     var favoriteContactToAdd by remember { mutableStateOf<ContactInfo?>(null) }
 
     LaunchedEffect(Unit) {
@@ -109,7 +110,9 @@ fun BigContactsScreen() {
                             context.startActivity(dialIntent)
                         }
                     }, onLongClick = {
-                        favoriteContactToAdd = contact
+                        if (!isHomeFavLockEnabled) {
+                            favoriteContactToAdd = contact
+                        }
                     })
                 }
             }

@@ -12,7 +12,7 @@
     <string name="language_option">Uygulama Dili</string>
     <string name="go_back">Geri</string>
     <string name="protection_mode">Koruma Modu</string>
-    <string name="set_default">Varsayılan Yap</string>
+    <string name="set_default">Varsayılan Ekran Uygulamasını Yönet</string>
     <string name="add_page">Sayfa Ekle</string>
     <string name="add_page_3x2">Yeni Sayfa Ekle (3x2)</string>
     <string name="sos_settings">Acil Durum Ayarları</string>
@@ -26,7 +26,7 @@
     <string name="wifi_settings">WI-FI AYARLARI</string>
     <string name="bluetooth_settings">BLUETOOTH AYARLARI</string>
     <string name="mobile_data_settings">MOBİL VERİ AYARLARI</string>
-    <string name="onboarding_welcome">Hoşgeldiniz\nWelcome</string>
+    <string name="onboarding_welcome">Hoş geldiniz</string>
     <string name="onboarding_start">BAŞLA</string>
     <string name="pin_enter_new">Yeni Şifre Belirleyin</string>
     <string name="pin_reenter">Şifreyi Tekrar Girin</string>
@@ -58,6 +58,8 @@
     <string name="manage_pages">Sayfaları Yönet</string>
     <string name="delete_page">Sayfayı Sil</string>
     <string name="cannot_delete_last_page">Son sayfayı silemezsiniz.</string>
+    <string name="create_page_btn">Oluştur</string>
+    <string name="page_layout_title">Sayfa Düzenini Seçin</string>
     <string name="battery_optimization_title">Arka Plan Çalışma İzni (Pil Muafiyeti)</string>
     <string name="battery_optimization_desc">SOS ve bildirimlerin arka planda sorunsuz çalışması için bu ayar kritiktir.</string>
     <string name="battery_protection_active">Koruma Aktif</string>
@@ -93,7 +95,7 @@
     <string name="settings_category_1">1. Dil ve Ses</string>
     <string name="settings_category_2">2. Güvenlik ve Şifre</string>
     <string name="settings_category_3">3. Acil Durum (SOS)</string>
-    <string name="settings_category_4">4. Ana Ekran Yönetimi</string>
+    <string name="settings_category_4">4. Sayfa Yönetimi</string>
     <string name="settings_category_5">5. Tıbbi Kimlik Bilgileri</string>
     <string name="home_fav_lock">Ana Ekranı ve Favorileri Kilitle</string>
     <string name="clock_tap_action">Saat ve Tarihe Tıklanınca Ne Olsun?</string>
@@ -186,7 +188,7 @@
     <string name="permission_granted">İzin Verildi!</string>
     <string name="next">İleri</string>
     <string name="setup_complete">Kurulum Tamamlandı</string>
-    <string name="choose_language">Dil Seçin / Choose Language</string>
+    <string name="choose_language">Dil Seçin</string>
     <string name="permission_sos">SOS / Acil Durum İzni</string>
     <string name="permission_contacts">Rehber &amp; Arama İzni</string>
     <string name="permission_dnd">Ses Kontrolü / İzinsiz Girmeyin</string>
@@ -200,4 +202,7 @@
     <string name="filter_red">Kırmızı</string>
     <string name="freeze">DONDUR</string>
     <string name="unfreeze">DEVAM</string>
+    <string name="sos_not_configured_warning">Acil durum bilgileri girilmemiş. Lütfen ayarlar menüsünden doldurun.</string>
+    <string name="dialog_warning">Uyarı</string>
+    <string name="close_btn">Kapat</string>
 </resources>

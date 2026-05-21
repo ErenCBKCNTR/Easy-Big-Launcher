@@ -12,7 +12,7 @@
     <string name="language_option">App Language</string>
     <string name="go_back">Back</string>
     <string name="protection_mode">Protection Mode</string>
-    <string name="set_default">Set as Default</string>
+    <string name="set_default">Manage Default Launcher App</string>
     <string name="add_page">Add Page</string>
     <string name="add_page_3x2">Add New Page (3x2)</string>
     <string name="sos_settings">SOS Settings</string>
@@ -26,7 +26,7 @@
     <string name="wifi_settings">WI-FI SETTINGS</string>
     <string name="bluetooth_settings">BLUETOOTH SETTINGS</string>
     <string name="mobile_data_settings">MOBILE DATA SETTINGS</string>
-    <string name="onboarding_welcome">Hoşgeldiniz\nWelcome</string>
+    <string name="onboarding_welcome">Welcome</string>
     <string name="onboarding_start">START</string>
     <string name="pin_enter_new">Set New Password</string>
     <string name="pin_reenter">Re-enter Password</string>
@@ -59,6 +59,8 @@
     <string name="manage_pages">Manage Pages</string>
     <string name="delete_page">Delete Page</string>
     <string name="cannot_delete_last_page">You cannot delete the last page.</string>
+    <string name="create_page_btn">Create</string>
+    <string name="page_layout_title">Select Page Layout</string>
     <string name="battery_optimization_title">Background Work Permission (Battery Exemption)</string>
     <string name="battery_optimization_desc">This is critical for SOS and notifications to work reliably in the background.</string>
     <string name="battery_protection_active">Protection Active</string>
@@ -94,7 +96,7 @@
     <string name="settings_category_1">1. Language &amp; Sound</string>
     <string name="settings_category_2">2. Security &amp; Password</string>
     <string name="settings_category_3">3. Emergency (SOS)</string>
-    <string name="settings_category_4">4. Home Screen Management</string>
+    <string name="settings_category_4">4. Page Management</string>
     <string name="settings_category_5">5. Medical ID Info</string>
     <string name="home_fav_lock">Lock Home Screen and Favorites</string>
     <string name="clock_tap_action">Action on Clock/Date click?</string>
@@ -187,7 +189,7 @@
     <string name="permission_granted">Permission Granted!</string>
     <string name="next">Next</string>
     <string name="setup_complete">Setup Complete</string>
-    <string name="choose_language">Choose Language / Dil Seçin</string>
+    <string name="choose_language">Choose Language</string>
     <string name="sos_not_configured_warning">Emergency information not entered. Please fill it from the settings menu.</string>
     <string name="permission_sos">SOS / Emergency Permission</string>
     <string name="permission_contacts">Contacts &amp; Call Permission</string>
@@ -201,4 +203,6 @@
     <string name="filter_red">Red</string>
     <string name="freeze">FREEZE</string>
     <string name="unfreeze">UNFREEZE</string>
+    <string name="dialog_warning">Warning</string>
+    <string name="close_btn">Close</string>
 </resources>
