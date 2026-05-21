@@ -1,10 +1,15 @@
 package com.prusoft.easybiglauncher.components
 
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -16,7 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.prusoft.easybiglauncher.utils.TTSManager
 
-@androidx.compose.foundation.ExperimentalFoundationApi
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun BigFooterButton(
     text: String,
@@ -34,7 +39,7 @@ fun BigFooterButton(
     Surface(
         modifier = modifier
             .fillMaxHeight()
-            .androidx.compose.foundation.combinedClickable(
+            .combinedClickable(
                 onClick = {
                     if (isTtsEnabled) {
                         ttsManager.speak(text)
@@ -48,7 +53,7 @@ fun BigFooterButton(
             ),
         color = containerColor,
         contentColor = contentColor,
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
+        shape = RoundedCornerShape(16.dp)
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),

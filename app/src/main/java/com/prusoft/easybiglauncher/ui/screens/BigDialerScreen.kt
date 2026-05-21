@@ -195,27 +195,28 @@ fun DialerContent(context: Context) {
                     .weight(1f)
                     .height(90.dp)
                     .pointerInput(Unit) {
-                        detectTapGestures(
-                            onTap = {
-                                if (currentNumber.isNotEmpty()) number = currentNumber.dropLast(1)
-                            },
-                            onPress = {
-                                val job = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
-                                    delay(500)
-                                    while (true) {
-                                        if (currentNumber.isNotEmpty()) {
-                                            number = currentNumber.dropLast(1)
-                                        }
-                                        delay(100)
-                                    }
-                                }
-                                tryAwaitRelease()
-                                job.cancel()
+                        awaitEachGesture {
+                            val down = awaitFirstDown()
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            if (currentNumber.isNotEmpty()) {
+                                number = currentNumber.dropLast(1)
                             }
-                        )
+                            val job = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
+                                delay(500)
+                                while (true) {
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    if (currentNumber.isNotEmpty()) {
+                                        number = currentNumber.dropLast(1)
+                                    }
+                                    delay(100)
+                                }
+                            }
+                            waitForUpOrCancellation()
+                            job.cancel()
+                        }
                     },
                 color = Color.Gray,
-                shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
+                shape = RoundedCornerShape(16.dp)
             ) {
                 Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
                     Icon(Icons.Default.Backspace, contentDescription = null, modifier = Modifier.size(40.dp), tint = Color.White)
@@ -248,7 +249,7 @@ fun DialerContent(context: Context) {
                     .weight(2f)
                     .height(90.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
-                shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
+                shape = RoundedCornerShape(16.dp)
             ) {
                 Icon(Icons.Default.Call, contentDescription = null, modifier = Modifier.size(48.dp))
                 Spacer(modifier = Modifier.width(12.dp))
@@ -265,11 +266,11 @@ fun DialerButton(text: String, onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .height(100.dp)
-            .androidx.compose.foundation.clickable {
+            .clickable {
                 haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                 onClick()
             },
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(16.dp),
         color = MaterialTheme.colorScheme.primaryContainer,
         contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
         shadowElevation = 2.dp

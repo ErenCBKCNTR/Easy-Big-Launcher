@@ -4,9 +4,12 @@ import android.content.Context
 import android.content.Intent
 import android.media.AudioManager
 import android.provider.Settings
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -205,7 +208,7 @@ fun ToolsScreen(navController: NavController, viewModel: LauncherViewModel = vie
     }
 }
 
-@androidx.compose.foundation.ExperimentalFoundationApi
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ToolButton(
     text: String,
@@ -225,7 +228,7 @@ fun ToolButton(
         modifier = Modifier
             .fillMaxWidth()
             .height(140.dp)
-            .androidx.compose.foundation.combinedClickable(
+            .combinedClickable(
                 onClick = {
                     if (isTtsEnabled) {
                         ttsManager.speak(currentText)
@@ -239,7 +242,7 @@ fun ToolButton(
             ),
         color = color,
         contentColor = contentColor,
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(24.dp),
+        shape = RoundedCornerShape(24.dp),
         shadowElevation = 8.dp
     ) {
         Row(

@@ -34,6 +34,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
+import androidx.compose.foundation.shape.RoundedCornerShape
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
 
@@ -83,27 +87,23 @@ fun CustomQwertyKeyboard(
                     .padding(horizontal = 2.dp)
                     .height(80.dp)
                     .pointerInput(Unit) {
-                        detectTapGestures(
-                            onTap = { 
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                currentOnBackspace() 
-                            },
-                            onPress = {
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                val job = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
-                                    kotlinx.coroutines.delay(500)
-                                    while (true) {
-                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                        currentOnBackspace()
-                                        kotlinx.coroutines.delay(100)
-                                    }
+                        awaitEachGesture {
+                            val down = awaitFirstDown()
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            currentOnBackspace()
+                            val job = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
+                                kotlinx.coroutines.delay(500)
+                                while (true) {
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    currentOnBackspace()
+                                    kotlinx.coroutines.delay(100)
                                 }
-                                tryAwaitRelease()
-                                job.cancel()
                             }
-                        )
+                            waitForUpOrCancellation()
+                            job.cancel()
+                        }
                     },
-                shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
+                shape = RoundedCornerShape(8.dp),
                 color = Color.DarkGray
             ) {
                 Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
@@ -135,11 +135,11 @@ fun KeyButton(
         modifier = modifier
             .padding(horizontal = 2.dp)
             .height(80.dp)
-            .androidx.compose.foundation.clickable {
+            .clickable {
                 haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                 onClick()
             },
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
+        shape = RoundedCornerShape(8.dp),
         color = containerColor,
         contentColor = contentColor,
         shadowElevation = 2.dp
@@ -181,27 +181,23 @@ fun CustomNumpad(
                     .fillMaxWidth()
                     .height(70.dp)
                     .pointerInput(Unit) {
-                        detectTapGestures(
-                            onTap = { 
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                currentOnBackspace() 
-                            },
-                            onPress = {
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                val job = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
-                                    kotlinx.coroutines.delay(500)
-                                    while (true) {
-                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                        currentOnBackspace()
-                                        kotlinx.coroutines.delay(100)
-                                    }
+                        awaitEachGesture {
+                            val down = awaitFirstDown()
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            currentOnBackspace()
+                            val job = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
+                                kotlinx.coroutines.delay(500)
+                                while (true) {
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    currentOnBackspace()
+                                    kotlinx.coroutines.delay(100)
                                 }
-                                tryAwaitRelease()
-                                job.cancel()
                             }
-                        )
+                            waitForUpOrCancellation()
+                            job.cancel()
+                        }
                     },
-                shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
+                shape = RoundedCornerShape(8.dp),
                 color = Color.DarkGray
             ) {
                 Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {

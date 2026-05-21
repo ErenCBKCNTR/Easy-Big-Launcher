@@ -1,8 +1,11 @@
 package com.prusoft.easybiglauncher.components
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -27,7 +30,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.input.pointer.pointerInput
 
-@androidx.compose.foundation.ExperimentalFoundationApi
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun BigButton(
     text: String,
@@ -72,7 +75,7 @@ fun BigButton(
                 contentAlignment = Alignment.Center, 
                 modifier = Modifier
                     .fillMaxSize()
-                    .androidx.compose.foundation.combinedClickable(
+                    .combinedClickable(
                         onClick = {
                             if (isTtsEnabled) {
                                 ttsManager.speak(currentText)
@@ -162,7 +165,7 @@ fun BigButton(
                     .align(Alignment.TopEnd)
                     .offset(x = 8.dp, y = (-8).dp)
                     .size(48.dp)
-                    .background(Color.Red, shape = androidx.compose.foundation.shape.CircleShape),
+                    .background(Color.Red, shape = CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Text(

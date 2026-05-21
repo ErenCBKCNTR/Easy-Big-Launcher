@@ -468,7 +468,7 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
                         }
                         Button(onClick = {
                             scope.launch { viewModel.securityRepository.setMedicalInfo(localName.text, localSurname.text, localAge.text, localAddressTextField.text, "$localBloodType $localBloodRh", localChronic.text, localContactName.text, localContactNumber.text, localContactRelation) }
-                            navController.popBackStack()
+                            currentCategory = 0
                         }, modifier = Modifier.fillMaxWidth().height(80.dp).padding(top = 16.dp), shape = RoundedCornerShape(16.dp)) {
                             Text(stringResource(R.string.medical_save), fontSize = 24.sp, fontWeight = FontWeight.Bold)
                         }
