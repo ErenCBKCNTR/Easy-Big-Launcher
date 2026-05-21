@@ -47,9 +47,7 @@ fun BigFooterButton(
                         currentOnClick()
                     }
                 },
-                onDoubleClick = if (isTtsEnabled) {
-                    { currentOnClick() }
-                } else null
+                onDoubleClick = if (isTtsEnabled) currentOnClick else null
             ),
         color = containerColor,
         contentColor = contentColor,

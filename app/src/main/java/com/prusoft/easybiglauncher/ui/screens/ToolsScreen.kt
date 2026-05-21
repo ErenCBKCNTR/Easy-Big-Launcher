@@ -236,9 +236,7 @@ fun ToolButton(
                         currentOnClick()
                     }
                 },
-                onDoubleClick = if (isTtsEnabled) {
-                    { currentOnClick() }
-                } else null
+                onDoubleClick = if (isTtsEnabled) currentOnClick else null
             ),
         color = color,
         contentColor = contentColor,

@@ -83,9 +83,7 @@ fun BigButton(
                                 currentOnClick()
                             }
                         },
-                        onDoubleClick = if (isTtsEnabled) {
-                            { currentOnClick() }
-                        } else null,
+                        onDoubleClick = if (isTtsEnabled) currentOnClick else null,
                         onLongClick = currentOnLongClick
                     )
             ) {
