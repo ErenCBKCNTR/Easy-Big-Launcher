@@ -41,8 +41,6 @@ fun ToolsScreen(navController: NavController, viewModel: LauncherViewModel = vie
     val context = LocalContext.current
     val isFlashOn by ToolManager.isFlashlightOn.collectAsState()
     val soundMode by ToolManager.soundMode.collectAsState()
-    val isTtsEnabled by viewModel.securityRepository.isTtsEnabled.collectAsState(initial = false)
-    val ttsManager = remember { TTSManager.getInstance(context) }
 
     val sharedPref = remember { context.getSharedPreferences("sos_prefs", Context.MODE_PRIVATE) }
     val showOtherTools = sharedPref.getBoolean("show_other_tools", true)
@@ -72,20 +70,12 @@ fun ToolsScreen(navController: NavController, viewModel: LauncherViewModel = vie
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item {
-                val flashlightOnAnn = stringResource(R.string.flashlight_on_announcement)
-                val flashlightOffAnn = stringResource(R.string.flashlight_off_announcement)
                 ToolButton(
                     text = if (isFlashOn) stringResource(R.string.flashlight_on) else stringResource(R.string.flashlight_off),
                     icon = if (isFlashOn) Icons.Default.FlashlightOn else Icons.Default.FlashlightOff,
                     color = if (isFlashOn) Color(0xFFFFEB3B) else Color.DarkGray,
                     contentColor = if (isFlashOn) Color.Black else Color.White,
-                    isTtsEnabled = isTtsEnabled,
-                    onClick = { 
-                        ToolManager.toggleFlashlight(context)
-                        if (isTtsEnabled) {
-                            ttsManager.speak(if (!isFlashOn) flashlightOnAnn else flashlightOffAnn)
-                        }
-                    }
+                    onClick = { ToolManager.toggleFlashlight(context) }
                 )
             }
             item {
@@ -96,10 +86,7 @@ fun ToolsScreen(navController: NavController, viewModel: LauncherViewModel = vie
                     icon = soundInfo.third,
                     color = soundInfo.fourth,
                     contentColor = Color.White,
-                    isTtsEnabled = isTtsEnabled,
-                    onClick = { 
-                        ToolManager.cycleSoundMode(context)
-                    }
+                    onClick = { ToolManager.cycleSoundMode(context) }
                 )
             }
             item {
@@ -108,10 +95,7 @@ fun ToolsScreen(navController: NavController, viewModel: LauncherViewModel = vie
                     icon = Icons.Default.Alarm,
                     color = Color(0xFF9C27B0), // Purple
                     contentColor = Color.White,
-                    isTtsEnabled = isTtsEnabled,
-                    onClick = {
-                        navController.navigate("reminders")
-                    }
+                    onClick = { navController.navigate("reminders") }
                 )
             }
             item {
@@ -120,10 +104,7 @@ fun ToolsScreen(navController: NavController, viewModel: LauncherViewModel = vie
                     icon = Icons.Default.ZoomIn,
                     color = Color(0xFF009688), // Teal
                     contentColor = Color.White,
-                    isTtsEnabled = isTtsEnabled,
-                    onClick = {
-                        navController.navigate("magnifier")
-                    }
+                    onClick = { navController.navigate("magnifier") }
                 )
             }
             item {
@@ -132,10 +113,7 @@ fun ToolsScreen(navController: NavController, viewModel: LauncherViewModel = vie
                     icon = Icons.Default.Warning,
                     color = Color(0xFFF44336), // Red
                     contentColor = Color.White,
-                    isTtsEnabled = isTtsEnabled,
-                    onClick = {
-                        navController.navigate("siren")
-                    }
+                    onClick = { navController.navigate("siren") }
                 )
             }
             
@@ -159,7 +137,6 @@ fun ToolsScreen(navController: NavController, viewModel: LauncherViewModel = vie
                         icon = Icons.Default.Wifi,
                         color = Color(0xFF2196F3),
                         contentColor = Color.White,
-                        isTtsEnabled = isTtsEnabled,
                         onClick = {
                             val intent = Intent(Settings.ACTION_WIFI_SETTINGS)
                             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -174,7 +151,6 @@ fun ToolsScreen(navController: NavController, viewModel: LauncherViewModel = vie
                         icon = Icons.Default.Bluetooth,
                         color = Color(0xFF3F51B5),
                         contentColor = Color.White,
-                        isTtsEnabled = isTtsEnabled,
                         onClick = {
                             val intent = Intent(Settings.ACTION_BLUETOOTH_SETTINGS)
                             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -189,9 +165,8 @@ fun ToolsScreen(navController: NavController, viewModel: LauncherViewModel = vie
                         icon = Icons.Default.CellTower,
                         color = Color(0xFFFF9800),
                         contentColor = Color.White,
-                        isTtsEnabled = isTtsEnabled,
                         onClick = {
-                            val intent = Intent(Settings.ACTION_NETWORK_OPERATOR_SETTINGS)
+                            val intent = Intent(Settings.ACTION_DATA_USAGE_SETTINGS)
                             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                             try {
                                 context.startActivity(intent)
@@ -215,29 +190,13 @@ fun ToolButton(
     icon: ImageVector,
     color: Color,
     contentColor: Color,
-    isTtsEnabled: Boolean = false,
     onClick: () -> Unit
 ) {
-    val context = LocalContext.current
-    val ttsManager = remember { TTSManager.getInstance(context) }
-
-    val currentOnClick by rememberUpdatedState(onClick)
-    val currentText by rememberUpdatedState(text)
-
     Surface(
         modifier = Modifier
             .fillMaxWidth()
             .height(140.dp)
-            .combinedClickable(
-                onClick = {
-                    if (isTtsEnabled) {
-                        ttsManager.speak(currentText)
-                    } else {
-                        currentOnClick()
-                    }
-                },
-                onDoubleClick = if (isTtsEnabled) currentOnClick else null
-            ),
+            .clickable(onClick = onClick),
         color = color,
         contentColor = contentColor,
         shape = RoundedCornerShape(24.dp),

@@ -48,8 +48,11 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.ui.text.style.TextAlign
 import java.util.Calendar
 
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+
 @Composable
-fun StatusBarWidget(isTtsEnabled: Boolean = false) {
+fun StatusBarWidget(onBatteryTenClicks: (() -> Unit)? = null) {
     val context = LocalContext.current
     val securityRepository = remember { SecurityRepository(context.applicationContext as Application) }
     val clockTapAction by securityRepository.clockTapAction.collectAsState(initial = 2)
@@ -61,6 +64,9 @@ fun StatusBarWidget(isTtsEnabled: Boolean = false) {
     val signalLevel by rememberSignalStrength(context)
     
     var showCalendarDialog by remember { mutableStateOf(false) }
+
+    var batteryClickCount by remember { mutableIntStateOf(0) }
+    val scope = rememberCoroutineScope()
 
     Row(
         modifier = Modifier
@@ -93,6 +99,17 @@ fun StatusBarWidget(isTtsEnabled: Boolean = false) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.clickable {
+                    batteryClickCount++
+                    if (batteryClickCount == 1) {
+                        scope.launch {
+                            delay(3000)
+                            batteryClickCount = 0
+                        }
+                    } else if (batteryClickCount >= 10) {
+                        batteryClickCount = 0
+                        onBatteryTenClicks?.invoke()
+                    }
+
                     val msg = context.getString(R.string.battery_level, battery.percentage)
                     if (battery.percentage <= 15 && !battery.isCharging) {
                         ttsManager.speak(msg + ". " + context.getString(R.string.battery_low_warning))

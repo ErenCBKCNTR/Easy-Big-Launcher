@@ -72,7 +72,6 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
     var sosNumber by remember { mutableStateOf(sharedPref.getString("sos_number", "") ?: "") }
     
     val isProtectionEnabled by viewModel.securityRepository.isProtectionEnabled.collectAsState(initial = false)
-    val isTtsEnabled by viewModel.securityRepository.isTtsEnabled.collectAsState(initial = false)
     val isHomeFavLockEnabled by viewModel.securityRepository.isHomeFavLockEnabled.collectAsState(initial = false)
     val clockTapAction by viewModel.securityRepository.clockTapAction.collectAsState(initial = 2)
     val savedPin by viewModel.securityRepository.savedPin.collectAsState(initial = null)
@@ -185,19 +184,18 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
                         Button(onClick = { AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("tr")) }, modifier = Modifier.fillMaxWidth().height(80.dp), shape = RoundedCornerShape(16.dp)) { Text("Türkçe", fontSize = 24.sp) }
                         
                         Divider()
-                        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                            Text(stringResource(R.string.voice_feedback), fontSize = 24.sp, modifier = Modifier.weight(1f))
-                            Switch(checked = isTtsEnabled, onCheckedChange = { 
-                                scope.launch { viewModel.securityRepository.setTtsEnabled(it) }
-                            })
-                        }
-                        Divider()
-                        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                            Text(stringResource(R.string.sms_read_incoming), fontSize = 24.sp, modifier = Modifier.weight(1f))
-                            Switch(checked = isSmsTtsEnabled, onCheckedChange = { 
-                                scope.launch { viewModel.securityRepository.setSmsTtsEnabled(it) }
-                            })
-                        }
+                        val isAutoBatteryWarningEnabled by viewModel.securityRepository.isAutoBatteryWarningEnabled.collectAsState(initial = true)
+                        SettingsToggleRow(
+                            text = stringResource(R.string.auto_battery_warning),
+                            isChecked = isAutoBatteryWarningEnabled,
+                            onCheckedChange = { scope.launch { viewModel.securityRepository.setAutoBatteryWarningEnabled(it) } }
+                        )
+
+                        SettingsToggleRow(
+                            text = stringResource(R.string.sms_read_incoming),
+                            isChecked = isSmsTtsEnabled,
+                            onCheckedChange = { scope.launch { viewModel.securityRepository.setSmsTtsEnabled(it) } }
+                        )
                         Divider()
                         Text(text = stringResource(R.string.clock_tap_action), fontSize = 20.sp, fontWeight = FontWeight.Bold)
                         Column {
@@ -222,42 +220,43 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
                         }
                     }
                     2 -> {
-                        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                            Text(stringResource(R.string.protection_mode), fontSize = 24.sp, modifier = Modifier.weight(1f))
-                            Switch(checked = isProtectionEnabled, onCheckedChange = { checked ->
+                        SettingsToggleRow(
+                            text = stringResource(R.string.protection_mode),
+                            isChecked = isProtectionEnabled,
+                            onCheckedChange = { checked ->
                                 if (checked && savedPin == null) showSetPinDialog = true
                                 else scope.launch { viewModel.securityRepository.setProtectionEnabled(checked) }
-                            })
-                        }
+                            }
+                        )
                         Button(onClick = { showSetPinDialog = true }, modifier = Modifier.fillMaxWidth().height(80.dp), shape = RoundedCornerShape(16.dp)) {
                             Text(stringResource(R.string.change_pin), fontSize = 24.sp)
                         }
-                        Divider()
-                        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                            Text(stringResource(R.string.home_fav_lock), fontSize = 24.sp, modifier = Modifier.weight(1f))
-                            Switch(checked = isHomeFavLockEnabled, onCheckedChange = { 
-                                scope.launch { viewModel.securityRepository.setHomeFavLockEnabled(it) }
-                            })
-                        }
+                        SettingsToggleRow(
+                            text = stringResource(R.string.home_fav_lock),
+                            isChecked = isHomeFavLockEnabled,
+                            onCheckedChange = { scope.launch { viewModel.securityRepository.setHomeFavLockEnabled(it) } }
+                        )
                     }
                     3 -> {
                         Text(text = stringResource(R.string.sos_settings), style = MaterialTheme.typography.titleLarge)
                         var isLowBatterySosEnabled by remember { mutableStateOf(sharedPref.getBoolean("low_battery_sos_enabled", false)) }
-                        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                            Text(stringResource(R.string.low_battery_sos), fontSize = 24.sp, modifier = Modifier.weight(1f))
-                            Switch(checked = isLowBatterySosEnabled, onCheckedChange = { 
+                        SettingsToggleRow(
+                            text = stringResource(R.string.low_battery_sos),
+                            isChecked = isLowBatterySosEnabled,
+                            onCheckedChange = { 
                                 isLowBatterySosEnabled = it
                                 sharedPref.edit().putBoolean("low_battery_sos_enabled", it).apply() 
-                            })
-                        }
+                            }
+                        )
                         var sendLocationSosEnabled by remember { mutableStateOf(sharedPref.getBoolean("sos_send_location", false)) }
-                        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                            Text(stringResource(R.string.sos_send_location), fontSize = 24.sp, modifier = Modifier.weight(1f))
-                            Switch(checked = sendLocationSosEnabled, onCheckedChange = { 
+                        SettingsToggleRow(
+                            text = stringResource(R.string.sos_send_location),
+                            isChecked = sendLocationSosEnabled,
+                            onCheckedChange = { 
                                 sendLocationSosEnabled = it
                                 sharedPref.edit().putBoolean("sos_send_location", it).apply() 
-                            })
-                        }
+                            }
+                        )
                         
                         val contactPickerLauncher = rememberLauncherForActivityResult(ActivityResultContracts.PickContact()) { uri ->
                             uri?.let {
@@ -332,12 +331,53 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
                         Divider()
                         
                         var showOtherTools by remember { mutableStateOf(sharedPref.getBoolean("show_other_tools", true)) }
-                        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                            Text(stringResource(R.string.show_other_tools), fontSize = 20.sp, modifier = Modifier.weight(1f))
-                            Switch(checked = showOtherTools, onCheckedChange = { 
+                        SettingsToggleRow(
+                            text = stringResource(R.string.show_other_tools),
+                            isChecked = showOtherTools,
+                            onCheckedChange = { 
                                 showOtherTools = it
                                 sharedPref.edit().putBoolean("show_other_tools", it).apply()
-                            })
+                            }
+                        )
+                        
+                        Divider()
+
+                        val isHideSettingsEnabled by viewModel.securityRepository.isHideSettingsEnabled.collectAsState(initial = false)
+                        var showHideSettingsWarning by remember { mutableStateOf(false) }
+
+                        SettingsToggleRow(
+                            text = stringResource(R.string.hide_settings_btn),
+                            isChecked = isHideSettingsEnabled,
+                            onCheckedChange = { checked ->
+                                if (checked) {
+                                    showHideSettingsWarning = true
+                                } else {
+                                    scope.launch { viewModel.securityRepository.setHideSettingsEnabled(false) }
+                                }
+                            }
+                        )
+
+                        if (showHideSettingsWarning) {
+                            AlertDialog(
+                                onDismissRequest = { showHideSettingsWarning = false },
+                                title = { Text(stringResource(R.string.dialog_warning)) },
+                                text = { Text(stringResource(R.string.hide_settings_btn_warning)) },
+                                confirmButton = {
+                                    Button(onClick = {
+                                        scope.launch {
+                                            viewModel.securityRepository.setHideSettingsEnabled(true)
+                                            showHideSettingsWarning = false
+                                        }
+                                    }) {
+                                        Text(stringResource(R.string.ok))
+                                    }
+                                },
+                                dismissButton = {
+                                    TextButton(onClick = { showHideSettingsWarning = false }) {
+                                        Text(stringResource(R.string.close_btn))
+                                    }
+                                }
+                            )
                         }
                     }
                     5 -> {
@@ -495,12 +535,32 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
 
 @Composable
 fun SettingsMenuButton(text: String, onClick: () -> Unit) {
-    Button(
-        onClick = onClick,
-        modifier = Modifier.fillMaxWidth().height(100.dp),
+    Card(
+        modifier = Modifier.fillMaxWidth().height(100.dp).clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer, contentColor = MaterialTheme.colorScheme.onPrimaryContainer)
+        colors = CardDefaults.cardColors(containerColor = Color.White, contentColor = Color.Black),
+        elevation = CardDefaults.cardElevation(8.dp)
     ) {
-        Text(text, fontSize = 26.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis, lineHeight = 30.sp)
+        Box(contentAlignment = androidx.compose.ui.Alignment.Center, modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
+            Text(text, fontSize = 26.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis, lineHeight = 30.sp, color = Color.Black)
+        }
+    }
+}
+
+@Composable
+fun SettingsToggleRow(text: String, isChecked: Boolean, onCheckedChange: (Boolean) -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White, contentColor = Color.Black),
+        elevation = CardDefaults.cardElevation(2.dp)
+    ) {
+        Row(
+            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 20.dp)
+        ) {
+            Text(text, fontSize = 22.sp, modifier = Modifier.weight(1f), color = Color.Black, fontWeight = FontWeight.SemiBold)
+            Switch(checked = isChecked, onCheckedChange = onCheckedChange)
+        }
     }
 }

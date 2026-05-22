@@ -9,9 +9,17 @@ import androidx.work.WorkerParameters
 import com.prusoft.easybiglauncher.R
 import kotlinx.coroutines.delay
 
+import kotlinx.coroutines.flow.first
+import com.prusoft.easybiglauncher.data.SecurityRepository
+import android.app.Application
+
 class BatteryWorker(val context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
+        val securityRepo = SecurityRepository(context.applicationContext as Application)
+        val isEnabled = securityRepo.isAutoBatteryWarningEnabled.first()
+        if (!isEnabled) return Result.success()
+
         val batteryStatus: Intent? = IntentFilter(Intent.ACTION_BATTERY_CHANGED).let { filter ->
             context.registerReceiver(null, filter)
         }

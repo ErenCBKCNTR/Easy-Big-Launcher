@@ -23,8 +23,6 @@ fun NotificationSummaryScreen(navController: NavController, viewModel: LauncherV
     val context = LocalContext.current
     val missedCalls by NotificationTracker.missedCalls.collectAsState()
     val unreadSms by NotificationTracker.unreadSmsCount.collectAsState()
-    val isTtsEnabled by viewModel.securityRepository.isTtsEnabled.collectAsState(initial = false)
-    val ttsManager = remember { TTSManager.getInstance(context) }
 
     Scaffold(
         topBar = { TopAppBar(title = { Text(stringResource(R.string.notification_summary_title)) }) }
@@ -36,10 +34,7 @@ fun NotificationSummaryScreen(navController: NavController, viewModel: LauncherV
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(8.dp)
-                            .clickable {
-                                if (isTtsEnabled) ttsManager.speak(summaryText)
-                            },
+                            .padding(8.dp),
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)
                     ) {
                         Text(
@@ -58,10 +53,7 @@ fun NotificationSummaryScreen(navController: NavController, viewModel: LauncherV
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(8.dp)
-                            .clickable {
-                                if (isTtsEnabled) ttsManager.speak(smsSummaryText)
-                            },
+                            .padding(8.dp),
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
                     ) {
                         Text(

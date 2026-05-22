@@ -208,4 +208,13 @@
     <string name="unfreeze">UNFREEZE</string>
     <string name="dialog_warning">Warning</string>
     <string name="close_btn">Close</string>
+    <string name="auto_battery_warning">Automatic Low Battery Audio Warning</string>
+    <string name="hide_settings_btn">Hide Settings Button</string>
+    <string name="hide_settings_btn_warning">Warning! To access the settings menu, you must click on the battery percentage 10 times consecutively.</string>
+    <string name="add_to_contacts">Add to Contacts</string>
+    <string name="send_message">Send Message</string>
+    <string name="block_number">Block Number</string>
+    <string name="blocked_list">Blocked List</string>
+    <string name="unblock_number">Unblock Number</string>
+    <string name="unblock_number_desc">Are you sure you want to unblock %1$s?</string>
 </resources>

@@ -152,6 +152,16 @@ fun DialerContent(context: Context) {
                         fontWeight = FontWeight.Medium,
                         maxLines = 1
                     )
+                } else if (number.isNotEmpty()) {
+                    TextButton(onClick = {
+                        val intent = Intent(Intent.ACTION_INSERT).apply {
+                            type = android.provider.ContactsContract.RawContacts.CONTENT_TYPE
+                            putExtra(android.provider.ContactsContract.Intents.Insert.PHONE, number)
+                        }
+                        context.startActivity(intent)
+                    }) {
+                        Text(stringResource(R.string.add_to_contacts), fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    }
                 }
             }
         }

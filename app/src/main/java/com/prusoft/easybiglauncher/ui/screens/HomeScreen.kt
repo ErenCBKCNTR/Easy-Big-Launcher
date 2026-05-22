@@ -114,8 +114,8 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
     val missedCalls by NotificationTracker.missedCalls.collectAsState()
     val unreadSms by NotificationTracker.unreadSmsCount.collectAsState()
     val isProtectionEnabled by viewModel.securityRepository.isProtectionEnabled.collectAsState(initial = false)
-    val isTtsEnabled by viewModel.securityRepository.isTtsEnabled.collectAsState(initial = false)
     val isHomeFavLockEnabled by viewModel.securityRepository.isHomeFavLockEnabled.collectAsState(initial = false)
+    val isHideSettingsEnabled by viewModel.securityRepository.isHideSettingsEnabled.collectAsState(initial = false)
     val language by viewModel.securityRepository.language.collectAsState(initial = "tr")
     val savedPin by viewModel.securityRepository.savedPin.collectAsState(initial = null)
     
@@ -362,7 +362,16 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        StatusBarWidget(isTtsEnabled = isTtsEnabled)
+        StatusBarWidget(
+            onBatteryTenClicks = {
+                if (isProtectionEnabled) {
+                    navDestination = "settings"
+                    showPinDialogForNav = true
+                } else {
+                    navController.navigate("settings")
+                }
+            }
+        )
         
         Box(modifier = Modifier.weight(1f)) {
             if (pages.isEmpty()) {
@@ -389,7 +398,6 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
                                 modifier = Modifier
                             ) {
                                 GridItem(item, 
-                                    isTtsEnabled = isTtsEnabled,
                                     isHomeFavLockEnabled = isHomeFavLockEnabled,
                                 badgeCount = when {
                                     item.packageName == "com.android.dialer" || item.packageName == "com.google.android.dialer" -> missedCalls
@@ -533,7 +541,7 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
                             icon = Icons.Default.Call,
                             containerColor = Color.Red,
                             contentColor = Color.White,
-                            isTtsEnabled = isTtsEnabled,
+                            isTtsEnabled = false,
                             onClick = {
                                 val sosContact = sharedPref.getString("sos_number", "")
                                 if (sosContact.isNullOrEmpty()) {
@@ -549,7 +557,7 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
                             icon = Icons.Default.MedicalInformation,
                             containerColor = Color.White,
                             contentColor = Color.Red,
-                            isTtsEnabled = isTtsEnabled,
+                            isTtsEnabled = false,
                             onClick = {
                                 navController.navigate("medical_id")
                             },
@@ -557,22 +565,24 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
                         )
                     }
                 }
-                Box(modifier = Modifier.weight(1f)) {
-                    BigFooterButton(
-                        text = stringResource(R.string.btn_settings),
-                        icon = Icons.Default.Settings,
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                        isTtsEnabled = isTtsEnabled,
-                        onClick = {
-                            if (isProtectionEnabled) {
-                                navDestination = "settings"
-                                showPinDialogForNav = true
-                            } else {
-                                navController.navigate("settings")
+                if (!isHideSettingsEnabled) {
+                    Box(modifier = Modifier.weight(1f)) {
+                        BigFooterButton(
+                            text = stringResource(R.string.btn_settings),
+                            icon = Icons.Default.Settings,
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                            isTtsEnabled = false,
+                            onClick = {
+                                if (isProtectionEnabled) {
+                                    navDestination = "settings"
+                                    showPinDialogForNav = true
+                                } else {
+                                    navController.navigate("settings")
+                                }
                             }
-                        }
-                    )
+                        )
+                    }
                 }
                 Box(modifier = Modifier.weight(1f)) {
                     BigFooterButton(
@@ -580,7 +590,7 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
                         icon = Icons.Default.Build,
                         containerColor = Color(0xFFE91E63),
                         contentColor = Color.White,
-                        isTtsEnabled = isTtsEnabled,
+                        isTtsEnabled = false,
                         onClick = {
                             navController.navigate("tools")
                         }
@@ -592,7 +602,7 @@ fun HomeScreen(navController: NavController, viewModel: LauncherViewModel = view
 }
 
 @Composable
-fun GridItem(item: LauncherItem, isTtsEnabled: Boolean, isHomeFavLockEnabled: Boolean, badgeCount: Int = 0, onClick: () -> Unit, onLongClick: () -> Unit) {
+fun GridItem(item: LauncherItem, isHomeFavLockEnabled: Boolean, badgeCount: Int = 0, onClick: () -> Unit, onLongClick: () -> Unit) {
     val isPhone = item.packageName == "com.android.dialer" || item.packageName == "com.google.android.dialer"
     val isSms = item.packageName == "com.android.messaging" || item.packageName == "com.google.android.apps.messaging"
     val isTool = item.packageName?.startsWith("tool_") == true
@@ -650,7 +660,7 @@ fun GridItem(item: LauncherItem, isTtsEnabled: Boolean, isHomeFavLockEnabled: Bo
         badgeCount = badgeCount,
         customColor = item.customColor,
         customImageUri = item.customImageUri,
-        isTtsEnabled = isTtsEnabled,
+        isTtsEnabled = false,
         appIconPackageName = if (item.itemType == ItemType.APP && !isPhone && !isSms && !isTool) item.packageName else null,
         isContact = item.itemType == ItemType.CONTACT && !isTool && !isWhatsApp,
         onClick = onClick,

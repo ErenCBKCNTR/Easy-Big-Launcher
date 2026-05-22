@@ -208,4 +208,13 @@
     <string name="sos_not_configured_warning">Acil durum bilgileri girilmemiş. Lütfen ayarlar menüsünden doldurun.</string>
     <string name="dialog_warning">Uyarı</string>
     <string name="close_btn">Kapat</string>
+    <string name="auto_battery_warning">Otomatik Düşük Pil Uyarısı</string>
+    <string name="hide_settings_btn">Ayarlar Butonunu Gizle</string>
+    <string name="hide_settings_btn_warning">Dikkat! Ayarlar menüsüne erişmek için pil yüzdesine arka arkaya 10 defa tıklamanız gerekmektedir.</string>
+    <string name="add_to_contacts">Rehbere Kaydet</string>
+    <string name="send_message">Mesaj Gönder</string>
+    <string name="block_number">Numarayı Engelle</string>
+    <string name="blocked_list">Engellenenler Listesi</string>
+    <string name="unblock_number">Numara Engellemeyi Kaldır</string>
+    <string name="unblock_number_desc">%1$s numaralı kişinin engelini kaldırmak istediğinize emin misiniz?</string>
 </resources>

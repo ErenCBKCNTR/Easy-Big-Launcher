@@ -13,9 +13,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CallMade
 import androidx.compose.material.icons.filled.CallMissed
 import androidx.compose.material.icons.filled.CallReceived
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -53,8 +55,12 @@ fun CallHistoryScreen(viewModel: com.prusoft.easybiglauncher.viewmodel.LauncherV
     var hasPermission by remember { mutableStateOf(ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CALL_LOG) == PackageManager.PERMISSION_GRANTED) }
 
     val isHomeFavLockEnabled by viewModel.securityRepository.isHomeFavLockEnabled.collectAsState(initial = false)
-    var favoriteContactToAdd by remember { mutableStateOf<CallLogInfo?>(null) }
+    var selectedLogForOptions by remember { mutableStateOf<CallLogInfo?>(null) }
     var showClearHistoryDialog by remember { mutableStateOf(false) }
+    
+    val sharedPref = remember { context.getSharedPreferences("blocked_prefs", android.content.Context.MODE_PRIVATE) }
+    
+    var showBlockedList by remember { mutableStateOf(false) }
 
     val writePermissionLauncher = rememberLauncherForActivityResult(
         contract = androidx.activity.result.contract.ActivityResultContracts.RequestPermission()
@@ -103,14 +109,46 @@ fun CallHistoryScreen(viewModel: com.prusoft.easybiglauncher.viewmodel.LauncherV
         }
     } else {
         Column(modifier = Modifier.fillMaxSize()) {
-            if (callLogs.isNotEmpty()) {
-                Button(
-                    onClick = { showClearHistoryDialog = true },
-                    modifier = Modifier.fillMaxWidth().padding(16.dp).height(70.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red, contentColor = Color.White)
+            if (showBlockedList) {
+                BlockedNumbersList(
+                    sharedPref = sharedPref,
+                    onBack = { showBlockedList = false }
+                )
+            } else if (callLogs.isNotEmpty()) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(stringResource(R.string.clear_history), fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                    Button(
+                        onClick = { showClearHistoryDialog = true },
+                        modifier = Modifier.weight(1f).height(60.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Red, contentColor = Color.White)
+                    ) {
+                        Text(stringResource(R.string.clear_history), fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    }
+                    
+                    Spacer(modifier = Modifier.width(16.dp))
+                    
+                    var menuExpanded by remember { mutableStateOf(false) }
+                    Box {
+                        IconButton(onClick = { menuExpanded = true }) {
+                            Icon(Icons.Default.MoreVert, contentDescription = null, modifier = Modifier.size(32.dp))
+                        }
+                        DropdownMenu(
+                            expanded = menuExpanded,
+                            onDismissRequest = { menuExpanded = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.blocked_list), fontSize = 20.sp) },
+                                onClick = {
+                                    menuExpanded = false
+                                    showBlockedList = true
+                                }
+                            )
+                        }
+                    }
                 }
 
                 LazyColumn(
@@ -122,22 +160,7 @@ fun CallHistoryScreen(viewModel: com.prusoft.easybiglauncher.viewmodel.LauncherV
                         CallLogRow(
                             log = log, 
                             onClick = {
-                                val intent = Intent(Intent.ACTION_CALL).apply {
-                                    data = Uri.parse("tel:${log.number}")
-                                }
-                                try {
-                                    context.startActivity(intent)
-                                } catch (e: Exception) {
-                                    val dialIntent = Intent(Intent.ACTION_DIAL).apply {
-                                        data = Uri.parse("tel:${log.number}")
-                                    }
-                                    context.startActivity(dialIntent)
-                                }
-                            }, 
-                            onLongClick = {
-                                if (!isHomeFavLockEnabled) {
-                                    favoriteContactToAdd = log
-                                }
+                                selectedLogForOptions = log
                             }
                         )
                     }
@@ -148,6 +171,82 @@ fun CallHistoryScreen(viewModel: com.prusoft.easybiglauncher.viewmodel.LauncherV
                 }
             }
         }
+    }
+
+    if (selectedLogForOptions != null) {
+        val log = selectedLogForOptions!!
+        AlertDialog(
+            onDismissRequest = { selectedLogForOptions = null },
+            title = { Text(log.name ?: log.number, fontSize = 24.sp, fontWeight = FontWeight.Bold) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                    Button(
+                        onClick = {
+                            val intent = Intent(Intent.ACTION_CALL).apply { data = Uri.parse("tel:${log.number}") }
+                            try { context.startActivity(intent) } catch(e: Exception) {
+                                val dialIntent = Intent(Intent.ACTION_DIAL).apply { data = Uri.parse("tel:${log.number}") }
+                                context.startActivity(dialIntent)
+                            }
+                            selectedLogForOptions = null
+                        },
+                        modifier = Modifier.fillMaxWidth().height(60.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
+                    ) { Text(stringResource(R.string.call), fontSize = 20.sp) }
+                    
+                    Button(
+                        onClick = {
+                            val intent = Intent(Intent.ACTION_VIEW).apply {
+                                data = Uri.parse("sms:${log.number}")
+                            }
+                            context.startActivity(intent)
+                            selectedLogForOptions = null
+                        },
+                        modifier = Modifier.fillMaxWidth().height(60.dp)
+                    ) { Text(stringResource(R.string.send_message), fontSize = 20.sp) }
+                    
+                    Button(
+                        onClick = {
+                            if (!isHomeFavLockEnabled) {
+                                favoriteContactToAdd = log
+                            }
+                            selectedLogForOptions = null
+                        },
+                        modifier = Modifier.fillMaxWidth().height(60.dp)
+                    ) { Text(stringResource(R.string.add_to_favorites), fontSize = 20.sp) }
+                    
+                    if (log.name == null) {
+                        Button(
+                            onClick = {
+                                val intent = Intent(Intent.ACTION_INSERT).apply {
+                                    type = android.provider.ContactsContract.RawContacts.CONTENT_TYPE
+                                    putExtra(android.provider.ContactsContract.Intents.Insert.PHONE, log.number)
+                                }
+                                context.startActivity(intent)
+                                selectedLogForOptions = null
+                            },
+                            modifier = Modifier.fillMaxWidth().height(60.dp)
+                        ) { Text(stringResource(R.string.add_to_contacts), fontSize = 20.sp) }
+                    }
+                    
+                    Button(
+                        onClick = {
+                            val editor = sharedPref.edit()
+                            val set = sharedPref.getStringSet("blocked_numbers", mutableSetOf())?.toMutableSet() ?: mutableSetOf()
+                            set.add(log.number)
+                            editor.putStringSet("blocked_numbers", set)
+                            editor.apply()
+                            selectedLogForOptions = null
+                        },
+                        modifier = Modifier.fillMaxWidth().height(60.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                    ) { Text(stringResource(R.string.block_number), fontSize = 20.sp) }
+                }
+            },
+            confirmButton = {},
+            dismissButton = {
+                TextButton(onClick = { selectedLogForOptions = null }) { Text(stringResource(R.string.cancel), fontSize = 20.sp) }
+            }
+        )
     }
 
     if (favoriteContactToAdd != null) {
@@ -187,7 +286,7 @@ fun CallHistoryScreen(viewModel: com.prusoft.easybiglauncher.viewmodel.LauncherV
 }
 
 @Composable
-fun CallLogRow(log: CallLogInfo, onClick: () -> Unit, onLongClick: () -> Unit = {}) {
+fun CallLogRow(log: CallLogInfo, onClick: () -> Unit) {
     val backgroundColor = if (log.type == CallLog.Calls.MISSED_TYPE) Color(0xFFFFEBEE) else MaterialTheme.colorScheme.surfaceVariant
     val icon = when (log.type) {
         CallLog.Calls.INCOMING_TYPE -> Icons.Default.CallReceived
@@ -205,12 +304,7 @@ fun CallLogRow(log: CallLogInfo, onClick: () -> Unit, onLongClick: () -> Unit = 
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .pointerInput(Unit) {
-                detectTapGestures(
-                    onLongPress = { onLongClick() },
-                    onTap = { onClick() }
-                )
-            },
+            .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
         color = backgroundColor,
         tonalElevation = 2.dp
@@ -249,6 +343,93 @@ fun CallLogRow(log: CallLogInfo, onClick: () -> Unit, onLongClick: () -> Unit = 
 
 private fun getFormattedDate(time: Long): String {
     return DateUtils.getRelativeTimeSpanString(time, System.currentTimeMillis(), DateUtils.SECOND_IN_MILLIS).toString()
+}
+
+@Composable
+fun BlockedNumbersList(
+    sharedPref: android.content.SharedPreferences,
+    onBack: () -> Unit
+) {
+    val blockedNumbers = sharedPref.getStringSet("blocked_numbers", emptySet())?.toList() ?: emptyList()
+    var numberToUnblock by remember { mutableStateOf<String?>(null) }
+    
+    Column(modifier = Modifier.fillMaxSize()) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = onBack) {
+                Icon(Icons.Default.ArrowBack, contentDescription = null, modifier = Modifier.size(32.dp))
+            }
+            Spacer(modifier = Modifier.width(16.dp))
+            Text(stringResource(R.string.blocked_list), fontSize = 24.sp, fontWeight = FontWeight.Bold)
+        }
+        
+        if (blockedNumbers.isEmpty()) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(stringResource(R.string.history_empty), fontSize = 24.sp, color = Color.Gray)
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(blockedNumbers) { number ->
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { numberToUnblock = number },
+                        shape = RoundedCornerShape(16.dp),
+                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        tonalElevation = 2.dp
+                    ) {
+                        Text(
+                            text = number,
+                            modifier = Modifier.padding(24.dp),
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+        }
+    }
+    
+    if (numberToUnblock != null) {
+        AlertDialog(
+            onDismissRequest = { numberToUnblock = null },
+            title = { Text(stringResource(R.string.unblock_number), fontSize = 24.sp, fontWeight = FontWeight.Bold) },
+            text = { Text(stringResource(R.string.unblock_number_desc, numberToUnblock!!), fontSize = 20.sp) },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val editor = sharedPref.edit()
+                        val set = sharedPref.getStringSet("blocked_numbers", mutableSetOf())?.toMutableSet() ?: mutableSetOf()
+                        set.remove(numberToUnblock)
+                        editor.putStringSet("blocked_numbers", set)
+                        editor.apply()
+                        numberToUnblock = null
+                    },
+                    modifier = Modifier.size(80.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
+                ) {
+                    Icon(androidx.compose.material.icons.Icons.Default.Check, contentDescription = null, tint = Color.White, modifier = Modifier.size(48.dp))
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = { numberToUnblock = null },
+                    modifier = Modifier.size(80.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                ) {
+                    Icon(androidx.compose.material.icons.Icons.Default.Close, contentDescription = null, tint = Color.White, modifier = Modifier.size(48.dp))
+                }
+            }
+        )
+    }
 }
 
 private fun fetchCallLogs(contentResolver: ContentResolver, context: android.content.Context): List<CallLogInfo> {

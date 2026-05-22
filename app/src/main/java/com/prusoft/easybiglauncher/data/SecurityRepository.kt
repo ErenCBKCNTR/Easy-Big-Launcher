@@ -14,7 +14,8 @@ class SecurityRepository(private val context: Context) {
     private val PROTECTION_ENABLED_KEY = booleanPreferencesKey("protection_enabled")
     private val LANGUAGE_KEY = stringPreferencesKey("language")
     private val ONBOARDING_COMPLETED_KEY = booleanPreferencesKey("onboarding_completed")
-    private val TTS_ENABLED_KEY = booleanPreferencesKey("tts_enabled")
+    private val AUTO_BATTERY_WARNING_KEY = booleanPreferencesKey("auto_battery_warning")
+    private val HIDE_SETTINGS_KEY = booleanPreferencesKey("hide_settings")
 
     private val MED_NAME_KEY = stringPreferencesKey("med_name")
     private val MED_SURNAME_KEY = stringPreferencesKey("med_surname")
@@ -46,8 +47,12 @@ class SecurityRepository(private val context: Context) {
         preferences[ONBOARDING_COMPLETED_KEY] ?: false
     }
 
-    val isTtsEnabled: Flow<Boolean> = context.dataStore.data.map { preferences ->
-        preferences[TTS_ENABLED_KEY] ?: false
+    val isAutoBatteryWarningEnabled: Flow<Boolean> = context.dataStore.data.map { preferences ->
+        preferences[AUTO_BATTERY_WARNING_KEY] ?: true
+    }
+
+    val isHideSettingsEnabled: Flow<Boolean> = context.dataStore.data.map { preferences ->
+        preferences[HIDE_SETTINGS_KEY] ?: false
     }
 
     val isSmsTtsEnabled: Flow<Boolean> = context.dataStore.data.map { preferences ->
@@ -100,9 +105,15 @@ class SecurityRepository(private val context: Context) {
         }
     }
 
-    suspend fun setTtsEnabled(enabled: Boolean) {
+    suspend fun setAutoBatteryWarningEnabled(enabled: Boolean) {
         context.dataStore.edit { preferences ->
-            preferences[TTS_ENABLED_KEY] = enabled
+            preferences[AUTO_BATTERY_WARNING_KEY] = enabled
+        }
+    }
+
+    suspend fun setHideSettingsEnabled(enabled: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[HIDE_SETTINGS_KEY] = enabled
         }
     }
 
