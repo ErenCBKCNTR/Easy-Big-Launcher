@@ -221,4 +221,6 @@
     <string name="alarm_attention">!!! DİKKAT !!!</string>
     <string name="alarm_time_arrived">SAATİ GELDİ</string>
     <string name="alarm_tts_message">%1$s zamanı geldi. Lütfen kontrol edin.</string>
+    <string name="permission_notification">Bildirim İzni</string>
+    <string name="permission_notification_desc">Hatırlatıcı bildirimlerini göstermek ve alarmları güvenilir şekilde tetiklemek için bildirim izni gereklidir.</string>
 </resources>

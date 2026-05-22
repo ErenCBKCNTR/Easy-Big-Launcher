@@ -221,4 +221,6 @@
     <string name="alarm_attention">!!! ATTENTION !!!</string>
     <string name="alarm_time_arrived">TIME HAS ARRIVED</string>
     <string name="alarm_tts_message">It is time for %1$s. Please check.</string>
+    <string name="permission_notification">Notification Permission</string>
+    <string name="permission_notification_desc">Notification permission is required to show reminder notifications and fire alarm triggers reliably.</string>
 </resources>

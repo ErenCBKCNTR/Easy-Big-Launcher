@@ -198,23 +198,58 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
                         )
                         Divider()
                         Text(text = stringResource(R.string.clock_tap_action), fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                        Column {
-                            val options = listOf(
-                                0 to stringResource(R.string.clock_action_read),
-                                1 to stringResource(R.string.clock_action_calendar),
-                                2 to stringResource(R.string.clock_action_both)
-                            )
-                            options.forEach { (value, label) ->
-                                Row(
-                                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
-                                    modifier = Modifier.fillMaxWidth().height(56.dp).clickable { 
-                                        scope.launch { viewModel.securityRepository.setClockTapAction(value) }
-                                    }
-                                ) {
-                                    RadioButton(selected = clockTapAction == value, onClick = {
-                                        scope.launch { viewModel.securityRepository.setClockTapAction(value) }
-                                    })
-                                    Text(text = label, fontSize = 22.sp, modifier = Modifier.padding(start = 16.dp))
+                        var expanded by remember { mutableStateOf(false) }
+                        val options = listOf(
+                            0 to stringResource(R.string.clock_action_read),
+                            1 to stringResource(R.string.clock_action_calendar),
+                            2 to stringResource(R.string.clock_action_both)
+                        )
+                        val selectedOptionText = options.firstOrNull { it.first == clockTapAction }?.second ?: ""
+
+                        Box(modifier = Modifier.fillMaxWidth()) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(64.dp)
+                                    .padding(vertical = 4.dp)
+                                    .androidx.compose.foundation.background(Color.White, shape = RoundedCornerShape(12.dp))
+                                    .clickable { expanded = true }
+                                    .padding(horizontal = 16.dp),
+                                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    text = selectedOptionText,
+                                    fontSize = 20.sp,
+                                    color = Color.Black,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                Text(text = "▼", fontSize = 16.sp, color = Color.Black)
+                            }
+                            DropdownMenu(
+                                expanded = expanded,
+                                onDismissRequest = { expanded = false },
+                                modifier = Modifier
+                                    .fillMaxWidth(0.9f)
+                                    .androidx.compose.foundation.background(Color.White)
+                            ) {
+                                options.forEach { (value, label) ->
+                                    DropdownMenuItem(
+                                        text = { 
+                                            Text(
+                                                text = label, 
+                                                fontSize = 20.sp, 
+                                                fontWeight = FontWeight.Bold, 
+                                                color = Color.Black
+                                            ) 
+                                        },
+                                        onClick = {
+                                            scope.launch { viewModel.securityRepository.setClockTapAction(value) }
+                                            expanded = false
+                                        },
+                                        modifier = Modifier.androidx.compose.foundation.background(Color.White)
+                                    )
                                 }
                             }
                         }

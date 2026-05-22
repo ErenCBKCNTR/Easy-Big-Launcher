@@ -52,6 +52,23 @@ fun OnboardingScreen(navController: NavController, viewModel: LauncherViewModel 
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         mutableStateOf(notificationManager.isNotificationPolicyAccessGranted) 
     }
+    var hasNotificationPermission by remember {
+        val granted = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            androidx.core.content.ContextCompat.checkSelfPermission(
+                context,
+                android.Manifest.permission.POST_NOTIFICATIONS
+            ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+        } else {
+            true
+        }
+        mutableStateOf(granted)
+    }
+
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        hasNotificationPermission = isGranted
+    }
 
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
@@ -59,6 +76,14 @@ fun OnboardingScreen(navController: NavController, viewModel: LauncherViewModel 
                 isIgnoringBattery = BatteryOptimizationManager.isIgnoringBatteryOptimizations(context)
                 val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
                 hasDndPermission = notificationManager.isNotificationPolicyAccessGranted
+                hasNotificationPermission = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                    androidx.core.content.ContextCompat.checkSelfPermission(
+                        context,
+                        android.Manifest.permission.POST_NOTIFICATIONS
+                    ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+                } else {
+                    true
+                }
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -154,7 +179,10 @@ fun OnboardingScreen(navController: NavController, viewModel: LauncherViewModel 
                 userScrollEnabled = false
             ) { page ->
                 Column(
-                    modifier = Modifier.fillMaxSize().padding(24.dp),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
@@ -164,37 +192,56 @@ fun OnboardingScreen(navController: NavController, viewModel: LauncherViewModel 
                                 painter = androidx.compose.ui.res.painterResource(id = R.drawable.app_logo),
                                 contentDescription = stringResource(R.string.app_name),
                                 modifier = Modifier
-                                    .padding(bottom = 24.dp)
-                                    .size(140.dp),
+                                    .padding(bottom = 8.dp)
+                                    .size(80.dp),
                                 contentScale = androidx.compose.ui.layout.ContentScale.Fit
                             )
                             Text(
                                 text = stringResource(R.string.app_name),
-                                style = MaterialTheme.typography.displayMedium.copy(color = Color.White, textAlign = TextAlign.Center),
-                                modifier = Modifier.padding(bottom = 32.dp)
+                                style = MaterialTheme.typography.headlineMedium.copy(
+                                    color = Color.White,
+                                    fontSize = 28.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    textAlign = TextAlign.Center
+                                ),
+                                modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)
                             )
                             Text(
                                 text = stringResource(R.string.choose_language),
-                                style = MaterialTheme.typography.displaySmall.copy(color = Color.White, textAlign = TextAlign.Center)
+                                style = MaterialTheme.typography.titleLarge.copy(
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Bold,
+                                    textAlign = TextAlign.Center
+                                ),
+                                modifier = Modifier.fillMaxWidth()
                             )
-                            Spacer(modifier = Modifier.height(20.dp))
+                            Spacer(modifier = Modifier.height(10.dp))
                             Text(
                                 text = stringResource(R.string.onboarding_welcome_text),
-                                style = MaterialTheme.typography.bodyLarge.copy(color = Color.LightGray, textAlign = TextAlign.Center)
+                                style = MaterialTheme.typography.bodyLarge.copy(
+                                    color = Color.LightGray,
+                                    fontSize = 18.sp,
+                                    textAlign = TextAlign.Center
+                                ),
+                                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
                             )
-                            Spacer(modifier = Modifier.height(40.dp))
+                            Spacer(modifier = Modifier.height(20.dp))
                             LanguageButton(text = "🇹🇷 TÜRKÇE") {
                                 AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("tr"))
                                 scope.launch { viewModel.securityRepository.setLanguage("tr") }
                             }
-                            Spacer(modifier = Modifier.height(16.dp))
+                            Spacer(modifier = Modifier.height(12.dp))
                             LanguageButton(text = "🇬🇧 ENGLISH") {
                                 AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("en"))
                                 scope.launch { viewModel.securityRepository.setLanguage("en") }
                             }
-                            Spacer(modifier = Modifier.height(30.dp))
-                            Button(onClick = { scope.launch { pagerState.scrollToPage(1) } }) {
-                                Text(stringResource(R.string.next), fontSize = 24.sp)
+                            Spacer(modifier = Modifier.height(20.dp))
+                            Button(
+                                onClick = { scope.launch { pagerState.scrollToPage(1) } },
+                                modifier = Modifier.fillMaxWidth().height(60.dp),
+                                shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
+                            ) {
+                                Text(stringResource(R.string.next), fontSize = 24.sp, fontWeight = FontWeight.Bold)
                             }
                         }
                         1 -> {
@@ -239,6 +286,22 @@ fun OnboardingScreen(navController: NavController, viewModel: LauncherViewModel 
                         4 -> {
                             Text(stringResource(R.string.setup_complete), fontSize = 32.sp, color = Color.White, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
                             Spacer(modifier = Modifier.height(20.dp))
+                            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                                Button(
+                                    onClick = {
+                                        notificationPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+                                    },
+                                    modifier = Modifier.fillMaxWidth().height(60.dp),
+                                    colors = ButtonDefaults.buttonColors(containerColor = if (hasNotificationPermission) Color(0xFF4CAF50) else Color.DarkGray)
+                                ) {
+                                    Text(
+                                        text = stringResource(R.string.permission_notification) + if (hasNotificationPermission) " (${stringResource(R.string.permission_granted)})" else "",
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(10.dp))
+                            }
                             Button(
                                 onClick = { BatteryOptimizationManager.requestIgnoreBatteryOptimizations(context) },
                                 modifier = Modifier.fillMaxWidth().height(60.dp),
@@ -255,7 +318,7 @@ fun OnboardingScreen(navController: NavController, viewModel: LauncherViewModel 
                                 modifier = Modifier.fillMaxWidth().height(60.dp),
                                 colors = ButtonDefaults.buttonColors(containerColor = if (hasDndPermission) Color(0xFF4CAF50) else Color.DarkGray)
                             ) { Text(stringResource(R.string.permission_dnd), fontSize = 16.sp) }
-                            Spacer(modifier = Modifier.height(40.dp))
+                            Spacer(modifier = Modifier.height(30.dp))
                             Button(
                                 onClick = {
                                     scope.launch {

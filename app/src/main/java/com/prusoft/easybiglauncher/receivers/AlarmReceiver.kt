@@ -18,6 +18,21 @@ class AlarmReceiver : BroadcastReceiver() {
 
         Log.d("AlarmReceiver", "Alarm received for: $reminderTitle ($reminderId)")
 
+        // Acquire WakeLock to turn screen on when device is asleep / locked
+        try {
+            val powerManager = context.getSystemService(Context.POWER_SERVICE) as android.os.PowerManager
+            val wakeLock = powerManager.newWakeLock(
+                @Suppress("DEPRECATION")
+                (android.os.PowerManager.FULL_WAKE_LOCK or
+                 android.os.PowerManager.ACQUIRE_CAUSES_WAKEUP or
+                 android.os.PowerManager.ON_AFTER_RELEASE),
+                "EasyBigLauncher:AlarmWakeLock"
+            )
+            wakeLock.acquire(10000) // 10 seconds max
+        } catch (e: Exception) {
+            Log.e("AlarmReceiver", "Failed to acquire wake lock: ${e.message}")
+        }
+
         val alarmIntent = Intent(context, AlarmActivity::class.java).apply {
             putExtra("reminder_id", reminderId)
             putExtra("reminder_title", reminderTitle)
@@ -32,6 +47,9 @@ class AlarmReceiver : BroadcastReceiver() {
         }
         
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val alarmUri = android.media.RingtoneManager.getDefaultUri(android.media.RingtoneManager.TYPE_ALARM)
+            ?: android.media.RingtoneManager.getDefaultUri(android.media.RingtoneManager.TYPE_RINGTONE)
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel("alarm_channel", "Alarms", NotificationManager.IMPORTANCE_HIGH).apply {
                 description = "Easy Big Launcher Alarm Notifications"
@@ -39,6 +57,10 @@ class AlarmReceiver : BroadcastReceiver() {
                 enableVibration(true)
                 setBypassDnd(true)
                 lockscreenVisibility = android.app.Notification.VISIBILITY_PUBLIC
+                setSound(alarmUri, android.media.AudioAttributes.Builder()
+                    .setUsage(android.media.AudioAttributes.USAGE_ALARM)
+                    .setContentType(android.media.AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    .build())
             }
             notificationManager.createNotificationChannel(channel)
         }
@@ -59,6 +81,8 @@ class AlarmReceiver : BroadcastReceiver() {
             .setFullScreenIntent(fullScreenPendingIntent, true)
             .setAutoCancel(true)
             .setOngoing(true)
+            .setSound(alarmUri, android.media.AudioManager.STREAM_ALARM)
+            .setVibrate(longArrayOf(0, 500, 500, 500))
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .build()
             
