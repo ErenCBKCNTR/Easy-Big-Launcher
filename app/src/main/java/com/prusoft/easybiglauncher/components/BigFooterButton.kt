@@ -21,6 +21,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.prusoft.easybiglauncher.utils.TTSManager
 
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun BigFooterButton(
@@ -39,6 +42,9 @@ fun BigFooterButton(
     Surface(
         modifier = modifier
             .fillMaxHeight()
+            .semantics(mergeDescendants = true) {
+                contentDescription = text
+            }
             .combinedClickable(
                 onClick = {
                     if (isTtsEnabled) {

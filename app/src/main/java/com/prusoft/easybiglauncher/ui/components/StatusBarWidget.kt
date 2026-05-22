@@ -47,7 +47,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.ui.text.style.TextAlign
 import java.util.Calendar
-import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -66,7 +66,7 @@ fun StatusBarWidget(onBatteryTenClicks: (() -> Unit)? = null) {
     
     var showCalendarDialog by remember { mutableStateOf(false) }
 
-    var batteryClickCount by remember { mutableIntStateOf(0) }
+    var batteryClickCount by remember { mutableStateOf(0) }
     val scope = rememberCoroutineScope()
 
     Row(
@@ -106,7 +106,7 @@ fun StatusBarWidget(onBatteryTenClicks: (() -> Unit)? = null) {
                             delay(3000)
                             batteryClickCount = 0
                         }
-                    } else if (batteryClickCount >= 10) {
+                    } else if (batteryClickCount >= 5) {
                         batteryClickCount = 0
                         onBatteryTenClicks?.invoke()
                     }

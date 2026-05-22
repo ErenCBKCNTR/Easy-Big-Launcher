@@ -73,6 +73,7 @@
     <string name="grid_label">%1$dx%2$d Grid</string>
     <string name="no_notifications">No new notifications</string>
     <string name="reminders_title">Reminders</string>
+    <string name="reminder_item_title">Reminder</string>
     <string name="add_reminder">Add Reminder</string>
     <string name="reminder_hint">Reminder Name (Med/Appt)</string>
     <string name="hour">Hour</string>
@@ -217,4 +218,7 @@
     <string name="blocked_list">Blocked List</string>
     <string name="unblock_number">Unblock Number</string>
     <string name="unblock_number_desc">Are you sure you want to unblock %1$s?</string>
+    <string name="alarm_attention">!!! ATTENTION !!!</string>
+    <string name="alarm_time_arrived">TIME HAS ARRIVED</string>
+    <string name="alarm_tts_message">It is time for %1$s. Please check.</string>
 </resources>

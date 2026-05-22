@@ -5,7 +5,7 @@ import android.content.Context
 import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -24,7 +24,7 @@ import androidx.compose.ui.res.stringResource
 import com.prusoft.easybiglauncher.R
 import kotlinx.coroutines.delay
 
-class AlarmActivity : ComponentActivity() {
+class AlarmActivity : AppCompatActivity() {
 
     private lateinit var ttsManager: TTSManager
     private var reminderTitle: String = ""
@@ -37,11 +37,24 @@ class AlarmActivity : ComponentActivity() {
         reminderTitle = intent.getStringExtra("reminder_title") ?: "HATIRLATICI"
         ttsManager = TTSManager.getInstance(this)
 
+        val localeList = androidx.appcompat.app.AppCompatDelegate.getApplicationLocales()
+        if (!localeList.isEmpty) {
+            val locale = localeList.get(0)
+            if (locale != null) {
+                ttsManager.setLanguage(locale)
+            }
+        }
+
         setContent {
             AccessibilityLauncherTheme {
                 AlarmScreen(
                     title = reminderTitle,
                     onDismiss = {
+                        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
+                        val reminderId = intent.getIntExtra("reminder_id", -1)
+                        if (reminderId != -1) {
+                            notificationManager.cancel(reminderId)
+                        }
                         finish()
                     }
                 )
@@ -69,7 +82,7 @@ class AlarmActivity : ComponentActivity() {
     }
 
     private fun startSpeaking() {
-        val textToSpeak = "$reminderTitle zamanı geldi. Lütfen kontrol edin."
+        val textToSpeak = getString(R.string.alarm_tts_message, reminderTitle)
         repeatSpeaking(textToSpeak)
     }
 
@@ -103,7 +116,7 @@ fun AlarmScreen(title: String, onDismiss: () -> Unit) {
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "!!! DİKKAT !!!",
+            text = stringResource(R.string.alarm_attention),
             fontSize = 40.sp,
             fontWeight = FontWeight.Black,
             color = Color.Yellow,
@@ -124,7 +137,7 @@ fun AlarmScreen(title: String, onDismiss: () -> Unit) {
         Spacer(modifier = Modifier.height(16.dp))
         
         Text(
-            text = "SAATİ GELDİ",
+            text = stringResource(R.string.alarm_time_arrived),
             fontSize = 32.sp,
             fontWeight = FontWeight.Bold,
             color = Color.White,
@@ -143,9 +156,11 @@ fun AlarmScreen(title: String, onDismiss: () -> Unit) {
         ) {
             Text(
                 text = stringResource(R.string.alarm_dismiss),
-                fontSize = 44.sp,
+                fontSize = 28.sp,
                 fontWeight = FontWeight.Black,
-                color = Color(0xFFB71C1C)
+                color = Color(0xFFB71C1C),
+                textAlign = TextAlign.Center,
+                lineHeight = 34.sp
             )
         }
     }

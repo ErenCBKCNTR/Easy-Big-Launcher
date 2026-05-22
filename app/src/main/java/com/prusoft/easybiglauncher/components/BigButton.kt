@@ -30,6 +30,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.input.pointer.pointerInput
 
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun BigButton(
@@ -49,7 +52,7 @@ fun BigButton(
     val context = LocalContext.current
     val ttsManager = remember { TTSManager.getInstance(context) }
     
-    val contactColor = Color(0xFF2196F3) // Blue for contacts
+    val contactColor = Color(0xFF2196F3) 
     val finalBackgroundColor = when {
         customColor != null -> Color(android.graphics.Color.parseColor(customColor))
         isContact -> contactColor
@@ -66,7 +69,10 @@ fun BigButton(
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(140.dp),
+                .height(140.dp)
+                .semantics(mergeDescendants = true) {
+                    contentDescription = currentText
+                },
             shape = RoundedCornerShape(24.dp),
             color = finalBackgroundColor,
             contentColor = contentColor

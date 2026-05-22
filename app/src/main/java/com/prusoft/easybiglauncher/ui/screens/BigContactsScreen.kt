@@ -52,6 +52,8 @@ fun BigContactsScreen(viewModel: com.prusoft.easybiglauncher.viewmodel.LauncherV
     val isHomeFavLockEnabled by viewModel.securityRepository.isHomeFavLockEnabled.collectAsState(initial = false)
     var favoriteContactToAdd by remember { mutableStateOf<ContactInfo?>(null) }
 
+    var selectedContactForOptions by remember { mutableStateOf<ContactInfo?>(null) }
+
     LaunchedEffect(Unit) {
         contacts = withContext(Dispatchers.IO) {
             fetchContacts(context.contentResolver)
@@ -98,25 +100,60 @@ fun BigContactsScreen(viewModel: com.prusoft.easybiglauncher.viewmodel.LauncherV
             ) {
                 items(filteredContacts) { contact ->
                     ContactRow(contact = contact, onClick = {
-                        val intent = Intent(Intent.ACTION_CALL).apply {
-                            data = Uri.parse("tel:${contact.number}")
-                        }
-                        try {
-                            context.startActivity(intent)
-                        } catch (e: Exception) {
-                            val dialIntent = Intent(Intent.ACTION_DIAL).apply {
-                                data = Uri.parse("tel:${contact.number}")
-                            }
-                            context.startActivity(dialIntent)
-                        }
-                    }, onLongClick = {
-                        if (!isHomeFavLockEnabled) {
-                            favoriteContactToAdd = contact
-                        }
+                        selectedContactForOptions = contact
                     })
                 }
             }
         }
+    }
+
+    if (selectedContactForOptions != null) {
+        val contact = selectedContactForOptions!!
+        AlertDialog(
+            onDismissRequest = { selectedContactForOptions = null },
+            title = { Text(contact.name, fontSize = 24.sp, fontWeight = FontWeight.Bold) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                    Button(
+                        onClick = {
+                            val intent = Intent(Intent.ACTION_CALL).apply { data = Uri.parse("tel:${contact.number}") }
+                            try { context.startActivity(intent) } catch(e: Exception) {
+                                val dialIntent = Intent(Intent.ACTION_DIAL).apply { data = Uri.parse("tel:${contact.number}") }
+                                context.startActivity(dialIntent)
+                            }
+                            selectedContactForOptions = null
+                        },
+                        modifier = Modifier.fillMaxWidth().height(60.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
+                    ) { Text(stringResource(R.string.call), fontSize = 20.sp) }
+                    
+                    Button(
+                        onClick = {
+                            val intent = Intent(Intent.ACTION_VIEW).apply {
+                                data = Uri.parse("sms:${contact.number}")
+                            }
+                            context.startActivity(intent)
+                            selectedContactForOptions = null
+                        },
+                        modifier = Modifier.fillMaxWidth().height(60.dp)
+                    ) { Text(stringResource(R.string.send_message), fontSize = 20.sp) }
+                    
+                    Button(
+                        onClick = {
+                            if (!isHomeFavLockEnabled) {
+                                favoriteContactToAdd = contact
+                            }
+                            selectedContactForOptions = null
+                        },
+                        modifier = Modifier.fillMaxWidth().height(60.dp)
+                    ) { Text(stringResource(R.string.add_to_favorites), fontSize = 20.sp) }
+                }
+            },
+            confirmButton = {},
+            dismissButton = {
+                TextButton(onClick = { selectedContactForOptions = null }) { Text(stringResource(R.string.cancel), fontSize = 20.sp) }
+            }
+        )
     }
 
     if (favoriteContactToAdd != null) {
@@ -135,16 +172,11 @@ fun BigContactsScreen(viewModel: com.prusoft.easybiglauncher.viewmodel.LauncherV
 }
 
 @Composable
-fun ContactRow(contact: ContactInfo, onClick: () -> Unit, onLongClick: () -> Unit = {}) {
+fun ContactRow(contact: ContactInfo, onClick: () -> Unit) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .pointerInput(contact) {
-                detectTapGestures(
-                    onLongPress = { onLongClick() },
-                    onTap = { onClick() }
-                )
-            },
+            .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
         color = MaterialTheme.colorScheme.surfaceVariant,
         tonalElevation = 2.dp
