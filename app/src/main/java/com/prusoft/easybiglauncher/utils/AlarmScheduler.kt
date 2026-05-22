@@ -14,15 +14,6 @@ object AlarmScheduler {
     fun scheduleAlarm(context: Context, reminder: Reminder) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            if (!alarmManager.canScheduleExactAlarms()) {
-                val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
-                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                context.startActivity(intent)
-                return
-            }
-        }
-
         val intent = Intent(context, AlarmReceiver::class.java).apply {
             putExtra("reminder_id", reminder.id)
             putExtra("reminder_title", reminder.title)
@@ -35,11 +26,36 @@ object AlarmScheduler {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        alarmManager.setExactAndAllowWhileIdle(
-            AlarmManager.RTC_WAKEUP,
-            reminder.timeInMillis,
-            pendingIntent
-        )
+        var canScheduleExact = true
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            canScheduleExact = alarmManager.canScheduleExactAlarms()
+        }
+
+        if (canScheduleExact) {
+            try {
+                alarmManager.setExactAndAllowWhileIdle(
+                    AlarmManager.RTC_WAKEUP,
+                    reminder.timeInMillis,
+                    pendingIntent
+                )
+                android.util.Log.d("AlarmScheduler", "Exact alarm scheduled successfully for ID: ${reminder.id}")
+                return
+            } catch (e: SecurityException) {
+                android.util.Log.e("AlarmScheduler", "SecurityException scheduling exact: ${e.message}")
+            }
+        }
+
+        // Graceful fallback to non-exact but lockscreen/doze resilient alarm
+        try {
+            alarmManager.setAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                reminder.timeInMillis,
+                pendingIntent
+            )
+            android.util.Log.d("AlarmScheduler", "Fallback alarm scheduled successfully for ID: ${reminder.id}")
+        } catch (e: Exception) {
+            android.util.Log.e("AlarmScheduler", "Error scheduling fallback alarm: ${e.message}")
+        }
     }
 
     fun cancelAlarm(context: Context, reminder: Reminder) {

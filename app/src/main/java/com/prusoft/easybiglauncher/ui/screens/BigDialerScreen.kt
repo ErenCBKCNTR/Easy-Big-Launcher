@@ -180,11 +180,11 @@ fun DialerContent(context: Context) {
         ) {
             for (row in keys) {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().weight(1f),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     for (key in row) {
-                        Box(modifier = Modifier.weight(1f)) {
+                        Box(modifier = Modifier.weight(1f).fillMaxHeight()) {
                             DialerButton(key) {
                                 if (number.length < 15) number += key
                             }
@@ -276,8 +276,7 @@ fun DialerButton(text: String, onClick: () -> Unit) {
     val haptic = LocalHapticFeedback.current
     Surface(
         modifier = Modifier
-            .fillMaxWidth()
-            .height(100.dp)
+            .fillMaxSize()
             .pointerInput(Unit) {
                 awaitEachGesture {
                     val down = awaitFirstDown()
@@ -292,7 +291,11 @@ fun DialerButton(text: String, onClick: () -> Unit) {
         shadowElevation = 2.dp
     ) {
         Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-            Text(text = text, fontSize = 36.sp, fontWeight = FontWeight.Bold)
+            Text(
+                text = text,
+                fontSize = if (text == "*" || text == "#") 48.sp else 38.sp,
+                fontWeight = FontWeight.ExtraBold
+            )
         }
     }
 }

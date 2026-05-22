@@ -21,12 +21,25 @@ class AlarmReceiver : BroadcastReceiver() {
         val alarmIntent = Intent(context, AlarmActivity::class.java).apply {
             putExtra("reminder_id", reminderId)
             putExtra("reminder_title", reminderTitle)
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+        }
+
+        // Try to launch AlarmActivity directly so it appears immediately if screen is unlocked or app is in foreground
+        try {
+            context.startActivity(alarmIntent)
+        } catch (e: Exception) {
+            Log.e("AlarmReceiver", "Failed to start AlarmActivity directly: ${e.message}")
         }
         
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel("alarm_channel", "Alarms", NotificationManager.IMPORTANCE_HIGH)
+            val channel = NotificationChannel("alarm_channel", "Alarms", NotificationManager.IMPORTANCE_HIGH).apply {
+                description = "Easy Big Launcher Alarm Notifications"
+                enableLights(true)
+                enableVibration(true)
+                setBypassDnd(true)
+                lockscreenVisibility = android.app.Notification.VISIBILITY_PUBLIC
+            }
             notificationManager.createNotificationChannel(channel)
         }
 
@@ -44,6 +57,9 @@ class AlarmReceiver : BroadcastReceiver() {
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setFullScreenIntent(fullScreenPendingIntent, true)
+            .setAutoCancel(true)
+            .setOngoing(true)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .build()
             
         notificationManager.notify(reminderId, notification)

@@ -59,7 +59,7 @@ fun CustomQwertyKeyboard(
 
     Column(
         modifier = modifier.fillMaxWidth().padding(horizontal = 4.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
             rowNum.forEach { char ->
@@ -85,7 +85,7 @@ fun CustomQwertyKeyboard(
                 modifier = Modifier
                     .weight(1.5f)
                     .padding(horizontal = 2.dp)
-                    .height(80.dp)
+                    .height(48.dp)
                     .pointerInput(Unit) {
                         awaitEachGesture {
                             val down = awaitFirstDown()
@@ -107,7 +107,7 @@ fun CustomQwertyKeyboard(
                 color = Color.DarkGray
             ) {
                 Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                    Text("⌫", fontSize = 32.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    Text("⌫", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color.White)
                 }
             }
         }
@@ -134,7 +134,7 @@ fun KeyButton(
     Surface(
         modifier = modifier
             .padding(horizontal = 2.dp)
-            .height(80.dp)
+            .height(48.dp)
             .pointerInput(Unit) {
                 awaitEachGesture {
                     val down = awaitFirstDown()
@@ -149,7 +149,7 @@ fun KeyButton(
         shadowElevation = 2.dp
     ) {
         Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-            Text(text, fontSize = 28.sp, fontWeight = FontWeight.Bold)
+            Text(text, fontSize = 20.sp, fontWeight = FontWeight.Bold)
         }
     }
 }
@@ -169,12 +169,12 @@ fun CustomNumpad(
     )
     Column(
         modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         rows.forEach { row ->
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 row.forEach { char ->
-                    KeyButton(text = char, onClick = { onChar(char) }, modifier = Modifier.weight(1f).height(70.dp))
+                    KeyButton(text = char, onClick = { onChar(char) }, modifier = Modifier.weight(1f).height(50.dp))
                 }
             }
         }
@@ -183,7 +183,7 @@ fun CustomNumpad(
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(70.dp)
+                    .height(50.dp)
                     .pointerInput(Unit) {
                         awaitEachGesture {
                             val down = awaitFirstDown()
@@ -205,7 +205,7 @@ fun CustomNumpad(
                 color = Color.DarkGray
             ) {
                 Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                    Text("⌫", fontSize = 32.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    Text("⌫", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color.White)
                 }
             }
         }
@@ -262,6 +262,32 @@ fun BigSmsScreen(navController: NavController, viewModel: com.prusoft.easybiglau
                             IconButton(onClick = { showReplyDialog = false }) {
                                 Icon(Icons.Default.ArrowBack, contentDescription = null, modifier = Modifier.size(40.dp))
                             }
+                        },
+                        actions = {
+                            IconButton(
+                                onClick = {
+                                    if (replyText.isNotEmpty()) {
+                                        try {
+                                            val smsManager = context.getSystemService(android.telephony.SmsManager::class.java)
+                                            smsManager.sendTextMessage(selectedMessage!!.number, null, replyText, null, null)
+                                            selectedMessage = null
+                                            replyText = ""
+                                            showReplyDialog = false
+                                        } catch (e: Exception) {
+                                            // Handle exception
+                                        }
+                                    }
+                                },
+                                enabled = replyText.isNotEmpty(),
+                                modifier = Modifier.padding(end = 8.dp)
+                            ) {
+                                Icon(
+                                    Icons.Default.Send,
+                                    contentDescription = "Send",
+                                    modifier = Modifier.size(40.dp),
+                                    tint = if (replyText.isNotEmpty()) Color(0xFF007AFF) else Color.Gray
+                                )
+                            }
                         }
                     )
                 }
@@ -293,38 +319,6 @@ fun BigSmsScreen(navController: NavController, viewModel: com.prusoft.easybiglau
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
-                    
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        TextButton(
-                            onClick = { showReplyDialog = false },
-                            modifier = Modifier.weight(1f).height(80.dp),
-                            colors = ButtonDefaults.textButtonColors(contentColor = Color.Red)
-                        ) {
-                            Text(stringResource(R.string.reply_cancel_btn), fontSize = 24.sp, fontWeight = FontWeight.Bold)
-                        }
-                        Button(
-                            onClick = {
-                                if (replyText.isNotEmpty()) {
-                                    try {
-                                        val smsManager = context.getSystemService(android.telephony.SmsManager::class.java)
-                                        smsManager.sendTextMessage(selectedMessage!!.number, null, replyText, null, null)
-                                        selectedMessage = null
-                                        replyText = ""
-                                        showReplyDialog = false
-                                    } catch (e: Exception) {
-                                        // Handle exception
-                                    }
-                                }
-                            },
-                            modifier = Modifier.weight(2f).height(80.dp),
-                            shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF007AFF))
-                        ) {
-                            Icon(Icons.Default.Send, contentDescription = null, modifier = Modifier.size(36.dp), tint = Color.White)
-                            Spacer(Modifier.width(16.dp))
-                            Text(stringResource(R.string.reply_send_btn), fontSize = 32.sp, fontWeight = FontWeight.ExtraBold, color = Color.White)
-                        }
-                    }
                 }
             }
         } else {
@@ -458,6 +452,32 @@ fun BigSmsScreen(navController: NavController, viewModel: com.prusoft.easybiglau
                             IconButton(onClick = { showNewMessageDialog = false }) {
                                 Icon(Icons.Default.ArrowBack, contentDescription = null, modifier = Modifier.size(40.dp))
                             }
+                        },
+                        actions = {
+                            IconButton(
+                                onClick = {
+                                    if (newMessageNumber.isNotEmpty() && newMessageText.isNotEmpty()) {
+                                        try {
+                                            val smsManager = context.getSystemService(android.telephony.SmsManager::class.java)
+                                            smsManager.sendTextMessage(newMessageNumber, null, newMessageText, null, null)
+                                            showNewMessageDialog = false
+                                            newMessageNumber = ""
+                                            newMessageText = ""
+                                        } catch (e: Exception) {
+                                            // Handle exception
+                                        }
+                                    }
+                                },
+                                enabled = newMessageNumber.isNotEmpty() && newMessageText.isNotEmpty(),
+                                modifier = Modifier.padding(end = 8.dp)
+                            ) {
+                                Icon(
+                                    Icons.Default.Send,
+                                    contentDescription = "Send",
+                                    modifier = Modifier.size(40.dp),
+                                    tint = if (newMessageNumber.isNotEmpty() && newMessageText.isNotEmpty()) Color(0xFF007AFF) else Color.Gray
+                                )
+                            }
                         }
                     )
                 }
@@ -518,38 +538,6 @@ fun BigSmsScreen(navController: NavController, viewModel: com.prusoft.easybiglau
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
-                    
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        TextButton(
-                            onClick = { showNewMessageDialog = false },
-                            modifier = Modifier.weight(1f).height(80.dp),
-                            colors = ButtonDefaults.textButtonColors(contentColor = Color.Red)
-                        ) {
-                            Text(stringResource(R.string.reply_cancel_btn), fontSize = 24.sp, fontWeight = FontWeight.Bold)
-                        }
-                        Button(
-                            onClick = {
-                                if (newMessageNumber.isNotEmpty() && newMessageText.isNotEmpty()) {
-                                    try {
-                                        val smsManager = context.getSystemService(android.telephony.SmsManager::class.java)
-                                        smsManager.sendTextMessage(newMessageNumber, null, newMessageText, null, null)
-                                        showNewMessageDialog = false
-                                        newMessageNumber = ""
-                                        newMessageText = ""
-                                    } catch (e: Exception) {
-                                        // Handle exception
-                                    }
-                                }
-                            },
-                            modifier = Modifier.weight(2f).height(80.dp),
-                            shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF007AFF))
-                        ) {
-                            Icon(Icons.Default.Send, contentDescription = null, modifier = Modifier.size(36.dp), tint = Color.White)
-                            Spacer(Modifier.width(16.dp))
-                            Text(stringResource(R.string.reply_send_btn), fontSize = 32.sp, fontWeight = FontWeight.ExtraBold, color = Color.White)
-                        }
-                    }
                 }
             }
     } else {

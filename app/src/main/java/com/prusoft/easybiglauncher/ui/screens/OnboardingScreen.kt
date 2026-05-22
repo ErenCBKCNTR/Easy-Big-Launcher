@@ -164,10 +164,14 @@ fun OnboardingScreen(navController: NavController, viewModel: LauncherViewModel 
                                 painter = androidx.compose.ui.res.painterResource(id = R.drawable.app_logo),
                                 contentDescription = stringResource(R.string.app_name),
                                 modifier = Modifier
-                                    .padding(bottom = 32.dp)
-                                    .fillMaxWidth()
-                                    .height(200.dp),
+                                    .padding(bottom = 24.dp)
+                                    .size(140.dp),
                                 contentScale = androidx.compose.ui.layout.ContentScale.Fit
+                            )
+                            Text(
+                                text = stringResource(R.string.app_name),
+                                style = MaterialTheme.typography.displayMedium.copy(color = Color.White, textAlign = TextAlign.Center),
+                                modifier = Modifier.padding(bottom = 32.dp)
                             )
                             Text(
                                 text = stringResource(R.string.choose_language),

@@ -352,13 +352,47 @@ private fun getFormattedDate(time: Long): String {
     return DateUtils.getRelativeTimeSpanString(time, System.currentTimeMillis(), DateUtils.SECOND_IN_MILLIS).toString()
 }
 
+fun getContactNameByNumber(contentResolver: ContentResolver, phoneNumber: String): String? {
+    val uri = Uri.withAppendedPath(
+        android.provider.ContactsContract.PhoneLookup.CONTENT_FILTER_URI,
+        Uri.encode(phoneNumber)
+    )
+    val projection = arrayOf(android.provider.ContactsContract.PhoneLookup.DISPLAY_NAME)
+    try {
+        contentResolver.query(uri, projection, null, null, null)?.use { cursor ->
+            if (cursor.moveToFirst()) {
+                val nameIndex = cursor.getColumnIndex(android.provider.ContactsContract.PhoneLookup.DISPLAY_NAME)
+                if (nameIndex != -1) {
+                    return cursor.getString(nameIndex)
+                }
+            }
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+    return null
+}
+
 @Composable
 fun BlockedNumbersList(
     sharedPref: android.content.SharedPreferences,
     onBack: () -> Unit
 ) {
+    val context = LocalContext.current
     val blockedNumbers = sharedPref.getStringSet("blocked_numbers", emptySet())?.toList() ?: emptyList()
     var numberToUnblock by remember { mutableStateOf<String?>(null) }
+    
+    // Cache mapped names asynchronously
+    var blockedNames by remember { mutableStateOf<Map<String, String?>>(emptyMap()) }
+    
+    LaunchedEffect(blockedNumbers) {
+        val names = withContext(Dispatchers.IO) {
+            blockedNumbers.associateWith { number ->
+                getContactNameByNumber(context.contentResolver, number)
+            }
+        }
+        blockedNames = names
+    }
     
     Column(modifier = Modifier.fillMaxSize()) {
         Row(
@@ -383,6 +417,7 @@ fun BlockedNumbersList(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(blockedNumbers) { number ->
+                    val contactName = blockedNames[number]
                     Surface(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -391,12 +426,23 @@ fun BlockedNumbersList(
                         color = MaterialTheme.colorScheme.surfaceVariant,
                         tonalElevation = 2.dp
                     ) {
-                        Text(
-                            text = number,
-                            modifier = Modifier.padding(24.dp),
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold
-                        )
+                        Column(modifier = Modifier.padding(24.dp)) {
+                            Text(
+                                text = contactName ?: number,
+                                fontSize = 26.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            if (contactName != null) {
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = number,
+                                    fontSize = 18.sp,
+                                    color = Color.Gray,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
+                        }
                     }
                 }
             }
