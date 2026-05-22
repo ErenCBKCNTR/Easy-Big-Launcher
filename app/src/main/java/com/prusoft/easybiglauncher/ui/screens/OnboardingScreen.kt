@@ -192,56 +192,56 @@ fun OnboardingScreen(navController: NavController, viewModel: LauncherViewModel 
                                 painter = androidx.compose.ui.res.painterResource(id = R.drawable.app_logo),
                                 contentDescription = stringResource(R.string.app_name),
                                 modifier = Modifier
-                                    .padding(bottom = 8.dp)
-                                    .size(80.dp),
+                                    .padding(bottom = 4.dp)
+                                    .size(60.dp),
                                 contentScale = androidx.compose.ui.layout.ContentScale.Fit
                             )
                             Text(
                                 text = stringResource(R.string.app_name),
                                 style = MaterialTheme.typography.headlineMedium.copy(
                                     color = Color.White,
-                                    fontSize = 28.sp,
+                                    fontSize = 22.sp,
                                     fontWeight = FontWeight.Bold,
                                     textAlign = TextAlign.Center
                                 ),
-                                modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)
+                                modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp)
                             )
                             Text(
                                 text = stringResource(R.string.choose_language),
-                                style = MaterialTheme.typography.titleLarge.copy(
+                                style = MaterialTheme.typography.titleMedium.copy(
                                     color = Color.White,
                                     fontWeight = FontWeight.Bold,
                                     textAlign = TextAlign.Center
                                 ),
                                 modifier = Modifier.fillMaxWidth()
                             )
-                            Spacer(modifier = Modifier.height(10.dp))
+                            Spacer(modifier = Modifier.height(8.dp))
                             Text(
                                 text = stringResource(R.string.onboarding_welcome_text),
                                 style = MaterialTheme.typography.bodyLarge.copy(
                                     color = Color.LightGray,
-                                    fontSize = 18.sp,
+                                    fontSize = 15.sp,
                                     textAlign = TextAlign.Center
                                 ),
-                                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
+                                modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp)
                             )
-                            Spacer(modifier = Modifier.height(20.dp))
+                            Spacer(modifier = Modifier.height(16.dp))
                             LanguageButton(text = "🇹🇷 TÜRKÇE") {
                                 AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("tr"))
                                 scope.launch { viewModel.securityRepository.setLanguage("tr") }
                             }
-                            Spacer(modifier = Modifier.height(12.dp))
+                            Spacer(modifier = Modifier.height(10.dp))
                             LanguageButton(text = "🇬🇧 ENGLISH") {
                                 AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("en"))
                                 scope.launch { viewModel.securityRepository.setLanguage("en") }
                             }
-                            Spacer(modifier = Modifier.height(20.dp))
+                            Spacer(modifier = Modifier.height(16.dp))
                             Button(
                                 onClick = { scope.launch { pagerState.scrollToPage(1) } },
-                                modifier = Modifier.fillMaxWidth().height(60.dp),
+                                modifier = Modifier.fillMaxWidth().height(56.dp),
                                 shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
                             ) {
-                                Text(stringResource(R.string.next), fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                                Text(stringResource(R.string.next), fontSize = 20.sp, fontWeight = FontWeight.Bold)
                             }
                         }
                         1 -> {
@@ -355,10 +355,10 @@ fun OnboardingScreen(navController: NavController, viewModel: LauncherViewModel 
 fun LanguageButton(text: String, onClick: () -> Unit) {
     Button(
         onClick = onClick,
-        modifier = Modifier.fillMaxWidth().height(80.dp),
+        modifier = Modifier.fillMaxWidth().height(60.dp),
         colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Color.Black),
         shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)
     ) {
-        Text(text = text, fontSize = 28.sp, fontWeight = FontWeight.ExtraBold)
+        Text(text = text, fontSize = 22.sp, fontWeight = FontWeight.ExtraBold)
     }
 }

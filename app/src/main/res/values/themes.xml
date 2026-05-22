@@ -5,4 +5,10 @@
         <item name="colorPrimary">@color/purple_500</item>
     </style>
     <color name="purple_500">#6200EE</color>
+
+    <style name="Theme.EasyBigLauncher.Fullscreen" parent="Theme.EasyBigLauncher">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+    </style>
 </resources>
