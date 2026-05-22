@@ -36,6 +36,7 @@ import android.content.Context
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import com.prusoft.easybiglauncher.utils.TelecomUtils
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -48,6 +49,7 @@ fun OnboardingScreen(navController: NavController, viewModel: LauncherViewModel 
     // state removed
 
     var isIgnoringBattery by remember { mutableStateOf(BatteryOptimizationManager.isIgnoringBatteryOptimizations(context)) }
+    var isDefaultDialer by remember { mutableStateOf(TelecomUtils.isDefaultDialer(context)) }
     var hasDndPermission by remember { 
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         mutableStateOf(notificationManager.isNotificationPolicyAccessGranted) 
@@ -74,6 +76,7 @@ fun OnboardingScreen(navController: NavController, viewModel: LauncherViewModel 
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
                 isIgnoringBattery = BatteryOptimizationManager.isIgnoringBatteryOptimizations(context)
+                isDefaultDialer = TelecomUtils.isDefaultDialer(context)
                 val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
                 hasDndPermission = notificationManager.isNotificationPolicyAccessGranted
                 hasNotificationPermission = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
@@ -307,6 +310,18 @@ fun OnboardingScreen(navController: NavController, viewModel: LauncherViewModel 
                                 modifier = Modifier.fillMaxWidth().height(60.dp),
                                 colors = ButtonDefaults.buttonColors(containerColor = if (isIgnoringBattery) Color(0xFF4CAF50) else Color.DarkGray)
                             ) { Text(stringResource(R.string.battery_optimization_title), fontSize = 16.sp) }
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Button(
+                                onClick = { TelecomUtils.requestDefaultDialer(context) },
+                                modifier = Modifier.fillMaxWidth().height(60.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = if (isDefaultDialer) Color(0xFF4CAF50) else Color.DarkGray)
+                            ) {
+                                Text(
+                                    text = if (isDefaultDialer) stringResource(R.string.default_dialer_set) else stringResource(R.string.default_dialer_button),
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
                             Spacer(modifier = Modifier.height(10.dp))
                             Button(
                                 onClick = { 

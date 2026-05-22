@@ -81,7 +81,7 @@ fun ToolsScreen(navController: NavController, viewModel: LauncherViewModel = vie
             }
             item {
                 val soundInfo = getSoundModeInfo(soundMode)
-                val soundModeText = "${stringResource(R.string.sound_mode)}: ${stringResource(soundInfo.first)} / ${stringResource(soundInfo.second)}"
+                val soundModeText = "${stringResource(R.string.sound_mode)}: ${stringResource(soundInfo.first)}"
                 ToolButton(
                     text = soundModeText,
                     icon = soundInfo.third,

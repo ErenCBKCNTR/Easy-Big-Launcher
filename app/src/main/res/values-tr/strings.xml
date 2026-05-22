@@ -223,4 +223,7 @@
     <string name="alarm_tts_message">%1$s zamanı geldi. Lütfen kontrol edin.</string>
     <string name="permission_notification">Bildirim İzni</string>
     <string name="permission_notification_desc">Hatırlatıcı bildirimlerini göstermek ve alarmları güvenilir şekilde tetiklemek için bildirim izni gereklidir.</string>
+    <string name="default_dialer_banner">Aramaları bu büyük ekranda cevaplamak ve yönetmek için Easy Big Launcher\'ı varsayılan telefon uygulamanız yapın.</string>
+    <string name="default_dialer_button">VARSAYILAN TELEFON YAP</string>
+    <string name="default_dialer_set">Varsayılan Telefon: Aktif</string>
 </resources>

@@ -40,9 +40,9 @@
     <string name="sound_ring">RING</string>
     <string name="sound_vibrate">VIBRATE</string>
     <string name="sound_silent">SILENT</string>
-    <string name="ses_ring">SESLİ</string>
-    <string name="ses_vibrate">TİTREŞİM</string>
-    <string name="ses_silent">SESSİZ</string>
+    <string name="ses_ring">RING</string>
+    <string name="ses_vibrate">VIBRATE</string>
+    <string name="ses_silent">SILENT</string>
     <string name="privacy_policy_title">Privacy Policy</string>
     <string name="disclosure_title">Why is this permission needed?</string>
     <string name="disclosure_sos_desc">We need SMS and Location permissions to make the SOS function work and to send your location to your relatives in case of emergency.</string>
@@ -223,4 +223,7 @@
     <string name="alarm_tts_message">It is time for %1$s. Please check.</string>
     <string name="permission_notification">Notification Permission</string>
     <string name="permission_notification_desc">Notification permission is required to show reminder notifications and fire alarm triggers reliably.</string>
+    <string name="default_dialer_banner">Set Easy Big Launcher as your default phone application to see and answer calls on this big screen.</string>
+    <string name="default_dialer_button">SET DEFAULT PHONE APP</string>
+    <string name="default_dialer_set">Default Phone App: Active</string>
 </resources>

@@ -37,12 +37,25 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.gestures.detectTapGestures
+import com.prusoft.easybiglauncher.utils.TelecomUtils
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BigDialerScreen(navController: NavController) {
     var selectedTab by remember { mutableStateOf(0) } // 0: Dialer, 1: Contacts, 2: History
     val context = LocalContext.current
+    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+    var isDefaultDialer by remember { mutableStateOf(TelecomUtils.isDefaultDialer(context)) }
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
+            if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
+                isDefaultDialer = TelecomUtils.isDefaultDialer(context)
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
 
     Scaffold(
         topBar = {
@@ -61,6 +74,48 @@ fun BigDialerScreen(navController: NavController) {
                 .padding(padding)
                 .fillMaxSize()
         ) {
+            if (!isDefaultDialer) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.default_dialer_banner),
+                            style = MaterialTheme.typography.bodyLarge.copy(
+                                color = MaterialTheme.colorScheme.onErrorContainer,
+                                fontWeight = FontWeight.SemiBold,
+                                textAlign = TextAlign.Center
+                            ),
+                            fontSize = 18.sp
+                        )
+                        Button(
+                            onClick = { TelecomUtils.requestDefaultDialer(context) },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.error,
+                                contentColor = MaterialTheme.colorScheme.onError
+                            ),
+                            modifier = Modifier.fillMaxWidth().height(56.dp)
+                        ) {
+                            Text(
+                                text = stringResource(R.string.default_dialer_button),
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+            }
+
             // Tab Buttons
             Row(
                 modifier = Modifier

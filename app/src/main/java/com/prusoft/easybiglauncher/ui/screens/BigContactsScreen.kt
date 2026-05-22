@@ -92,6 +92,28 @@ fun BigContactsScreen(viewModel: com.prusoft.easybiglauncher.viewmodel.LauncherV
             }
         }
 
+        // Search Results list taking up all available space
+        Box(modifier = Modifier.weight(1f)) {
+            if (isLoading) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(filteredContacts) { contact ->
+                        ContactRow(contact = contact, onClick = {
+                            selectedContactForOptions = contact
+                        })
+                    }
+                }
+            }
+        }
+
+        // Keyboard at the absolute bottom
         if (showKeyboard) {
             CustomQwertyKeyboard(
                 onChar = { searchQuery += it },
@@ -105,24 +127,6 @@ fun BigContactsScreen(viewModel: com.prusoft.easybiglauncher.viewmodel.LauncherV
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Gray)
             ) {
                 Text(stringResource(R.string.close_btn), fontSize = 20.sp)
-            }
-        }
-
-        if (isLoading) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
-            }
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(filteredContacts) { contact ->
-                    ContactRow(contact = contact, onClick = {
-                        selectedContactForOptions = contact
-                    })
-                }
             }
         }
     }

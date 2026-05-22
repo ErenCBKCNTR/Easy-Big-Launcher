@@ -49,6 +49,36 @@ object ToolManager {
 
         audioManager.ringerMode = nextMode
         _soundMode.value = nextMode
+
+        // Feedback based on selected mode
+        when (nextMode) {
+            AudioManager.RINGER_MODE_NORMAL -> {
+                try {
+                    val toneG = android.media.ToneGenerator(android.media.AudioManager.STREAM_NOTIFICATION, 80)
+                    toneG.startTone(android.media.ToneGenerator.TONE_PROP_BEEP, 100)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+            AudioManager.RINGER_MODE_VIBRATE -> {
+                try {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        val vibratorManager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as android.os.VibratorManager
+                        val vibrator = vibratorManager.defaultVibrator
+                        vibrator.vibrate(android.os.VibrationEffect.createOneShot(150, android.os.VibrationEffect.DEFAULT_AMPLITUDE))
+                    } else {
+                        @Suppress("DEPRECATION")
+                        val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as android.os.Vibrator
+                        vibrator.vibrate(150)
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+            AudioManager.RINGER_MODE_SILENT -> {
+                // Do nothing when muted
+            }
+        }
     }
     
     fun updateState(context: Context) {

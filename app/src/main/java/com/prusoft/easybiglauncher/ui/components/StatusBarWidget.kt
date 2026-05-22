@@ -34,6 +34,7 @@ import androidx.compose.runtime.collectAsState
 import android.app.Application
 import com.prusoft.easybiglauncher.R
 import java.text.SimpleDateFormat
+import java.text.DateFormatSymbols
 import java.util.Date
 import java.util.Locale
 
@@ -58,9 +59,10 @@ fun StatusBarWidget(onBatteryTenClicks: (() -> Unit)? = null) {
     val securityRepository = remember { SecurityRepository(context.applicationContext as Application) }
     val clockTapAction by securityRepository.clockTapAction.collectAsState(initial = 2)
     
+    val lang by securityRepository.language.collectAsState(initial = "tr")
     val ttsManager = remember { TTSManager.getInstance(context) }
     val time by rememberCurrentTime()
-    val date = remember { SimpleDateFormat("dd MMMM EEEE", Locale.getDefault()).format(Date()) }
+    val date = remember(lang, time) { SimpleDateFormat("dd MMMM EEEE", Locale(lang)).format(Date()) }
     val battery by rememberBatteryStatus(context)
     val signalLevel by rememberSignalStrength(context)
     
@@ -137,15 +139,16 @@ fun StatusBarWidget(onBatteryTenClicks: (() -> Unit)? = null) {
     }
     
     if (showCalendarDialog) {
-        CalendarDialog(onDismiss = { showCalendarDialog = false })
+        CalendarDialog(lang = lang, onDismiss = { showCalendarDialog = false })
     }
 }
 
 @Composable
-fun CalendarDialog(onDismiss: () -> Unit) {
-    val calendar = Calendar.getInstance()
+fun CalendarDialog(lang: String, onDismiss: () -> Unit) {
+    val locale = remember(lang) { Locale(lang) }
+    val calendar = remember { Calendar.getInstance(locale) }
     val currentDay = calendar.get(Calendar.DAY_OF_MONTH)
-    val currentMonthStr = SimpleDateFormat("MMMM yyyy", Locale.getDefault()).format(calendar.time)
+    val currentMonthStr = remember(lang) { SimpleDateFormat("MMMM yyyy", locale).format(calendar.time) }
 
     calendar.set(Calendar.DAY_OF_MONTH, 1)
     val firstDayOfWeek = calendar.get(Calendar.DAY_OF_WEEK) // 1 = Sunday, 2 = Monday...
@@ -170,7 +173,7 @@ fun CalendarDialog(onDismiss: () -> Unit) {
         onDismissRequest = onDismiss,
         title = {
             Text(
-                text = currentMonthStr.uppercase(), 
+                text = currentMonthStr.uppercase(locale), 
                 fontSize = 32.sp, 
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
@@ -181,7 +184,20 @@ fun CalendarDialog(onDismiss: () -> Unit) {
             Column(modifier = Modifier.fillMaxWidth()) {
                 // Weekday headers
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-                    val weekDays = listOf("Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz")
+                    val symbols = DateFormatSymbols(locale)
+                    val weekDays = listOf(
+                        symbols.shortWeekdays[Calendar.MONDAY],
+                        symbols.shortWeekdays[Calendar.TUESDAY],
+                        symbols.shortWeekdays[Calendar.WEDNESDAY],
+                        symbols.shortWeekdays[Calendar.THURSDAY],
+                        symbols.shortWeekdays[Calendar.FRIDAY],
+                        symbols.shortWeekdays[Calendar.SATURDAY],
+                        symbols.shortWeekdays[Calendar.SUNDAY]
+                    ).map { day ->
+                        day.lowercase(locale).replaceFirstChar { char ->
+                            if (char.isLowerCase()) char.titlecase(locale) else char.toString()
+                        }
+                    }
                     weekDays.forEach {
                         Text(it, fontSize = 20.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
                     }

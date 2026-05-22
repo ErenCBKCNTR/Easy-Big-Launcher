@@ -1,12 +1,14 @@
 package com.prusoft.easybiglauncher.ui.call
 
 import android.content.Context
+import android.media.AudioManager
 import android.os.Build
 import android.os.Bundle
 import android.telecom.TelecomManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
+import com.prusoft.easybiglauncher.services.CustomInCallService
 import com.prusoft.easybiglauncher.ui.theme.AccessibilityLauncherTheme
 
 @RequiresApi(Build.VERSION_CODES.M)
@@ -42,6 +44,18 @@ class CustomCallActivity : ComponentActivity() {
     }
 
     private fun declineCall() {
+        val activeCall = CustomInCallService.activeCall
+        if (activeCall != null && activeCall.state == android.telecom.Call.STATE_RINGING) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                activeCall.reject(android.telecom.Call.REJECT_REASON_DECLINED, null)
+            } else {
+                activeCall.reject(false, null)
+            }
+        } else {
+            activeCall?.disconnect()
+        }
+        
+        // Fallback using TelecomManager
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             try {
                 val telecomManager = getSystemService(Context.TELECOM_SERVICE) as TelecomManager
@@ -53,7 +67,11 @@ class CustomCallActivity : ComponentActivity() {
     }
 
     private fun acceptCall() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        val activeCall = CustomInCallService.activeCall
+        if (activeCall != null) {
+            activeCall.answer(android.telecom.VideoProfile.STATE_AUDIO_ONLY)
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // Fallback using TelecomManager
             try {
                 val telecomManager = getSystemService(Context.TELECOM_SERVICE) as TelecomManager
                 telecomManager.acceptRingingCall()
@@ -64,7 +82,11 @@ class CustomCallActivity : ComponentActivity() {
     }
 
     private fun endCall() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+        val activeCall = CustomInCallService.activeCall
+        if (activeCall != null) {
+            activeCall.disconnect()
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            // Fallback using TelecomManager
             try {
                 val telecomManager = getSystemService(Context.TELECOM_SERVICE) as TelecomManager
                 telecomManager.endCall()
