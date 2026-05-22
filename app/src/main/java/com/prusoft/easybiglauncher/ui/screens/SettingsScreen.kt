@@ -34,6 +34,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
 
 @Composable
 fun SettingsWrapper(navController: NavController, viewModel: LauncherViewModel = viewModel()) {
@@ -205,14 +206,13 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
                             2 to stringResource(R.string.clock_action_both)
                         )
                         val selectedOptionText = options.firstOrNull { it.first == clockTapAction }?.second ?: ""
-
                         Box(modifier = Modifier.fillMaxWidth()) {
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .height(64.dp)
                                     .padding(vertical = 4.dp)
-                                    .androidx.compose.foundation.background(Color.White, shape = RoundedCornerShape(12.dp))
+                                    .background(Color.White, shape = RoundedCornerShape(12.dp))
                                     .clickable { expanded = true }
                                     .padding(horizontal = 16.dp),
                                 verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
@@ -232,7 +232,7 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
                                 onDismissRequest = { expanded = false },
                                 modifier = Modifier
                                     .fillMaxWidth(0.9f)
-                                    .androidx.compose.foundation.background(Color.White)
+                                    .background(Color.White)
                             ) {
                                 options.forEach { (value, label) ->
                                     DropdownMenuItem(
@@ -248,7 +248,7 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
                                             scope.launch { viewModel.securityRepository.setClockTapAction(value) }
                                             expanded = false
                                         },
-                                        modifier = Modifier.androidx.compose.foundation.background(Color.White)
+                                        modifier = Modifier.background(Color.White)
                                     )
                                 }
                             }
