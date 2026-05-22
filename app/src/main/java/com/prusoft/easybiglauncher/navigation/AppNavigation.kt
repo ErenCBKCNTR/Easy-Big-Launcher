@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.prusoft.easybiglauncher.ui.screens.HomeScreen
 import com.prusoft.easybiglauncher.ui.screens.SettingsScreen
 import com.prusoft.easybiglauncher.ui.screens.AllAppsScreen
@@ -48,7 +49,10 @@ fun AppNavigation(viewModel: LauncherViewModel = viewModel()) {
         composable("privacy_policy") { PrivacyPolicyScreen(navController) }
         composable("manage_pages") { ManagePagesScreen(navController, viewModel) }
         composable("dialer") { BigDialerScreen(navController) }
-        composable("sms") { BigSmsScreen(navController) }
+        composable("sms?number={number}", arguments = listOf(navArgument("number") { nullable = true })) { backStackEntry -> 
+            val number = backStackEntry.arguments?.getString("number")
+            BigSmsScreen(navController, initialPhoneNumber = number) 
+        }
         composable("reminders") { RemindersScreen(navController, viewModel) }
         composable("magnifier") { MagnifierScreen(navController) }
         composable("siren") { PanicSirenScreen(navController) }

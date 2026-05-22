@@ -45,7 +45,7 @@ fun OnboardingScreen(navController: NavController, viewModel: LauncherViewModel 
     val scope = rememberCoroutineScope()
     
     val pagerState = rememberPagerState(pageCount = { 5 })
-    var showRestartDialog by remember { mutableStateOf(false) }
+    // state removed
 
     var isIgnoringBattery by remember { mutableStateOf(BatteryOptimizationManager.isIgnoringBatteryOptimizations(context)) }
     var hasDndPermission by remember { 
@@ -160,10 +160,14 @@ fun OnboardingScreen(navController: NavController, viewModel: LauncherViewModel 
                 ) {
                     when (page) {
                         0 -> {
-                            Text(
-                                text = stringResource(R.string.app_name),
-                                style = MaterialTheme.typography.displayMedium.copy(color = Color.White, textAlign = TextAlign.Center),
-                                modifier = Modifier.padding(bottom = 32.dp)
+                            androidx.compose.foundation.Image(
+                                painter = androidx.compose.ui.res.painterResource(id = R.drawable.app_logo),
+                                contentDescription = stringResource(R.string.app_name),
+                                modifier = Modifier
+                                    .padding(bottom = 32.dp)
+                                    .fillMaxWidth()
+                                    .height(200.dp),
+                                contentScale = androidx.compose.ui.layout.ContentScale.Fit
                             )
                             Text(
                                 text = stringResource(R.string.choose_language),
@@ -252,7 +256,9 @@ fun OnboardingScreen(navController: NavController, viewModel: LauncherViewModel 
                                 onClick = {
                                     scope.launch {
                                         viewModel.securityRepository.setOnboardingCompleted(true)
-                                        showRestartDialog = true
+                                        navController.navigate("home") {
+                                            popUpTo("onboarding") { inclusive = true }
+                                        }
                                     }
                                 },
                                 modifier = Modifier.fillMaxWidth().height(80.dp),
@@ -274,43 +280,6 @@ fun OnboardingScreen(navController: NavController, viewModel: LauncherViewModel 
                 }
             }
 
-            if (showRestartDialog) {
-                AlertDialog(
-                    onDismissRequest = { },
-                    title = { Text(stringResource(R.string.setup_complete)) },
-                    text = { Text(stringResource(R.string.restart_app_warning), fontSize = 18.sp) },
-                    confirmButton = {
-                        Button(
-                            onClick = {
-                                try {
-                                    val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
-                                    val componentName = intent?.component
-                                    val mainIntent = android.content.Intent.makeRestartActivityTask(componentName)
-                                    context.startActivity(mainIntent)
-                                    Runtime.getRuntime().exit(0)
-                                } catch (e: Exception) {
-                                    val activity = context as? android.app.Activity
-                                    activity?.finishAndRemoveTask()
-                                    kotlin.system.exitProcess(0)
-                                }
-                            }
-                        ) {
-                            Text(stringResource(R.string.restart_app_btn))
-                        }
-                    },
-                    dismissButton = {
-                        TextButton(
-                            onClick = {
-                                val activity = context as? android.app.Activity
-                                activity?.finishAndRemoveTask()
-                                kotlin.system.exitProcess(0)
-                            }
-                        ) {
-                            Text(stringResource(R.string.ok)) // Re-using current OK string, or just hardcode "Tamam" based on context but usually ok is defined
-                        }
-                    }
-                )
-            }
         }
     }
 }

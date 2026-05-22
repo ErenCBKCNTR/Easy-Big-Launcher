@@ -43,7 +43,7 @@ data class ContactInfo(
 )
 
 @Composable
-fun BigContactsScreen(viewModel: com.prusoft.easybiglauncher.viewmodel.LauncherViewModel = androidx.lifecycle.viewmodel.compose.viewModel()) {
+fun BigContactsScreen(viewModel: com.prusoft.easybiglauncher.viewmodel.LauncherViewModel = androidx.lifecycle.viewmodel.compose.viewModel(), navController: androidx.navigation.NavController? = null) {
     val context = LocalContext.current
     var contacts by remember { mutableStateOf<List<ContactInfo>>(emptyList()) }
     var searchQuery by remember { mutableStateOf("") }
@@ -66,27 +66,47 @@ fun BigContactsScreen(viewModel: com.prusoft.easybiglauncher.viewmodel.LauncherV
         else contacts.filter { it.name.contains(searchQuery, ignoreCase = true) || it.number.contains(searchQuery) }
     }
 
+    var showKeyboard by remember { mutableStateOf(false) }
+
     Column(modifier = Modifier.fillMaxSize()) {
         // Search Bar
-        TextField(
-            value = searchQuery,
-            onValueChange = { searchQuery = it },
+        Surface(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            placeholder = { Text(stringResource(R.string.search_contacts_hint), color = Color.LightGray, fontSize = 20.sp) },
-            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color.White) },
-            singleLine = true,
-            textStyle = androidx.compose.ui.text.TextStyle(color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold),
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = Color.DarkGray,
-                unfocusedContainerColor = Color.DarkGray,
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-                cursorColor = Color.White
-            ),
-            shape = RoundedCornerShape(12.dp)
-        )
+                .padding(16.dp)
+                .clickable { showKeyboard = true },
+            shape = RoundedCornerShape(12.dp),
+            color = Color.DarkGray
+        ) {
+            Row(
+                modifier = Modifier.padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(Icons.Default.Search, contentDescription = null, tint = Color.White)
+                Spacer(modifier = Modifier.width(8.dp))
+                if (searchQuery.isEmpty()) {
+                    Text(stringResource(R.string.search_contacts_hint), color = Color.LightGray, fontSize = 20.sp)
+                } else {
+                    Text(searchQuery, color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+        }
+
+        if (showKeyboard) {
+            CustomQwertyKeyboard(
+                onChar = { searchQuery += it },
+                onBackspace = { if (searchQuery.isNotEmpty()) searchQuery = searchQuery.dropLast(1) },
+                onSpace = { searchQuery += " " },
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            Button(
+                onClick = { showKeyboard = false },
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Gray)
+            ) {
+                Text(stringResource(R.string.close_btn), fontSize = 20.sp)
+            }
+        }
 
         if (isLoading) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -129,10 +149,14 @@ fun BigContactsScreen(viewModel: com.prusoft.easybiglauncher.viewmodel.LauncherV
                     
                     Button(
                         onClick = {
-                            val intent = Intent(Intent.ACTION_VIEW).apply {
-                                data = Uri.parse("sms:${contact.number}")
+                            if (navController != null) {
+                                navController.navigate("sms?number=${Uri.encode(contact.number)}")
+                            } else {
+                                val intent = Intent(Intent.ACTION_VIEW).apply {
+                                    data = Uri.parse("sms:${contact.number}")
+                                }
+                                context.startActivity(intent)
                             }
-                            context.startActivity(intent)
                             selectedContactForOptions = null
                         },
                         modifier = Modifier.fillMaxWidth().height(60.dp)

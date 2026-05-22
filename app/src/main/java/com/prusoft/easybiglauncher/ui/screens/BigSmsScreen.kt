@@ -135,9 +135,13 @@ fun KeyButton(
         modifier = modifier
             .padding(horizontal = 2.dp)
             .height(80.dp)
-            .clickable {
-                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                onClick()
+            .pointerInput(Unit) {
+                awaitEachGesture {
+                    val down = awaitFirstDown()
+                    down.consume()
+                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                    onClick()
+                }
             },
         shape = RoundedCornerShape(8.dp),
         color = containerColor,
@@ -210,14 +214,14 @@ fun CustomNumpad(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BigSmsScreen(navController: NavController, viewModel: com.prusoft.easybiglauncher.viewmodel.LauncherViewModel = androidx.lifecycle.viewmodel.compose.viewModel()) {
+fun BigSmsScreen(navController: NavController, viewModel: com.prusoft.easybiglauncher.viewmodel.LauncherViewModel = androidx.lifecycle.viewmodel.compose.viewModel(), initialPhoneNumber: String? = null) {
     val context = LocalContext.current
     var showReplyDialog by remember { mutableStateOf(false) } // Still used for standard new msg dialog maybe, let's keep name
     var selectedMessage by remember { mutableStateOf<SmsMessage?>(null) }
     var replyText by remember { mutableStateOf("") }
 
-    var showNewMessageDialog by remember { mutableStateOf(false) }
-    var newMessageNumber by remember { mutableStateOf("") }
+    var showNewMessageDialog by remember { mutableStateOf(initialPhoneNumber != null) }
+    var newMessageNumber by remember { mutableStateOf(initialPhoneNumber ?: "") }
     var newMessageText by remember { mutableStateOf("") }
 
     var messages by remember { mutableStateOf<List<SmsMessage>>(emptyList()) }
@@ -366,9 +370,32 @@ fun BigSmsScreen(navController: NavController, viewModel: com.prusoft.easybiglau
             }
         }
     } else if (showNewMessageDialog) {
-            var isEditingNumber by remember { mutableStateOf(true) }
+            var isEditingNumber by remember { mutableStateOf(newMessageNumber.isEmpty()) }
             val numberInteractionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
             val textInteractionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+            
+            val contactName = remember(newMessageNumber) {
+                if (newMessageNumber.isNotEmpty()) {
+                    try {
+                        val uri = android.net.Uri.withAppendedPath(android.provider.ContactsContract.PhoneLookup.CONTENT_FILTER_URI, android.net.Uri.encode(newMessageNumber))
+                        val projection = arrayOf(android.provider.ContactsContract.PhoneLookup.DISPLAY_NAME)
+                        val cursor = context.contentResolver.query(uri, projection, null, null, null)
+                        var resultName: String? = null
+                        if (cursor != null) {
+                            if (cursor.moveToFirst()) {
+                                val nameIndex = cursor.getColumnIndex(android.provider.ContactsContract.PhoneLookup.DISPLAY_NAME)
+                                if (nameIndex >= 0) {
+                                    resultName = cursor.getString(nameIndex)
+                                }
+                            }
+                            cursor.close()
+                        }
+                        resultName
+                    } catch (e: Exception) {
+                        null
+                    }
+                } else null
+            }
             
             val pickContactLauncher = rememberLauncherForActivityResult(
                 contract = androidx.activity.result.contract.ActivityResultContracts.PickContact()
@@ -438,7 +465,7 @@ fun BigSmsScreen(navController: NavController, viewModel: com.prusoft.easybiglau
                 Column(modifier = Modifier.padding(padding).fillMaxSize().padding(16.dp)) {
                     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                         OutlinedTextField(
-                            value = newMessageNumber,
+                            value = contactName ?: newMessageNumber,
                             onValueChange = { },
                             readOnly = true,
                             label = { Text(stringResource(R.string.new_message_hint_phone), color = Color.DarkGray) },

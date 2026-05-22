@@ -78,8 +78,8 @@ fun BigDialerScreen(navController: NavController) {
                 when (selectedTab) {
                     0 -> DialerContent(context)
                     1 -> FavoritesScreen()
-                    2 -> BigContactsScreen()
-                    3 -> CallHistoryScreen()
+                    2 -> BigContactsScreen(navController = navController)
+                    3 -> CallHistoryScreen(navController = navController)
                 }
             }
         }
@@ -278,9 +278,13 @@ fun DialerButton(text: String, onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .height(100.dp)
-            .clickable {
-                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                onClick()
+            .pointerInput(Unit) {
+                awaitEachGesture {
+                    val down = awaitFirstDown()
+                    down.consume()
+                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                    onClick()
+                }
             },
         shape = RoundedCornerShape(16.dp),
         color = MaterialTheme.colorScheme.primaryContainer,

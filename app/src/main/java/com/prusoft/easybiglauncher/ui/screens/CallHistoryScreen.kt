@@ -50,7 +50,7 @@ data class CallLogInfo(
 )
 
 @Composable
-fun CallHistoryScreen(viewModel: com.prusoft.easybiglauncher.viewmodel.LauncherViewModel = androidx.lifecycle.viewmodel.compose.viewModel()) {
+fun CallHistoryScreen(viewModel: com.prusoft.easybiglauncher.viewmodel.LauncherViewModel = androidx.lifecycle.viewmodel.compose.viewModel(), navController: androidx.navigation.NavController? = null) {
     val context = LocalContext.current
     var callLogs by remember { mutableStateOf<List<CallLogInfo>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
@@ -198,10 +198,14 @@ fun CallHistoryScreen(viewModel: com.prusoft.easybiglauncher.viewmodel.LauncherV
                     
                     Button(
                         onClick = {
-                            val intent = Intent(Intent.ACTION_VIEW).apply {
-                                data = Uri.parse("sms:${log.number}")
+                            if (navController != null) {
+                                navController.navigate("sms?number=${Uri.encode(log.number)}")
+                            } else {
+                                val intent = Intent(Intent.ACTION_VIEW).apply {
+                                    data = Uri.parse("sms:${log.number}")
+                                }
+                                context.startActivity(intent)
                             }
-                            context.startActivity(intent)
                             selectedLogForOptions = null
                         },
                         modifier = Modifier.fillMaxWidth().height(60.dp)
