@@ -14,6 +14,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.CallMade
 import androidx.compose.material.icons.filled.CallMissed
 import androidx.compose.material.icons.filled.CallReceived
@@ -55,6 +57,7 @@ fun CallHistoryScreen(viewModel: com.prusoft.easybiglauncher.viewmodel.LauncherV
     var hasPermission by remember { mutableStateOf(ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CALL_LOG) == PackageManager.PERMISSION_GRANTED) }
 
     val isHomeFavLockEnabled by viewModel.securityRepository.isHomeFavLockEnabled.collectAsState(initial = false)
+    var favoriteContactToAdd by remember { mutableStateOf<CallLogInfo?>(null) }
     var selectedLogForOptions by remember { mutableStateOf<CallLogInfo?>(null) }
     var showClearHistoryDialog by remember { mutableStateOf(false) }
     
