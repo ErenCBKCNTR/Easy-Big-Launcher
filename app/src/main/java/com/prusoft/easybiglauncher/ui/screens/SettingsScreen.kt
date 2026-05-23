@@ -83,11 +83,6 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
         isDefault = LauncherUtils.isDefaultLauncher(context)
     }
 
-    var isDefaultDialer by remember { mutableStateOf(TelecomUtils.isDefaultDialer(context)) }
-    val defaultDialerLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        isDefaultDialer = TelecomUtils.isDefaultDialer(context)
-    }
-
     var isIgnoringBattery by remember { mutableStateOf(BatteryOptimizationManager.isIgnoringBatteryOptimizations(context)) }
     var showSetPinDialog by remember { mutableStateOf(false) }
     var currentCategory by remember { mutableIntStateOf(0) } // 0: Main, 1: Language & Sound, 2: Security, 3: SOS, 4: Home Management, 5: Medical
@@ -420,80 +415,6 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
                             }
                         }, modifier = Modifier.fillMaxWidth().height(80.dp), shape = RoundedCornerShape(16.dp)) {
                             Text(if (isDefault) "${stringResource(R.string.set_default)} (${stringResource(R.string.active_status)})" else stringResource(R.string.set_default), fontSize = 20.sp)
-                        }
-                        
-                        Divider()
-
-                        // Default Phone App option
-                        if (!isDefaultDialer) {
-                            Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 4.dp),
-                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
-                                shape = RoundedCornerShape(12.dp)
-                            ) {
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(12.dp),
-                                    horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                                ) {
-                                    Text(
-                                        text = stringResource(R.string.default_dialer_banner),
-                                        style = MaterialTheme.typography.bodyLarge.copy(
-                                            color = MaterialTheme.colorScheme.onErrorContainer,
-                                            fontWeight = FontWeight.Bold,
-                                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                                        ),
-                                        fontSize = 18.sp
-                                    )
-                                    Button(
-                                        onClick = {
-                                            try {
-                                                val intent = TelecomUtils.createDefaultDialerIntent(context)
-                                                if (intent != null) {
-                                                    defaultDialerLauncher.launch(intent)
-                                                } else {
-                                                    TelecomUtils.requestDefaultDialer(context)
-                                                }
-                                            } catch (e: Exception) {
-                                                e.printStackTrace()
-                                                TelecomUtils.openDefaultAppsSettings(context)
-                                            }
-                                        },
-                                        colors = ButtonDefaults.buttonColors(
-                                            containerColor = MaterialTheme.colorScheme.error,
-                                            contentColor = MaterialTheme.colorScheme.onError
-                                        ),
-                                        modifier = Modifier.fillMaxWidth().height(60.dp)
-                                    ) {
-                                        Text(
-                                            text = stringResource(R.string.default_dialer_button),
-                                            fontSize = 18.sp,
-                                            fontWeight = FontWeight.Bold
-                                        )
-                                    }
-                                }
-                            }
-                        } else {
-                            Button(
-                                onClick = { /* already default */ },
-                                enabled = false,
-                                modifier = Modifier.fillMaxWidth().height(80.dp),
-                                shape = RoundedCornerShape(16.dp),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color.Gray,
-                                    contentColor = Color.White
-                                )
-                            ) {
-                                Text(
-                                    text = "${stringResource(R.string.default_dialer_set)} (${stringResource(R.string.active_status)})",
-                                    fontSize = 20.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
                         }
                         
                         Divider()

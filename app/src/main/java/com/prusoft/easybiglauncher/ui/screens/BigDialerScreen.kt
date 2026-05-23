@@ -45,18 +45,6 @@ import com.prusoft.easybiglauncher.utils.TelecomUtils
 fun BigDialerScreen(navController: NavController) {
     var selectedTab by remember { mutableStateOf(0) } // 0: Dialer, 1: Contacts, 2: History
     val context = LocalContext.current
-    val lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current
-    var isDefaultDialer by remember { mutableStateOf(TelecomUtils.isDefaultDialer(context)) }
-
-    DisposableEffect(lifecycleOwner) {
-        val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
-            if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
-                isDefaultDialer = TelecomUtils.isDefaultDialer(context)
-            }
-        }
-        lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
-    }
 
     Scaffold(
         topBar = {
