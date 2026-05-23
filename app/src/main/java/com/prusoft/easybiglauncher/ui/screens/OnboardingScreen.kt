@@ -319,11 +319,16 @@ fun OnboardingScreen(navController: NavController, viewModel: LauncherViewModel 
                             Spacer(modifier = Modifier.height(10.dp))
                             Button(
                                 onClick = {
-                                    val intent = TelecomUtils.createDefaultDialerIntent(context)
-                                    if (intent != null) {
-                                        defaultDialerLauncher.launch(intent)
-                                    } else {
-                                        TelecomUtils.requestDefaultDialer(context)
+                                    try {
+                                        val intent = TelecomUtils.createDefaultDialerIntent(context)
+                                        if (intent != null) {
+                                            defaultDialerLauncher.launch(intent)
+                                        } else {
+                                            TelecomUtils.requestDefaultDialer(context)
+                                        }
+                                    } catch (e: Exception) {
+                                        e.printStackTrace()
+                                        TelecomUtils.openDefaultAppsSettings(context)
                                     }
                                 },
                                 modifier = Modifier.fillMaxWidth().height(60.dp),
@@ -334,55 +339,6 @@ fun OnboardingScreen(navController: NavController, viewModel: LauncherViewModel 
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.Bold
                                 )
-                            }
-                            if (!isDefaultDialer) {
-                                Spacer(modifier = Modifier.height(10.dp))
-                                Card(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    colors = CardDefaults.cardColors(containerColor = Color(0xFF261919)),
-                                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE57373))
-                                ) {
-                                    Column(
-                                        modifier = Modifier.padding(16.dp),
-                                        horizontalAlignment = Alignment.CenterHorizontally
-                                    ) {
-                                        Text(
-                                            text = stringResource(R.string.restricted_settings_title),
-                                            color = Color(0xFFFFCDD2),
-                                            fontSize = 16.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            textAlign = TextAlign.Center
-                                        )
-                                        Spacer(modifier = Modifier.height(10.dp))
-                                        Text(
-                                            text = stringResource(R.string.restricted_settings_desc),
-                                            color = Color.White,
-                                            fontSize = 14.sp,
-                                            textAlign = TextAlign.Start
-                                        )
-                                        Spacer(modifier = Modifier.height(15.dp))
-                                        Button(
-                                            onClick = {
-                                                try {
-                                                    val intent = android.content.Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                                                        data = android.net.Uri.fromParts("package", context.packageName, null)
-                                                    }
-                                                    context.startActivity(intent)
-                                                } catch (e: Exception) {
-                                                    e.printStackTrace()
-                                                }
-                                            },
-                                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE57373), contentColor = Color.Black),
-                                            modifier = Modifier.fillMaxWidth().height(50.dp)
-                                        ) {
-                                            Text(
-                                                text = stringResource(R.string.restricted_settings_button),
-                                                fontSize = 14.sp,
-                                                fontWeight = FontWeight.Bold
-                                            )
-                                        }
-                                    }
-                                }
                             }
                             Spacer(modifier = Modifier.height(10.dp))
                             Button(
