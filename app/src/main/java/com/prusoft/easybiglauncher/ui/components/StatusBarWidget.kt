@@ -146,28 +146,35 @@ fun StatusBarWidget(onBatteryTenClicks: (() -> Unit)? = null) {
 @Composable
 fun CalendarDialog(lang: String, onDismiss: () -> Unit) {
     val locale = remember(lang) { Locale(lang) }
-    val calendar = remember { Calendar.getInstance(locale) }
-    val currentDay = calendar.get(Calendar.DAY_OF_MONTH)
-    val currentMonthStr = remember(lang) { SimpleDateFormat("MMMM yyyy", locale).format(calendar.time) }
-
-    calendar.set(Calendar.DAY_OF_MONTH, 1)
-    val firstDayOfWeek = calendar.get(Calendar.DAY_OF_WEEK) // 1 = Sunday, 2 = Monday...
-    val maxDays = calendar.getActualMaximum(Calendar.DAY_OF_MONTH)
-
-    // Adjust so week starts on Monday
-    val offset = if (firstDayOfWeek == Calendar.SUNDAY) 6 else firstDayOfWeek - 2
     
-    val days = mutableListOf<String>()
-    
-    // Add empty slots for days before 1st of month
-    for (i in 0 until offset) {
-        days.add("")
+    val calendarData = remember(locale) {
+        val todayCalendar = Calendar.getInstance(locale)
+        val currentDay = todayCalendar.get(Calendar.DAY_OF_MONTH)
+        val currentMonthStr = SimpleDateFormat("MMMM yyyy", locale).format(todayCalendar.time)
+        
+        val calcCalendar = Calendar.getInstance(locale).apply {
+            set(Calendar.DAY_OF_MONTH, 1)
+        }
+        val firstDayOfWeek = calcCalendar.get(Calendar.DAY_OF_WEEK) // 1 = Sunday, 2 = Monday...
+        val maxDays = calcCalendar.getActualMaximum(Calendar.DAY_OF_MONTH)
+        
+        // Adjust so week starts on Monday
+        val offset = if (firstDayOfWeek == Calendar.SUNDAY) 6 else firstDayOfWeek - 2
+        
+        val days = mutableListOf<String>()
+        for (i in 0 until offset) {
+            days.add("")
+        }
+        for (i in 1..maxDays) {
+            days.add(i.toString())
+        }
+        
+        Triple(currentDay, currentMonthStr, days)
     }
     
-    // Add actual days
-    for (i in 1..maxDays) {
-        days.add(i.toString())
-    }
+    val currentDay = calendarData.first
+    val currentMonthStr = calendarData.second
+    val days = calendarData.third
 
     AlertDialog(
         onDismissRequest = onDismiss,

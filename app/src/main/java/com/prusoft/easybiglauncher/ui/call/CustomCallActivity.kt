@@ -46,8 +46,8 @@ class CustomCallActivity : ComponentActivity() {
     private fun declineCall() {
         val activeCall = CustomInCallService.activeCall
         if (activeCall != null && activeCall.state == android.telecom.Call.STATE_RINGING) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                activeCall.reject(android.telecom.Call.REJECT_REASON_DECLINED, null)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                activeCall.reject(android.telecom.Call.REJECT_REASON_DECLINED)
             } else {
                 activeCall.reject(false, null)
             }

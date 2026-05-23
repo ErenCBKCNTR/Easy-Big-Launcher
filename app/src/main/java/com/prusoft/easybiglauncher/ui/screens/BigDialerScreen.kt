@@ -24,6 +24,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
@@ -44,7 +45,7 @@ import com.prusoft.easybiglauncher.utils.TelecomUtils
 fun BigDialerScreen(navController: NavController) {
     var selectedTab by remember { mutableStateOf(0) } // 0: Dialer, 1: Contacts, 2: History
     val context = LocalContext.current
-    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+    val lifecycleOwner = androidx.compose.ui.platform.LocalLifecycleOwner.current
     var isDefaultDialer by remember { mutableStateOf(TelecomUtils.isDefaultDialer(context)) }
 
     DisposableEffect(lifecycleOwner) {
