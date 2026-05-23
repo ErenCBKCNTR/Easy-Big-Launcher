@@ -226,4 +226,7 @@
     <string name="default_dialer_banner">Aramaları bu büyük ekranda cevaplamak ve yönetmek için Easy Big Launcher\'ı varsayılan telefon uygulamanız yapın.</string>
     <string name="default_dialer_button">VARSAYILAN TELEFON YAP</string>
     <string name="default_dialer_set">Varsayılan Telefon: Aktif</string>
+    <string name="restricted_settings_title">"Erişim Engellendi/Reddedildi" Hatası mı Alıyorsunuz?</string>
+    <string name="restricted_settings_desc">Android 13 ve üzeri güvenlik sistemi (Kısıtlı Ayarlar) nedeniyle dışarıdan yüklenen uygulamalarda varsayılan seçimi engellenebilir.\n\nÇözümü Çok Kolay:\n1. Aşağıdaki "UYGULAMA AYARLARINI AÇ" butonuna tıklayın.\n2. Açılan sayfanın sağ üst köşesindeki "Üç Nokta" (⋮) simgesine dokunun.\n3. "Kısıtlı ayarlara izin ver" seçeneğine tıklayın.\n4. Telefon şifrenizi girin.\n5. Buraya geri dönüp "VARSAYILAN TELEFON YAP" butonuna tekrar basarak aktifleştirin.</string>
+    <string name="restricted_settings_button">UYGULAMA AYARLARINI AÇ</string>
 </resources>

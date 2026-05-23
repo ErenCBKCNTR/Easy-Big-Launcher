@@ -226,4 +226,7 @@
     <string name="default_dialer_banner">Set Easy Big Launcher as your default phone application to see and answer calls on this big screen.</string>
     <string name="default_dialer_button">SET DEFAULT PHONE APP</string>
     <string name="default_dialer_set">Default Phone App: Active</string>
+    <string name="restricted_settings_title">Are you getting "Permission/Access Denied" error?</string>
+    <string name="restricted_settings_desc">Due to Android 13+ security features (Restricted Settings), sideloaded apps might be blocked from becoming the default phone app.\n\nSolution is very simple:\n1. Click "OPEN APP SETTINGS" button below.\n2. Tap the "Three Dots" (⋮) icon in the top right corner of the page.\n3. Click "Allow restricted settings".\n4. Confirm your phone password/fingerprint.\n5. Return here and click "SET DEFAULT PHONE APP" button again.</string>
+    <string name="restricted_settings_button">OPEN APP SETTINGS</string>
 </resources>
