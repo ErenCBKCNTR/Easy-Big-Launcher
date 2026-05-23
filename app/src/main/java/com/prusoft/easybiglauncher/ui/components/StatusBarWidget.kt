@@ -62,7 +62,12 @@ fun StatusBarWidget(onBatteryTenClicks: (() -> Unit)? = null) {
     val lang by securityRepository.language.collectAsState(initial = "tr")
     val ttsManager = remember { TTSManager.getInstance(context) }
     val time by rememberCurrentTime()
-    val date = remember(lang, time) { SimpleDateFormat("dd MMMM EEEE", Locale(lang)).format(Date()) }
+    val date = remember(lang, time) {
+        val locale = if (lang.equals("en", ignoreCase = true)) Locale.ENGLISH
+                     else if (lang.equals("tr", ignoreCase = true)) Locale("tr", "TR")
+                     else Locale(lang)
+        SimpleDateFormat("dd MMMM EEEE", locale).format(Date())
+    }
     val battery by rememberBatteryStatus(context)
     val signalLevel by rememberSignalStrength(context)
     
@@ -145,7 +150,11 @@ fun StatusBarWidget(onBatteryTenClicks: (() -> Unit)? = null) {
 
 @Composable
 fun CalendarDialog(lang: String, onDismiss: () -> Unit) {
-    val locale = remember(lang) { Locale(lang) }
+    val locale = remember(lang) {
+        if (lang.equals("en", ignoreCase = true)) Locale.ENGLISH
+        else if (lang.equals("tr", ignoreCase = true)) Locale("tr", "TR")
+        else Locale(lang)
+    }
     
     val calendarData = remember(locale) {
         val todayCalendar = Calendar.getInstance(locale)

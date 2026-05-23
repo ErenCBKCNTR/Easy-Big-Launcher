@@ -72,6 +72,12 @@ fun OnboardingScreen(navController: NavController, viewModel: LauncherViewModel 
         hasNotificationPermission = isGranted
     }
 
+    val defaultDialerLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { _ ->
+        isDefaultDialer = TelecomUtils.isDefaultDialer(context)
+    }
+
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
@@ -312,7 +318,14 @@ fun OnboardingScreen(navController: NavController, viewModel: LauncherViewModel 
                             ) { Text(stringResource(R.string.battery_optimization_title), fontSize = 16.sp) }
                             Spacer(modifier = Modifier.height(10.dp))
                             Button(
-                                onClick = { TelecomUtils.requestDefaultDialer(context) },
+                                onClick = {
+                                    val intent = TelecomUtils.createDefaultDialerIntent(context)
+                                    if (intent != null) {
+                                        defaultDialerLauncher.launch(intent)
+                                    } else {
+                                        TelecomUtils.requestDefaultDialer(context)
+                                    }
+                                },
                                 modifier = Modifier.fillMaxWidth().height(60.dp),
                                 colors = ButtonDefaults.buttonColors(containerColor = if (isDefaultDialer) Color(0xFF4CAF50) else Color.DarkGray)
                             ) {

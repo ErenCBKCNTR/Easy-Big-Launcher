@@ -18,6 +18,26 @@ object TelecomUtils {
         }
     }
 
+    fun createDefaultDialerIntent(context: Context): Intent? {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            val roleManager = context.getSystemService(Context.ROLE_SERVICE) as? RoleManager
+            if (roleManager != null && !roleManager.isRoleHeld(RoleManager.ROLE_DIALER)) {
+                roleManager.createRequestRoleIntent(RoleManager.ROLE_DIALER)
+            } else {
+                null
+            }
+        } else {
+            val telecomManager = context.getSystemService(Context.TELECOM_SERVICE) as? TelecomManager
+            if (telecomManager != null && context.packageName != telecomManager.defaultDialerPackage) {
+                Intent(TelecomManager.ACTION_CHANGE_DEFAULT_DIALER).apply {
+                    putExtra(TelecomManager.EXTRA_CHANGE_DEFAULT_DIALER_PACKAGE_NAME, context.packageName)
+                }
+            } else {
+                null
+            }
+        }
+    }
+
     fun requestDefaultDialer(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             val roleManager = context.getSystemService(Context.ROLE_SERVICE) as? RoleManager

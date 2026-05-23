@@ -28,6 +28,7 @@ import com.prusoft.easybiglauncher.R
 import com.prusoft.easybiglauncher.ui.components.PinPadDialog
 import com.prusoft.easybiglauncher.utils.LauncherUtils
 import com.prusoft.easybiglauncher.utils.BatteryOptimizationManager
+import com.prusoft.easybiglauncher.utils.TelecomUtils
 import com.prusoft.easybiglauncher.viewmodel.LauncherViewModel
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.rememberScrollState
@@ -80,6 +81,11 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
     
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         isDefault = LauncherUtils.isDefaultLauncher(context)
+    }
+
+    var isDefaultDialer by remember { mutableStateOf(TelecomUtils.isDefaultDialer(context)) }
+    val defaultDialerLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        isDefaultDialer = TelecomUtils.isDefaultDialer(context)
     }
 
     var isIgnoringBattery by remember { mutableStateOf(BatteryOptimizationManager.isIgnoringBatteryOptimizations(context)) }
@@ -180,9 +186,62 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
                 when(currentCategory) {
                     1 -> {
                         val isSmsTtsEnabled by viewModel.securityRepository.isSmsTtsEnabled.collectAsState(initial = false)
+                        val currentLanguage by viewModel.securityRepository.language.collectAsState(initial = "tr")
+                        var langExpanded by remember { mutableStateOf(false) }
+                        val langOptions = listOf(
+                            "tr" to "🇹🇷 Türkçe",
+                            "en" to "🇬🇧 İngilizce"
+                        )
+                        val selectedLangText = langOptions.firstOrNull { it.first == currentLanguage }?.second ?: "🇹🇷 Türkçe"
+
                         Text(text = stringResource(id = R.string.language_option), style = MaterialTheme.typography.titleLarge)
-                        Button(onClick = { AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("en")) }, modifier = Modifier.fillMaxWidth().height(80.dp), shape = RoundedCornerShape(16.dp)) { Text("English", fontSize = 24.sp) }
-                        Button(onClick = { AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("tr")) }, modifier = Modifier.fillMaxWidth().height(80.dp), shape = RoundedCornerShape(16.dp)) { Text("Türkçe", fontSize = 24.sp) }
+                        Box(modifier = Modifier.fillMaxWidth()) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(64.dp)
+                                    .background(Color.White, shape = RoundedCornerShape(12.dp))
+                                    .clickable { langExpanded = true }
+                                    .padding(horizontal = 16.dp),
+                                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    text = selectedLangText,
+                                    fontSize = 20.sp,
+                                    color = Color.Black,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                Text(text = "▼", fontSize = 16.sp, color = Color.Black)
+                            }
+                            DropdownMenu(
+                                expanded = langExpanded,
+                                onDismissRequest = { langExpanded = false },
+                                modifier = Modifier
+                                    .fillMaxWidth(0.9f)
+                                    .background(Color.White)
+                            ) {
+                                langOptions.forEach { (value, label) ->
+                                    DropdownMenuItem(
+                                        text = { 
+                                            Text(
+                                                text = label, 
+                                                fontSize = 20.sp, 
+                                                fontWeight = FontWeight.Bold, 
+                                                color = Color.Black
+                                            ) 
+                                        },
+                                        onClick = {
+                                            AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(value))
+                                            scope.launch { viewModel.securityRepository.setLanguage(value) }
+                                            langExpanded = false
+                                        },
+                                        modifier = Modifier.background(Color.White)
+                                    )
+                                }
+                            }
+                        }
                         
                         Divider()
                         val isAutoBatteryWarningEnabled by viewModel.securityRepository.isAutoBatteryWarningEnabled.collectAsState(initial = true)
@@ -361,6 +420,75 @@ fun SettingsScreen(navController: NavController, viewModel: LauncherViewModel = 
                             }
                         }, modifier = Modifier.fillMaxWidth().height(80.dp), shape = RoundedCornerShape(16.dp)) {
                             Text(if (isDefault) "${stringResource(R.string.set_default)} (${stringResource(R.string.active_status)})" else stringResource(R.string.set_default), fontSize = 20.sp)
+                        }
+                        
+                        Divider()
+
+                        // Default Phone App option
+                        if (!isDefaultDialer) {
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp),
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(12.dp),
+                                    horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Text(
+                                        text = stringResource(R.string.default_dialer_banner),
+                                        style = MaterialTheme.typography.bodyLarge.copy(
+                                            color = MaterialTheme.colorScheme.onErrorContainer,
+                                            fontWeight = FontWeight.Bold,
+                                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                        ),
+                                        fontSize = 18.sp
+                                    )
+                                    Button(
+                                        onClick = {
+                                            val intent = TelecomUtils.createDefaultDialerIntent(context)
+                                            if (intent != null) {
+                                                defaultDialerLauncher.launch(intent)
+                                            } else {
+                                                TelecomUtils.requestDefaultDialer(context)
+                                            }
+                                        },
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = MaterialTheme.colorScheme.error,
+                                            contentColor = MaterialTheme.colorScheme.onError
+                                        ),
+                                        modifier = Modifier.fillMaxWidth().height(60.dp)
+                                    ) {
+                                        Text(
+                                            text = stringResource(R.string.default_dialer_button),
+                                            fontSize = 18.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+                                }
+                            }
+                        } else {
+                            Button(
+                                onClick = { /* already default */ },
+                                enabled = false,
+                                modifier = Modifier.fillMaxWidth().height(80.dp),
+                                shape = RoundedCornerShape(16.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color.Gray,
+                                    contentColor = Color.White
+                                )
+                            ) {
+                                Text(
+                                    text = "${stringResource(R.string.default_dialer_set)} (${stringResource(R.string.active_status)})",
+                                    fontSize = 20.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
                         }
                         
                         Divider()

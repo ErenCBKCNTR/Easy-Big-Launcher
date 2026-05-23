@@ -30,9 +30,9 @@ class AlarmActivity : AppCompatActivity() {
     private var reminderTitle: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        setupFlags()
         super.onCreate(savedInstanceState)
         
-        setupFlags()
         hideSystemUI()
         
         reminderTitle = intent.getStringExtra("reminder_title") ?: "HATIRLATICI"
